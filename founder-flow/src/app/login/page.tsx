@@ -1,21 +1,53 @@
 "use client";
 
-import React from "react";
-import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import React, { useState } from "react";
+import {
+    signInWithPopup,
+    GoogleAuthProvider,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword
+} from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import { LogIn, Rocket } from "lucide-react";
+import { LogIn, Rocket, UserPlus, Mail, Lock, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
+    const [isLogin, setIsLogin] = useState(true);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const handleGoogleLogin = async () => {
         const provider = new GoogleAuthProvider();
+        setError("");
         try {
             await signInWithPopup(auth, provider);
             router.push("/onboarding");
-        } catch (error) {
-            console.error("Login failed:", error);
+        } catch (error: any) {
+            console.error("Google login failed:", error);
+            setError(error.message || "Google login failed. Please try again.");
+        }
+    };
+
+    const handleEmailAuth = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError("");
+
+        try {
+            if (isLogin) {
+                await signInWithEmailAndPassword(auth, email, password);
+            } else {
+                await createUserWithEmailAndPassword(auth, email, password);
+            }
+            router.push("/onboarding");
+        } catch (error: any) {
+            console.error("Authentication failed:", error);
+            setError(error.message || "Authentication failed. Please check your credentials.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -27,23 +59,27 @@ export default function LoginPage() {
                         <Rocket className="w-8 h-8 text-white dark:text-black" />
                     </div>
                     <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                        Welcome to FounderFlow
+                        {isLogin ? "Welcome to FounderFlow" : "Create your account"}
                     </h1>
                     <p className="text-zinc-500 dark:text-zinc-400">
-                        The agentic hub for your startup journey.
+                        {isLogin
+                            ? "The agentic hub for your startup journey."
+                            : "Join the community of agentic founders."}
                     </p>
                 </div>
+
+                {error && (
+                    <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/10 dark:text-red-400 rounded-xl border border-red-100 dark:border-red-900/20">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>{error}</span>
+                    </div>
+                )}
 
                 <div className="space-y-4">
                     <button
                         onClick={handleGoogleLogin}
                         className="group relative flex w-full items-center justify-center gap-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-50 transition-all hover:bg-zinc-50 dark:hover:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2"
                     >
-                        <img
-                            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/bx_loader.gif"
-                            alt="Google"
-                            className="w-5 h-5 hidden group-active:block"
-                        />
                         <svg className="w-5 h-5" viewBox="0 0 24 24">
                             <path
                                 fill="currentColor"
@@ -59,10 +95,10 @@ export default function LoginPage() {
                             />
                             <path
                                 fill="currentColor"
-                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                             />
                         </svg>
-                        Continue with Google
+                        {isLogin ? "Continue with Google" : "Sign up with Google"}
                     </button>
                 </div>
 
@@ -77,21 +113,60 @@ export default function LoginPage() {
                     </div>
                 </div>
 
-                <div className="space-y-4">
-                    <input
-                        type="email"
-                        placeholder="name@company.com"
-                        className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all"
-                    />
-                    <button className="w-full flex items-center justify-center gap-2 rounded-xl bg-black dark:bg-zinc-50 px-4 py-3 text-sm font-medium text-white dark:text-black transition-all hover:bg-zinc-800 dark:hover:bg-zinc-200">
-                        <LogIn className="w-4 h-4" />
-                        Sign in with Email
+                <form onSubmit={handleEmailAuth} className="space-y-4">
+                    <div className="space-y-2">
+                        <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="name@company.com"
+                                required
+                                className="w-full pl-10 pr-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all"
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                required
+                                className="w-full pl-10 pr-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all"
+                            />
+                        </div>
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full flex items-center justify-center gap-2 rounded-xl bg-black dark:bg-zinc-50 px-4 py-3 text-sm font-medium text-white dark:text-black transition-all hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50"
+                    >
+                        {loading ? (
+                            <div className="w-5 h-5 border-2 border-white dark:border-black border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                            <>
+                                {isLogin ? <LogIn className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                                {isLogin ? "Sign in with Email" : "Create Account"}
+                            </>
+                        )}
                     </button>
-                </div>
+                </form>
 
-                <p className="text-center text-xs text-zinc-500 mt-6">
-                    By continuing, you agree to our Terms of Service and Privacy Policy.
-                </p>
+                <div className="text-center space-y-4">
+                    <button
+                        onClick={() => setIsLogin(!isLogin)}
+                        className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-colors"
+                    >
+                        {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                    </button>
+                    <p className="text-xs text-zinc-500">
+                        By continuing, you agree to our Terms of Service and Privacy Policy.
+                    </p>
+                </div>
             </div>
         </div>
     );
