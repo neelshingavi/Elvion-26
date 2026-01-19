@@ -1,29 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { Map as MapIcon, Loader2, Rocket, Flag, Target, Sparkles } from "lucide-react";
+import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { Map, Loader2, Rocket, Flag, Target, Sparkles } from "lucide-react";
+import { useStartup } from "@/hooks/useStartup";
 import { cn } from "@/lib/utils";
-
-const mockRoadmap = [
-    { stage: "Phase 1", title: "Core MVP Development", description: "Build the landing page and basic auth flow.", status: "completed" },
-    { stage: "Phase 2", title: "AI Orchestrator Setup", description: "Connect Gemini and build the agent switching logic.", status: "current" },
-    { stage: "Phase 3", title: "Matching Logic", description: "Implement vector-based matching for users.", status: "future" },
-    { stage: "Phase 4", title: "Public Launch", description: "Open beta for initial test group.", status: "future" },
-];
 
 export default function PlanningPage() {
     const { user } = useAuth();
-    const [loading, setLoading] = useState(false);
-    const [roadmap, setRoadmap] = useState<any[] | null>(null);
+    const { startup, loading } = useStartup();
+    const [generating, setGenerating] = useState(false);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="w-8 h-8 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
 
     const generateRoadmap = async () => {
-        setLoading(true);
-        // Simulate API call to Gemini
-        setTimeout(() => {
-            setRoadmap(mockRoadmap);
-            setLoading(false);
-        }, 2000);
+        if (!startup) return;
+        setGenerating(true);
+        try {
+            await fetch("/api/generate-roadmap", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ startupId: startup.startupId, idea: startup.idea }),
+            });
+        } catch (error) {
+            console.error("Roadmap generation failed:", error);
+        } finally {
+            setGenerating(false);
+        }
     };
 
     return (
@@ -31,7 +40,7 @@ export default function PlanningPage() {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-purple-500/10 text-purple-500 rounded-2xl">
-                        <Map className="w-8 h-8" />
+                        <MapIcon className="w-8 h-8" />
                     </div>
                     <div>
                         <h1 className="text-3xl font-bold">Strategic Roadmap</h1>
@@ -39,20 +48,20 @@ export default function PlanningPage() {
                     </div>
                 </div>
 
-                {!roadmap && (
+                {!startup || startup.stage === "idea_submitted" ? (
                     <button
                         onClick={generateRoadmap}
-                        disabled={loading}
+                        disabled={generating}
                         className="flex items-center gap-2 px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold transition-all hover:scale-105 active:scale-95 shadow-md disabled:bg-zinc-400"
                     >
-                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                        {generating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
                         Generate Roadmap
                     </button>
-                )}
+                ) : null}
             </div>
 
             <div className="relative">
-                {!roadmap ? (
+                {!startup || startup.stage === "idea_submitted" ? (
                     <div className="p-12 rounded-[2.5rem] bg-zinc-50 dark:bg-zinc-950 border-2 border-dashed border-zinc-200 dark:border-zinc-800 flex flex-col items-center text-center">
                         <div className="p-4 bg-white dark:bg-zinc-900 rounded-full mb-4 shadow-sm">
                             <Rocket className="w-12 h-12 text-zinc-300 dark:text-zinc-700" />
@@ -64,38 +73,47 @@ export default function PlanningPage() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 gap-6">
-                        {roadmap.map((step, i) => (
-                            <div
-                                key={i}
-                                className={cn(
-                                    "group p-8 rounded-3xl border transition-all",
-                                    step.status === "completed"
-                                        ? "bg-green-500/5 border-green-500/10"
-                                        : step.status === "current"
-                                            ? "bg-white dark:bg-zinc-900 border-black dark:border-white shadow-xl scale-[1.02]"
-                                            : "bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 opacity-60"
-                                )}
-                            >
-                                <div className="flex items-start justify-between">
-                                    <div className="space-y-1">
-                                        <span className={cn(
-                                            "text-xs font-black uppercase tracking-widest",
-                                            step.status === "completed" ? "text-green-500" : "text-zinc-400"
+                        {[
+                            { stage: "idea_validated", title: "Validation & Strategy", description: "Focusing on market fit and initial strategy." },
+                            { stage: "roadmap_created", title: "Technical Blueprint", description: "Architecture and core feature definition." },
+                            { stage: "execution_active", title: "Build & Launch", description: "Sprinting towards the MVP launch." }
+                        ].map((step, i) => {
+                            const isCompleted = ["idea_validated", "roadmap_created", "execution_active"].indexOf(startup.stage) > ["idea_validated", "roadmap_created", "execution_active"].indexOf(step.stage);
+                            const isCurrent = startup.stage === step.stage;
+
+                            return (
+                                <div
+                                    key={i}
+                                    className={cn(
+                                        "group p-8 rounded-3xl border transition-all",
+                                        isCompleted
+                                            ? "bg-green-500/5 border-green-500/10"
+                                            : isCurrent
+                                                ? "bg-white dark:bg-zinc-900 border-black dark:border-white shadow-xl scale-[1.02]"
+                                                : "bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 opacity-60"
+                                    )}
+                                >
+                                    <div className="flex items-start justify-between">
+                                        <div className="space-y-1">
+                                            <span className={cn(
+                                                "text-xs font-black uppercase tracking-widest",
+                                                isCompleted ? "text-green-500" : "text-zinc-400"
+                                            )}>
+                                                {step.stage.replace("_", " ")}
+                                            </span>
+                                            <h3 className="text-2xl font-bold">{step.title}</h3>
+                                            <p className="text-zinc-500 max-w-lg">{step.description}</p>
+                                        </div>
+                                        <div className={cn(
+                                            "p-3 rounded-2xl",
+                                            isCompleted ? "bg-green-500 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400"
                                         )}>
-                                            {step.stage}
-                                        </span>
-                                        <h3 className="text-2xl font-bold">{step.title}</h3>
-                                        <p className="text-zinc-500 max-w-lg">{step.description}</p>
-                                    </div>
-                                    <div className={cn(
-                                        "p-3 rounded-2xl",
-                                        step.status === "completed" ? "bg-green-500 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400"
-                                    )}>
-                                        {step.status === "completed" ? <Flag className="w-6 h-6" /> : <Target className="w-6 h-6" />}
+                                            {isCompleted ? <Flag className="w-6 h-6" /> : <Target className="w-6 h-6" />}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

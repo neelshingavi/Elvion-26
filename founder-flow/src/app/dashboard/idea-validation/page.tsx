@@ -2,35 +2,45 @@
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useStartup } from "@/hooks/useStartup";
 import { Lightbulb, Send, Loader2, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createStartup } from "@/lib/startup-service";
 
 export default function IdeaValidationPage() {
     const { user } = useAuth();
+    const { startup } = useStartup();
     const [idea, setIdea] = useState("");
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!idea || !user) return;
 
         setLoading(true);
+        setError(null);
         try {
-            // 1. Create startup doc
-            const startupId = await createStartup(user.uid, idea);
+            // 1. Get or create startup doc
+            let startupId = startup?.startupId;
+            if (!startupId) {
+                startupId = await createStartup(user.uid, idea);
+            }
 
             // 2. Call AI validation
             const res = await fetch("/api/validate-idea", {
                 method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ idea, startupId, userId: user.uid }),
             });
 
             const data = await res.json();
+            if (data.error) throw new Error(data.error);
             setResult(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Validation failed:", error);
+            setError(error.message);
         } finally {
             setLoading(false);
         }
@@ -47,6 +57,13 @@ export default function IdeaValidationPage() {
                     <p className="text-zinc-500">Run your premise through our AI scoring model.</p>
                 </div>
             </div>
+
+            {error && (
+                <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <p className="text-sm font-medium">{error}</p>
+                </div>
+            )}
 
             {!result ? (
                 <form onSubmit={handleSubmit} className="space-y-4">

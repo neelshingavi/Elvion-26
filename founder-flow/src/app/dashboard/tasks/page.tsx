@@ -1,23 +1,41 @@
 "use client";
 
 import { CheckSquare, ListTodo, Plus, Loader2, Sparkles, AlertCircle } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-
-const mockTasks = [
-    { id: 1, title: "Finalize Landing Page Hero", priority: "high", status: "todo" },
-    { id: 2, title: "Connect Firebase Auth", priority: "critical", status: "todo" },
-    { id: 3, title: "Setup Gemini Route", priority: "medium", status: "done" },
-    { id: 4, title: "Design Onboarding Flow", priority: "high", status: "done" },
-];
+import { useStartup } from "@/hooks/useStartup";
+import { updateTaskStatus } from "@/lib/startup-service";
 
 export default function TasksPage() {
-    const [tasks, setTasks] = useState(mockTasks);
-    const [loading, setLoading] = useState(false);
+    const { tasks, loading, startup } = useStartup();
+    const [syncing, setSyncing] = useState(false);
 
-    const generateTasks = () => {
-        setLoading(true);
-        setTimeout(() => setLoading(false), 1500);
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="w-8 h-8 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
+
+    const toggleTask = async (taskId: string, currentStatus: "pending" | "done") => {
+        await updateTaskStatus(taskId, currentStatus === "pending" ? "done" : "pending");
+    };
+
+    const handleSync = async () => {
+        if (!startup) return;
+        setSyncing(true);
+        try {
+            await fetch("/api/generate-tasks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ startupId: startup.startupId, idea: startup.idea }),
+            });
+        } catch (error) {
+            console.error("Sync failed:", error);
+        } finally {
+            setSyncing(false);
+        }
     };
 
     return (
@@ -34,11 +52,11 @@ export default function TasksPage() {
                 </div>
 
                 <button
-                    onClick={generateTasks}
-                    disabled={loading}
+                    onClick={handleSync}
+                    disabled={syncing}
                     className="flex items-center gap-2 px-6 py-3 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black rounded-xl font-bold transition-all hover:scale-105 active:scale-95 shadow-md"
                 >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                    {syncing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
                     AI Sync
                 </button>
             </div>
@@ -50,28 +68,39 @@ export default function TasksPage() {
                         Active Tasks
                     </h3>
                     <div className="space-y-3">
-                        {tasks.filter(t => t.status === "todo").map(task => (
-                            <div
-                                key={task.id}
-                                className="group flex items-center justify-between p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-black dark:hover:border-white transition-all cursor-pointer"
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className="w-5 h-5 rounded-md border-2 border-zinc-200 dark:border-zinc-800" />
-                                    <div>
-                                        <p className="font-medium">{task.title}</p>
-                                        <span className={cn(
-                                            "text-[10px] font-black uppercase px-2 py-0.5 rounded-full",
-                                            task.priority === "critical" ? "bg-red-500/10 text-red-500" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"
-                                        )}>
-                                            {task.priority}
-                                        </span>
+                        {tasks.filter(t => t.status === "pending").length > 0 ? (
+                            tasks.filter(t => t.status === "pending").map(task => (
+                                <div
+                                    key={task.id}
+                                    onClick={() => toggleTask(task.id, "pending")}
+                                    className="group flex items-center justify-between p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-black dark:hover:border-white transition-all cursor-pointer"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-5 h-5 rounded-md border-2 border-zinc-200 dark:border-zinc-800 group-hover:border-black dark:group-hover:border-white transition-colors" />
+                                        <div>
+                                            <p className="font-medium">{task.title}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className={cn(
+                                                    "text-[10px] font-black uppercase px-2 py-0.5 rounded-full",
+                                                    task.priority === "high" ? "bg-red-500/10 text-red-500" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"
+                                                )}>
+                                                    {task.priority}
+                                                </span>
+                                                <span className="text-[10px] text-zinc-400 opacity-60">via {task.createdByAgent}</span>
+                                            </div>
+                                        </div>
                                     </div>
+                                    <AlertCircle className="w-4 h-4 text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
-                                <AlertCircle className="w-4 h-4 text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            ))
+                        ) : (
+                            <div className="py-12 border-2 border-dashed border-zinc-100 dark:border-zinc-900 rounded-3xl flex flex-col items-center justify-center text-center px-6">
+                                <Sparkles className="w-8 h-8 text-zinc-200 mb-2" />
+                                <p className="text-zinc-400 text-sm">No tasks yet. Run AI Sync to generate your first sprint.</p>
                             </div>
-                        ))}
-                        <button className="w-full py-4 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl text-zinc-400 hover:text-black dark:hover:text-white transition-all flex items-center justify-center gap-2">
-                            <Plus className="w-4 h-4" />
+                        )}
+                        <button className="w-full py-4 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl text-zinc-400 hover:text-black dark:hover:text-white transition-all flex items-center justify-center gap-2 group">
+                            <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
                             Add custom task
                         </button>
                     </div>
@@ -86,7 +115,8 @@ export default function TasksPage() {
                         {tasks.filter(t => t.status === "done").map(task => (
                             <div
                                 key={task.id}
-                                className="flex items-center justify-between p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800"
+                                onClick={() => toggleTask(task.id, "done")}
+                                className="flex items-center justify-between p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 cursor-pointer"
                             >
                                 <div className="flex items-center gap-4 line-through">
                                     <div className="w-5 h-5 rounded-md bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center">

@@ -22,16 +22,16 @@ export async function POST(req: Request) {
         const validationResult = await callGemini(prompt);
 
         // Persist to Startup Memory
-        await addStartupMemory(startupId, "agent-output", JSON.stringify(validationResult));
+        await addStartupMemory(startupId, "agent-output", "agent", JSON.stringify(validationResult));
 
         // Progress stage to planning if valid enough
         if (validationResult.scoring > 40) {
-            await updateStartupStage(startupId, "planning");
+            await updateStartupStage(startupId, "idea_validated");
         }
 
         return NextResponse.json(validationResult);
-    } catch (error) {
+    } catch (error: any) {
         console.error("Validation route error:", error);
-        return NextResponse.json({ error: "Failed to validate idea" }, { status: 500 });
+        return NextResponse.json({ error: error.message || "Failed to validate idea" }, { status: 500 });
     }
 }

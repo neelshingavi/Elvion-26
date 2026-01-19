@@ -1,36 +1,24 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { getStartupMemory } from "@/lib/startup-service";
-import { History, Zap, Brain, MessageSquare } from "lucide-react";
-import { format } from "date-fns";
+import { useStartup } from "@/hooks/useStartup";
+import { History, Zap, Brain, MessageSquare, Clock, AlertCircle, Target, Rocket } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 export default function TimelinePage() {
-    const { user } = useAuth();
-    const [logs, setLogs] = useState<any[]>([]);
+    const { memory, loading } = useStartup();
 
-    useEffect(() => {
-        const fetchLogs = async () => {
-            if (!user) return;
-            // In a real app, we'd fetch the active startupId from a global state or DB
-            // For now, we'll need to find the latest startup for this user
-            // Placeholder: assuming we have a startupId
-            // const memory = await getStartupMemory(startupId);
-            // setLogs(memory);
-        };
-        fetchLogs();
-    }, [user]);
-
-    const mockLogs = [
-        { type: "idea", content: "AI-driven platform for founder matching and roadmap automation.", timestamp: new Date() },
-        { type: "agent-output", content: "Validated idea with score 85. Risks identified in market saturation.", timestamp: new Date(Date.now() - 1000 * 60 * 5) },
-    ];
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="w-8 h-8 border-4 border-black dark:border-white border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
 
     const getIcon = (type: string) => {
         switch (type) {
-            case "idea": return <Brain className="w-4 h-4" />;
-            case "agent-output": return <Zap className="w-4 h-4" />;
+            case "idea": return <Rocket className="w-4 h-4" />;
+            case "agent-output": return <Zap className="w-4 h-4 fill-current" />;
+            case "decision": return <Target className="w-4 h-4" />;
+            case "pivot": return <AlertCircle className="w-4 h-4" />;
             default: return <MessageSquare className="w-4 h-4" />;
         }
     };
@@ -48,23 +36,47 @@ export default function TimelinePage() {
             </div>
 
             <div className="relative border-l border-zinc-200 dark:border-zinc-800 ml-4 pl-8 space-y-12">
-                {mockLogs.map((log, i) => (
-                    <div key={i} className="relative">
-                        <div className="absolute -left-[41px] top-1 w-6 h-6 rounded-full bg-white dark:bg-black border-2 border-zinc-200 dark:border-zinc-800 flex items-center justify-center">
-                            {getIcon(log.type)}
-                        </div>
-                        <div className="space-y-2">
-                            <span className="text-xs font-mono text-zinc-400 uppercase tracking-tighter">
-                                {format(log.timestamp, "MMM d, HH:mm")} — {log.type}
-                            </span>
-                            <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                                <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                                    {log.content}
-                                </p>
+                {memory.length > 0 ? (
+                    memory.map((log) => (
+                        <div key={log.id} className="relative group">
+                            <div className={cn(
+                                "absolute -left-[41px] top-1 w-6 h-6 rounded-full border-2 border-[#fafafa] dark:border-[#050505] flex items-center justify-center transition-transform group-hover:scale-110",
+                                log.source === "agent" ? "bg-zinc-900 text-white dark:bg-zinc-50 dark:text-black shadow-lg" : "bg-white dark:bg-zinc-800 text-zinc-500 shadow-sm"
+                            )}>
+                                {getIcon(log.type)}
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                        {log.source === "agent" ? "Agent Sync" : "Founder Decision"}
+                                    </span>
+                                    <span className="text-[10px] text-zinc-300">•</span>
+                                    <span className="text-[10px] text-zinc-400">
+                                        {log.timestamp ? formatDistanceToNow(log.timestamp.toDate(), { addSuffix: true }) : "just now"}
+                                    </span>
+                                </div>
+                                <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-all group-hover:border-zinc-300 dark:group-hover:border-zinc-700">
+                                    <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
+                                        {(() => {
+                                            if (log.type !== "agent-output") return log.content;
+                                            try {
+                                                const parsed = JSON.parse(log.content);
+                                                return parsed.summary || log.content;
+                                            } catch (e) {
+                                                return log.content;
+                                            }
+                                        })()}
+                                    </p>
+                                </div>
                             </div>
                         </div>
+                    ))
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 opacity-40">
+                        <Clock className="w-12 h-12" />
+                        <p className="text-lg font-bold italic italic">Startup history is being written...</p>
                     </div>
-                ))}
+                )}
 
                 <div className="flex justify-center p-8 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl">
                     <p className="text-zinc-400 text-sm">End of history. More logs will appear as agents run.</p>
@@ -73,3 +85,5 @@ export default function TimelinePage() {
         </div>
     );
 }
+
+const cn = (...classes: any[]) => classes.filter(Boolean).join(" ");
