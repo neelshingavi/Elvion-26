@@ -1,4 +1,4 @@
-# FounderFlow SETUP GUIDE
+z# FounderFlow SETUP GUIDE
 
 This guide provides step-by-step instructions to set up the FounderFlow project on a new machine.
 

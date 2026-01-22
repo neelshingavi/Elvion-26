@@ -1,6 +1,9 @@
+"use client";
+
 import { useStartup } from "@/hooks/useStartup";
 import { History, Zap, Brain, MessageSquare, Clock, AlertCircle, Target, Rocket } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export default function TimelinePage() {
     const { memory, loading } = useStartup();
@@ -86,4 +89,4 @@ export default function TimelinePage() {
     );
 }
 
-const cn = (...classes: any[]) => classes.filter(Boolean).join(" ");
+

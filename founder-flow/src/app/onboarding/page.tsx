@@ -10,7 +10,8 @@ import {
     Check,
     ChevronRight,
     Sparkles,
-    ArrowLeft
+    ArrowLeft,
+    AlertCircle
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
@@ -51,26 +52,45 @@ export default function OnboardingPage() {
     const [selectedRole, setSelectedRole] = useState<string | null>(null);
     const [idea, setIdea] = useState("");
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // Timeout helper
+    const withTimeout = <T,>(promise: Promise<T>, ms: number = 8000, errorMessage: string = "Request timed out"): Promise<T> => {
+        const timeout = new Promise<T>((_, reject) =>
+            setTimeout(() => reject(new Error(errorMessage)), ms)
+        );
+        return Promise.race([promise, timeout]);
+    };
 
     const handleRoleSubmit = async () => {
         if (!selectedRole || !user) return;
 
         setLoading(true);
+        setError(null);
+
         try {
-            await setDoc(doc(db, "users", user.uid), {
-                uid: user.uid,
-                role: selectedRole,
-                createdAt: serverTimestamp(),
-            }, { merge: true });
+            await withTimeout(
+                setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    role: selectedRole,
+                    createdAt: serverTimestamp(),
+                }, { merge: true }),
+                10000,
+                "Network request timed out. Please check your internet connection."
+            );
 
             if (selectedRole === "founder") {
                 setStep(2);
             } else {
                 router.push("/dashboard");
             }
-        } catch (error) {
-            console.error("Error saving role:", error);
+        } catch (err: any) {
+            console.error("Error saving role:", err);
+            setError(err.message || "Failed to save role. Please try again.");
         } finally {
+            // Only stop loading if we're not navigating away or if we encountered an error
+            // If strictly navigating, we might want to keep loading to avoid flash, but safely resetting here is okay too.
+            // If we are setting step 2, we must stop loading.
             setLoading(false);
         }
     };
@@ -80,11 +100,18 @@ export default function OnboardingPage() {
         if (!idea || !user) return;
 
         setLoading(true);
+        setError(null);
+
         try {
-            await createStartup(user.uid, idea);
+            await withTimeout(
+                createStartup(user.uid, idea),
+                15000,
+                "Startup initialization timed out. Please check your connection."
+            );
             router.push("/dashboard");
-        } catch (error) {
-            console.error("Error creating startup:", error);
+        } catch (err: any) {
+            console.error("Error creating startup:", err);
+            setError(err.message || "Failed to initialize startup. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -93,6 +120,13 @@ export default function OnboardingPage() {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-[#fafafa] dark:bg-[#050505] p-4 font-sans">
             <div className="w-full max-w-2xl space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+
+                {error && (
+                    <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm font-medium flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+                        <AlertCircle className="w-4 h-4" />
+                        {error}
+                    </div>
+                )}
 
                 {step === 1 ? (
                     <>
