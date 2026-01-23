@@ -214,8 +214,12 @@ export default function LoginPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
                                 required
+                                minLength={6}
                                 className="w-full pl-10 pr-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all"
                             />
+                            {password.length > 0 && password.length < 6 && (
+                                <p className="text-xs text-red-500 mt-1 pl-1">Password must be at least 6 characters</p>
+                            )}
                         </div>
                     </div>
                     <button
