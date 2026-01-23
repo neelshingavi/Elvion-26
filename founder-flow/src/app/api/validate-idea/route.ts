@@ -15,6 +15,11 @@ export async function POST(req: Request) {
       2. summary: A 2-sentence summary of the potential.
       3. risks: An array of 3 key risks.
       4. suggestions: An array of 3 actionable next steps.
+      5. implementation_verdict: string ("Go for it", "Proceed with caution", or "Pivot needed")
+      6. capital_required: string (e.g. "$50k - $100k for MVP")
+      7. team_required: array of strings (e.g. ["Technical Co-founder", "Marketing Lead"])
+      8. competitors: array of strings (existing solutions)
+      9. existing_implementation: string (briefly mention if this exists elsewhere)
       
       Format: JSON only.
     `;
