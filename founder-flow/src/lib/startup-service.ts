@@ -35,6 +35,13 @@ export interface UserData {
     uid: string;
     role: "founder" | "admin";
     activeStartupId?: string;
+    // Expanded profile fields
+    about?: string;
+    skills?: string[];
+    age?: number;
+    phone?: string;
+    education?: string;
+    location?: string;
     createdAt: any;
 }
 
@@ -44,6 +51,8 @@ export interface Task {
     title: string;
     priority: "high" | "medium" | "low";
     reason: string;
+    instruction?: string; // What the user asked for
+    aiResponse?: string; // Gemini's output
     status: "pending" | "done";
     createdByAgent: string;
     createdAt: any;
