@@ -5,26 +5,66 @@ import {
     signInWithPopup,
     GoogleAuthProvider,
     signInWithEmailAndPassword,
-    createUserWithEmailAndPassword
+    createUserWithEmailAndPassword,
+    updateProfile
 } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { LogIn, Rocket, UserPlus, Mail, Lock, AlertCircle } from "lucide-react";
+import { LogIn, Rocket, UserPlus, Mail, Lock, AlertCircle, User } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [name, setName] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+
+    const handleRedirectByRole = (role?: string) => {
+        if (!role) {
+            router.push("/onboarding");
+            return;
+        }
+
+        if (role === "founder") {
+            router.push("/founder/dashboard");
+        } else if (role.startsWith("investor")) {
+            router.push("/investor/dashboard");
+        } else if (role === "job_seeker") {
+            router.push("/job-seeker/dashboard");
+        } else if (role === "customer") {
+            router.push("/customer/dashboard");
+        } else {
+            router.push("/onboarding");
+        }
+    };
 
     const handleGoogleLogin = async () => {
         const provider = new GoogleAuthProvider();
         setError("");
         try {
-            await signInWithPopup(auth, provider);
-            router.push("/onboarding");
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+
+            // Check if user exists in DB to handle redirect
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                handleRedirectByRole(userData.role);
+            } else {
+                // Create base user doc if it doesn't exist (first time google login)
+                await setDoc(userRef, {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    createdAt: serverTimestamp()
+                });
+                router.push("/onboarding");
+            }
         } catch (error: any) {
             console.error("Google login failed:", error);
             setError(error.message || "Google login failed. Please try again.");
@@ -38,11 +78,34 @@ export default function LoginPage() {
 
         try {
             if (isLogin) {
-                await signInWithEmailAndPassword(auth, email, password);
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Fetch user role
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    handleRedirectByRole(userSnap.data().role);
+                } else {
+                    router.push("/onboarding");
+                }
             } else {
-                await createUserWithEmailAndPassword(auth, email, password);
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                await updateProfile(user, { displayName: name });
+
+                // Create User Document
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: name,
+                    createdAt: serverTimestamp(),
+                });
+
+                router.push("/onboarding");
             }
-            router.push("/onboarding");
         } catch (error: any) {
             console.error("Authentication failed:", error);
             setError(error.message || "Authentication failed. Please check your credentials.");
@@ -114,6 +177,21 @@ export default function LoginPage() {
                 </div>
 
                 <form onSubmit={handleEmailAuth} className="space-y-4">
+                    {!isLogin && (
+                        <div className="space-y-2">
+                            <div className="relative">
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                                <input
+                                    type="text"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    placeholder="Full Name"
+                                    required={!isLogin}
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white transition-all"
+                                />
+                            </div>
+                        </div>
+                    )}
                     <div className="space-y-2">
                         <div className="relative">
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />

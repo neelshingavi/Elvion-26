@@ -16,6 +16,7 @@ import {
 export interface Startup {
     startupId: string;
     ownerId: string;
+    name: string;
     idea: string;
     stage: "idea_submitted" | "idea_validated" | "roadmap_created" | "execution_active";
     createdAt: any;
@@ -73,9 +74,10 @@ export const setActiveStartupId = async (uid: string, startupId: string) => {
 };
 
 // Startup services
-export const createStartup = async (userId: string, idea: string) => {
+export const createStartup = async (userId: string, name: string, idea: string) => {
     const docRef = await addDoc(collection(db, "startups"), {
         ownerId: userId,
+        name,
         idea,
         stage: "idea_submitted",
         createdAt: serverTimestamp(),
@@ -151,6 +153,7 @@ export const createAgentRun = async (startupId: string, agentType: string) => {
     return docRef.id;
 };
 
+
 export const getAgentRuns = async (startupId: string): Promise<AgentRun[]> => {
     const q = query(
         collection(db, "agentRuns"),
@@ -159,4 +162,42 @@ export const getAgentRuns = async (startupId: string): Promise<AgentRun[]> => {
     );
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any;
+};
+
+// Investor-facing services
+export interface StartupFilter {
+    stage?: string;
+    industry?: string; // Not yet in Startup model, but simulating 
+}
+
+export const getStartups = async (filter?: StartupFilter): Promise<Startup[]> => {
+    let q = query(collection(db, "startups"), orderBy("createdAt", "desc"));
+
+    if (filter?.stage) {
+        q = query(q, where("stage", "==", filter.stage));
+    }
+
+    // Note: Firestore requires composite indexes for multiple fields. 
+    // For now we implement basic filtering.
+
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ startupId: doc.id, ...doc.data() })) as any;
+};
+
+export const getStartupDeepDive = async (startupId: string) => {
+    const startup = await getStartup(startupId);
+    if (!startup) return null;
+
+    const [memory, tasks, agentRuns] = await Promise.all([
+        getStartupMemory(startupId),
+        getTasks(startupId),
+        getAgentRuns(startupId)
+    ]);
+
+    return {
+        ...startup,
+        memory,
+        tasks,
+        agentRuns
+    };
 };

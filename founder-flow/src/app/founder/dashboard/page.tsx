@@ -82,7 +82,7 @@ export default function DashboardPage() {
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                        Hello, {userData?.role === "founder" ? "Founder" : "User"}
+                        {startup?.name || (userData?.role === "founder" ? "Hello, Founder" : "Hello, User")}
                     </h1>
                     <p className="text-zinc-500 dark:text-zinc-400 mt-2">
                         Your agents have de-risked <span className="text-zinc-900 dark:text-zinc-100 font-medium">14%</span> of your roadmap today.
@@ -158,8 +158,8 @@ export default function DashboardPage() {
                                     >
                                         <div className="flex items-start justify-between mb-3">
                                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${task.priority === "high" ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" :
-                                                    task.priority === "medium" ? "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" :
-                                                        "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                                                task.priority === "medium" ? "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" :
+                                                    "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
                                                 }`}>
                                                 {task.priority}
                                             </span>

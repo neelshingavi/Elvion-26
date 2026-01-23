@@ -51,6 +51,7 @@ export default function OnboardingPage() {
     const [step, setStep] = useState(1);
     const [selectedRole, setSelectedRole] = useState<string | null>(null);
     const [idea, setIdea] = useState("");
+    const [startupName, setStartupName] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -81,8 +82,14 @@ export default function OnboardingPage() {
 
             if (selectedRole === "founder") {
                 setStep(2);
+            } else if (selectedRole.startsWith("investor")) {
+                router.push("/investor/dashboard");
+            } else if (selectedRole === "job_seeker") {
+                router.push("/job-seeker/onboarding");
+            } else if (selectedRole === "customer") {
+                router.push("/customer/dashboard");
             } else {
-                router.push("/dashboard");
+                router.push("/founder/dashboard");
             }
         } catch (err: any) {
             console.error("Error saving role:", err);
@@ -97,18 +104,18 @@ export default function OnboardingPage() {
 
     const handleStartupSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!idea || !user) return;
+        if (!idea || !startupName || !user) return;
 
         setLoading(true);
         setError(null);
 
         try {
             await withTimeout(
-                createStartup(user.uid, idea),
+                createStartup(user.uid, startupName, idea),
                 15000,
                 "Startup initialization timed out. Please check your connection."
             );
-            router.push("/dashboard");
+            router.push("/founder/dashboard");
         } catch (err: any) {
             console.error("Error creating startup:", err);
             setError(err.message || "Failed to initialize startup. Please try again.");
@@ -219,17 +226,31 @@ export default function OnboardingPage() {
                         </div>
 
                         <div className="space-y-4">
-                            <textarea
-                                value={idea}
-                                onChange={(e) => setIdea(e.target.value)}
-                                placeholder="A platform that uses AI agents to help founders scale..."
-                                className="w-full h-32 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-lg focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all resize-none"
-                                required
-                            />
+                            <div>
+                                <label className="block text-sm font-bold mb-2 text-zinc-500">Startup Name</label>
+                                <input
+                                    value={startupName}
+                                    onChange={(e) => setStartupName(e.target.value)}
+                                    placeholder="e.g. FounderFlow"
+                                    className="w-full p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-lg focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold mb-2 text-zinc-500">The Idea</label>
+                                <textarea
+                                    value={idea}
+                                    onChange={(e) => setIdea(e.target.value)}
+                                    placeholder="A platform that uses AI agents to help founders scale..."
+                                    className="w-full h-32 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-lg focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all resize-none"
+                                    required
+                                />
+                            </div>
 
                             <button
                                 type="submit"
-                                disabled={!idea || loading}
+                                disabled={!idea || !startupName || loading}
                                 className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-black dark:bg-zinc-50 text-white dark:text-black rounded-2xl font-bold hover:scale-[1.02] transition-all shadow-xl shadow-black/10 disabled:opacity-50"
                             >
                                 {loading ? "Initializing Agents..." : (

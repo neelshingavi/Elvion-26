@@ -10,18 +10,20 @@ import {
     Map,
     CheckSquare,
     Users,
-    LogOut
+    LogOut,
+    UserCircle
 } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 
 const navItems = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Timeline", href: "/dashboard/timeline", icon: History },
-    { name: "Idea Check", href: "/dashboard/idea-validation", icon: Lightbulb },
-    { name: "Roadmap", href: "/dashboard/planning", icon: Map },
-    { name: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
-    { name: "Matches", href: "/dashboard/matching", icon: Users },
+    { name: "Dashboard", href: "/founder/dashboard", icon: LayoutDashboard },
+    { name: "Timeline", href: "/founder/timeline", icon: History },
+    { name: "Idea Check", href: "/founder/idea-validation", icon: Lightbulb },
+    { name: "Roadmap", href: "/founder/planning", icon: Map },
+    { name: "Tasks", href: "/founder/tasks", icon: CheckSquare },
+    { name: "Matches", href: "/founder/matching", icon: Users },
+    { name: "Profile", href: "/founder/profile", icon: UserCircle },
 ];
 
 export function Sidebar() {
