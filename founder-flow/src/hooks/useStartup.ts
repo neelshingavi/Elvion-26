@@ -24,6 +24,7 @@ export function useStartup() {
     const [memory, setMemory] = useState<StartupMemory[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [agentRuns, setAgentRuns] = useState<AgentRun[]>([]);
+    const [userRole, setUserRole] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -98,13 +99,40 @@ export function useStartup() {
             setAgentRuns(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any);
         });
 
+        // 6. Fetch User Role (One-time fetch usually sufficient, or listener if roles change often)
+        // We'll use a listener for robustness
+        const memberQuery = query(
+            collection(db, "startup_members"),
+            where("startupId", "==", startupId),
+            where("userId", "==", user.uid)
+        );
+        const memberUnsubscribe = onSnapshot(memberQuery, (snapshot) => {
+            if (!snapshot.empty) {
+                const memberData = snapshot.docs[0].data();
+                setUserRole(memberData.role);
+            } else {
+                setUserRole(null);
+            }
+        });
+
         return () => {
             startupUnsubscribe();
             memoryUnsubscribe();
             tasksUnsubscribe();
             agentRunsUnsubscribe();
+            memberUnsubscribe();
         };
-    }, [userData?.activeStartupId]);
+    }, [user, userData?.activeStartupId]); // Added user to dependency for safety
+
+    // Computed Permissions
+    const isOwner = userRole === "owner";
+    const isCofounder = userRole === "cofounder";
+    const isInvestor = userRole === "investor";
+
+    // Matrix Implementation
+    const canEdit = isOwner || isCofounder;
+    const canManageTasks = isOwner || isCofounder || userRole === "team";
+    const canViewFinancials = isOwner || isCofounder || isInvestor;
 
     return {
         userData,
@@ -112,6 +140,13 @@ export function useStartup() {
         memory,
         tasks,
         agentRuns,
-        loading
+        loading,
+        userRole,
+        permissions: {
+            isOwner,
+            canEdit,
+            canManageTasks,
+            canViewFinancials
+        }
     };
 }

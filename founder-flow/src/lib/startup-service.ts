@@ -58,6 +58,14 @@ export interface AgentRun {
     createdAt: any;
 }
 
+export interface StartupMember {
+    id: string;
+    startupId: string;
+    userId: string;
+    role: "owner" | "cofounder" | "team" | "mentor" | "investor";
+    joinedAt: any;
+}
+
 // User data services
 export const getUserData = async (uid: string): Promise<UserData | null> => {
     const userRef = doc(db, "users", uid);
@@ -75,21 +83,44 @@ export const setActiveStartupId = async (uid: string, startupId: string) => {
 
 // Startup services
 export const createStartup = async (userId: string, name: string, idea: string) => {
+    // 1. Create Startup Doc
     const docRef = await addDoc(collection(db, "startups"), {
-        ownerId: userId,
+        ownerId: userId, // Keep for reference, but auth uses members
         name,
         idea,
         stage: "idea_submitted",
         createdAt: serverTimestamp(),
     });
 
-    // Also set as active startup for user
+    // 2. Add Owner to Startup Members
+    await addDoc(collection(db, "startup_members"), {
+        startupId: docRef.id,
+        userId: userId,
+        role: "owner",
+        joinedAt: serverTimestamp()
+    });
+
+    // 3. Set as active
     await setActiveStartupId(userId, docRef.id);
 
-    // Add initial memory
+    // 4. Initial Memory
     await addStartupMemory(docRef.id, "idea", "user", "Startup idea submitted: " + idea);
 
     return docRef.id;
+};
+
+export const getStartupMember = async (startupId: string, userId: string): Promise<StartupMember | null> => {
+    const q = query(
+        collection(db, "startup_members"),
+        where("startupId", "==", startupId),
+        where("userId", "==", userId)
+    );
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        return { id: doc.id, ...doc.data() } as StartupMember;
+    }
+    return null;
 };
 
 export const getStartup = async (startupId: string): Promise<Startup | null> => {

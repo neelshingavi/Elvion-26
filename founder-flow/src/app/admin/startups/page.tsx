@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, orderBy, query, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
 import { Trash2 } from "lucide-react";
+import { deleteStartupFully } from "@/lib/admin-service";
 
 export default function AdminStartupsPage() {
     const [startups, setStartups] = useState<any[]>([]);
@@ -27,10 +28,10 @@ export default function AdminStartupsPage() {
     }, []);
 
     const handleDelete = async (startupId: string) => {
-        if (!window.confirm("ARE YOU SURE? This will permanently delete this startup.")) return;
+        if (!window.confirm("ARE YOU SURE? This will permanently delete this startup (including tasks, memory, etc).")) return;
 
         try {
-            await deleteDoc(doc(db, "startups", startupId));
+            await deleteStartupFully(startupId);
             setStartups(prev => prev.filter(s => s.id !== startupId));
         } catch (error) {
             console.error("Failed to delete startup:", error);
