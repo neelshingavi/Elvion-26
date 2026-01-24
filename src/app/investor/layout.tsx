@@ -30,7 +30,7 @@ export default function InvestorLayout({
         { name: "Discovery", href: "/investor/startups", icon: Search },
         { name: "Deals", href: "/investor/deals", icon: Briefcase },
         { name: "Deal Flow", href: "/investor/dealflow", icon: Kanban },
-        { name: "Chat", href: "/messages", icon: MessageSquare },
+        { name: "Chat", href: "/investor/messages", icon: MessageSquare },
         { name: "Profile", href: "/investor/profile", icon: UserCircle },
     ];
 
@@ -108,11 +108,10 @@ export default function InvestorLayout({
 
             {/* Main Content */}
             <main className="flex-1 md:ml-64 p-3 md:p-6 pt-20 md:pt-6 min-h-screen overflow-x-hidden">
-                <div className="max-w-[1600px] mx-auto space-y-12">
+                <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500 h-full">
                     {children}
                 </div>
             </main>
         </div>
     );
 }
-

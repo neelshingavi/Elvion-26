@@ -17,7 +17,7 @@ export default function CustomerLayout({
         { name: "Dashboard", href: "/customer/dashboard", icon: LayoutDashboard },
         { name: "Explore Products", href: "/customer/products", icon: ShoppingBag },
         { name: "My Reviews", href: "/customer/reviews", icon: Star },
-        { name: "Chat", href: "/messages", icon: MessageSquare },
+        { name: "Chat", href: "/customer/messages", icon: MessageSquare },
         { name: "Profile", href: "/customer/profile", icon: UserCircle },
     ];
 
@@ -57,7 +57,7 @@ export default function CustomerLayout({
 
             {/* Main Content */}
             <main className="flex-1 md:ml-64 p-4 pt-20 md:pt-4 min-h-screen">
-                <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500 h-full">
                     {children}
                 </div>
             </main>

@@ -68,8 +68,7 @@ export const getMessages = (senderId: string, receiverId: string, callback: (mes
 export const getUserChatRooms = (uid: string, callback: (rooms: ChatRoom[]) => void) => {
     const q = query(
         collection(db, "chat_rooms"),
-        where("participants", "array-contains", uid),
-        orderBy("lastTimestamp", "desc")
+        where("participants", "array-contains", uid)
     );
 
     return onSnapshot(q, (snap) => {
