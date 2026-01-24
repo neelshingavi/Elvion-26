@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { updateProfile, sendPasswordResetEmail, getAuth } from "firebase/auth";
-import { User, Mail, Save, Phone, MapPin, GraduationCap, Briefcase, Award, Clock, ShieldCheck, Lock, Loader2 } from "lucide-react";
+import { User, Mail, Save, Phone, MapPin, GraduationCap, Briefcase, Award, Clock, ShieldCheck, Lock, Loader2, Link, Plus, Trash2, Star, Github, Linkedin, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function ProfileEditor() {
@@ -23,7 +23,10 @@ export default function ProfileEditor() {
         age: "",
         phone: "",
         education: "",
-        location: ""
+        location: "",
+        socialLinks: { linkedin: "", twitter: "", website: "" },
+        projects: [] as Array<{ name: string, description: string, role: string, link: string }>,
+        score: 0
     });
 
     useEffect(() => {
@@ -41,7 +44,10 @@ export default function ProfileEditor() {
                     age: data.age || "",
                     phone: data.phone || "",
                     education: data.education || "",
-                    location: data.location || ""
+                    location: data.location || "",
+                    socialLinks: data.socialLinks || { linkedin: "", twitter: "", website: "" },
+                    projects: data.projects || [],
+                    score: data.score || 0
                 });
             }
         };
@@ -63,7 +69,10 @@ export default function ProfileEditor() {
                 age: formData.age,
                 phone: formData.phone,
                 education: formData.education,
-                location: formData.location
+                location: formData.location,
+                socialLinks: formData.socialLinks,
+                projects: formData.projects,
+                score: formData.score
             });
             setSuccess(true);
             setTimeout(() => setSuccess(false), 3000);
@@ -84,6 +93,33 @@ export default function ProfileEditor() {
         } catch (error) {
             console.error("Reset failed:", error);
         }
+    };
+
+    const handleSocialChange = (field: string, value: string) => {
+        setFormData(prev => ({
+            ...prev,
+            socialLinks: { ...prev.socialLinks, [field]: value }
+        }));
+    };
+
+    const handleAddProject = () => {
+        setFormData(prev => ({
+            ...prev,
+            projects: [...prev.projects, { name: "", description: "", role: "", link: "" }]
+        }));
+    };
+
+    const handleRemoveProject = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            projects: prev.projects.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleProjectChange = (index: number, field: string, value: string) => {
+        const newProjects = [...formData.projects];
+        (newProjects[index] as any)[field] = value;
+        setFormData(prev => ({ ...prev, projects: newProjects }));
     };
 
     const InputField = ({ label, icon: Icon, name, type = "text", placeholder, disabled }: any) => (
@@ -165,6 +201,120 @@ export default function ProfileEditor() {
                             </div>
                         </div>
 
+                        <div className="w-full h-px bg-zinc-100 dark:bg-zinc-800" />
+
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-bold flex items-center gap-2">
+                                <Globe className="w-4 h-4 text-indigo-500" />
+                                Public Presence
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 pl-1">LinkedIn</label>
+                                    <div className="relative group">
+                                        <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors" />
+                                        <input
+                                            value={formData.socialLinks.linkedin}
+                                            onChange={(e) => handleSocialChange("linkedin", e.target.value)}
+                                            className="w-full pl-9 pr-3 py-2 text-[11px] font-bold rounded-xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:border-indigo-500/50 outline-none"
+                                            placeholder="linkedin.com/in/..."
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 pl-1">Twitter/X</label>
+                                    <div className="relative group">
+                                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                                        <input
+                                            value={formData.socialLinks.twitter}
+                                            onChange={(e) => handleSocialChange("twitter", e.target.value)}
+                                            className="w-full pl-9 pr-3 py-2 text-[11px] font-bold rounded-xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:border-indigo-500/50 outline-none"
+                                            placeholder="twitter.com/..."
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 pl-1">Portfolio</label>
+                                    <div className="relative group">
+                                        <Link className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors" />
+                                        <input
+                                            value={formData.socialLinks.website}
+                                            onChange={(e) => handleSocialChange("website", e.target.value)}
+                                            className="w-full pl-9 pr-3 py-2 text-[11px] font-bold rounded-xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:border-indigo-500/50 outline-none"
+                                            placeholder="yourwebsite.com"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="w-full h-px bg-zinc-100 dark:bg-zinc-800" />
+
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-bold flex items-center gap-2">
+                                    <Award className="w-4 h-4 text-indigo-500" />
+                                    Notable Projects
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={handleAddProject}
+                                    className="text-[10px] bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
+                                >
+                                    <Plus className="w-3 h-3" /> Insert Project
+                                </button>
+                            </div>
+
+                            <div className="grid gap-4">
+                                {formData.projects.map((project, index) => (
+                                    <div key={index} className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 relative group">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveProject(index)}
+                                            className="absolute top-2 right-2 p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                            <input
+                                                value={project.name}
+                                                onChange={(e) => handleProjectChange(index, "name", e.target.value)}
+                                                className="bg-transparent border-b border-zinc-200 dark:border-zinc-800 focus:border-indigo-500 px-1 py-1 text-sm font-bold outline-none"
+                                                placeholder="Project Name"
+                                            />
+                                            <input
+                                                value={project.role}
+                                                onChange={(e) => handleProjectChange(index, "role", e.target.value)}
+                                                className="bg-transparent border-b border-zinc-200 dark:border-zinc-800 focus:border-indigo-500 px-1 py-1 text-[11px] font-medium outline-none"
+                                                placeholder="Role / Capacity"
+                                            />
+                                        </div>
+                                        <textarea
+                                            value={project.description}
+                                            onChange={(e) => handleProjectChange(index, "description", e.target.value)}
+                                            rows={2}
+                                            className="w-full bg-transparent text-[11px] text-zinc-600 dark:text-zinc-400 outline-none resize-none"
+                                            placeholder="Review of the impact..."
+                                        />
+                                        <div className="mt-2 flex items-center gap-2">
+                                            <Link className="w-3 h-3 text-zinc-400" />
+                                            <input
+                                                value={project.link}
+                                                onChange={(e) => handleProjectChange(index, "link", e.target.value)}
+                                                className="bg-transparent text-[10px] text-zinc-500 w-full outline-none"
+                                                placeholder="https://..."
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                                {formData.projects.length === 0 && (
+                                    <div className="p-8 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
+                                        <p className="text-[11px] text-zinc-400 font-medium">No projects linked to profile yet.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
                         <div className="pt-2 flex items-center justify-between">
                             <button
                                 type="submit"
@@ -185,6 +335,24 @@ export default function ProfileEditor() {
 
                 {/* Right Side: Security & Bio */}
                 <div className="space-y-6">
+                    <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-700 text-white shadow-xl space-y-4 relative overflow-hidden">
+                        <div className="relative z-10 flex items-center justify-between">
+                            <div>
+                                <div className="flex items-center gap-2 opacity-80 mb-1">
+                                    <Star className="w-4 h-4 fill-white/20" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Founder Score</span>
+                                </div>
+                                <div className="text-4xl font-black tracking-tighter">
+                                    {formData.score}
+                                    <span className="text-lg opacity-40 ml-1">/ 100</span>
+                                </div>
+                            </div>
+                            <div className="w-12 h-12 rounded-full border-4 border-white/20 flex items-center justify-center bg-white/10 backdrop-blur-md">
+                                <span className="text-[10px] font-bold">A+</span>
+                            </div>
+                        </div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                    </div>
                     <div className="p-6 rounded-2xl bg-zinc-950 text-white dark:bg-white dark:text-black shadow-xl space-y-4 relative overflow-hidden">
                         <div className="relative z-10 space-y-4">
                             <div>
