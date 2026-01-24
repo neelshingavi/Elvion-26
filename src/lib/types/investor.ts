@@ -1,21 +1,4 @@
-export interface InvestorProfile {
-    uid: string;
-    role: "investor_angel" | "investor_vc_analyst" | "investor_vc_partner" | "admin";
-    email: string;
-    displayName: string;
-    organization?: string;
-    thesis?: string;
-    preferences: {
-        sectors: string[];
-        stages: string[];
-        minTicketSize?: number;
-        maxTicketSize?: number;
-    };
-    createdAt: any;
-    updatedAt: any;
-}
-
-export type DealStage = "new" | "review" | "call" | "due_diligence" | "term_sheet" | "invested" | "passed";
+export type DealStage = "new" | "review" | "due_diligence" | "term_sheet" | "invested" | "passed";
 
 export interface DealFlow {
     id: string;
@@ -28,21 +11,80 @@ export interface DealFlow {
     updatedAt: any;
 }
 
-export interface ExecutionSignal {
-    id: string;
-    startupId: string;
-    type: "decision_speed" | "execution_consistency" | "pivot_frequency" | "market_risk";
-    score: number; // 0-100
-    trend: "up" | "down" | "stable";
-    reason: string;
-    timestamp: any;
+export type InvestorType = "ANGEL" | "VC" | "MICRO_VC" | "STRATEGIC";
+export type AccessLevel = "METRICS_ONLY" | "METRICS_AND_UPDATES" | "FULL_READ";
+export type AccessStatus = "ACTIVE" | "REVOKED" | "EXPIRED";
+
+export interface Investor {
+    uid: string;
+    email: string;
+    displayName: string;
+    firmName?: string;
+    investorType: InvestorType;
+    createdAt: any;
+    lastAccessedAt?: any;
 }
 
-export interface StartupMetric {
-    id: string;
-    startupId: string;
-    metricType: "revenue" | "users" | "burn_rate" | "runway_months";
-    value: number;
-    period: string; // e.g., "2023-Q3" or "2023-10"
+export interface ProjectInvestorAccess {
+    accessId: string;
+    projectId: string;
+    investorId: string;
+    accessLevel: AccessLevel;
+    accessStatus: AccessStatus;
+    accessExpiryDate?: any;
+    createdAt: any;
+}
+
+export interface ProjectMetric {
+    metricId: string;
+    projectId: string;
+    metricName: string;
+    metricValue: number;
+    timePeriod: string; // e.g., "Weekly", "Oct 2023"
+    createdAt: any;
+}
+
+export interface InvestorRiskAnalysis {
+    analysisId: string;
+    projectId: string;
+    marketRisk: RiskFactor;
+    executionRisk: RiskFactor;
+    teamRisk: RiskFactor;
+    productRisk: RiskFactor;
+    generatedAt: any;
+}
+
+export interface RiskFactor {
+    severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+    evidence: string;
+    mitigation: string;
+}
+
+export interface DecisionLog {
+    decisionId: string;
+    projectId: string;
+    title: string;
+    context: string;
+    confidenceScore: number; // 0-100
+    decisionDate: any;
+    outcome?: string;
+}
+
+export interface InvestorUpdate {
+    updateId: string;
+    projectId: string;
+    title: string;
+    summary: string; // AI generated or Founder written
+    content?: string;
+    createdAt: any;
+    isRead?: boolean;
+}
+
+export interface InvestorActivityLog {
+    logId: string;
+    investorId: string;
+    projectId: string;
+    actionType: "VIEW_DASHBOARD" | "VIEW_METRICS" | "VIEW_DOCS" | "EXPORT_REPORT";
     timestamp: any;
+    ipAddress?: string;
 }

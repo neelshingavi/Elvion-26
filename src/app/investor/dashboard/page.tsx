@@ -113,7 +113,7 @@ export default function InvestorDashboard() {
                         trendingStartups.map((startup) => (
                             <Link
                                 key={startup.startupId}
-                                href={`/investor/startups/${startup.startupId}`}
+                                href={`/investor/project/${startup.startupId}`}
                                 className="group p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-black dark:hover:border-white transition-all hover:shadow-lg"
                             >
                                 <div className="flex justify-between items-start mb-4">
