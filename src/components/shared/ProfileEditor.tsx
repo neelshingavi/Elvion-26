@@ -110,34 +110,58 @@ export default function ProfileEditor() {
         try {
             const fileName = `${type}_${Date.now()}`;
             const storageRef = ref(storage, `users/${user.uid}/${fileName}`);
+
+            // Helpful logging for diagnostics
+            console.log(`[Storage] Target Bucket: ${storage.app.options.storageBucket}`);
+            console.log(`[Storage] Target Path: users/${user.uid}/${fileName}`);
+
             await uploadBytes(storageRef, file);
             const downloadURL = await getDownloadURL(storageRef);
 
             const field = type === 'avatar' ? 'photoURL' : 'bannerURL';
+
+            // 1. Update Database immediately
             await updateDoc(doc(db, "users", user.uid), {
                 [field]: downloadURL
             });
 
+            // 2. Update Auth Profile for avatar
             if (type === 'avatar') {
                 await updateProfile(user, { photoURL: downloadURL });
             }
 
+            // 3. Update Local State immediately so user sees it
             setFormData(prev => ({ ...prev, [field]: downloadURL }));
-        } catch (error) {
-            console.error("Upload failed:", error);
+
+            setSuccess(true);
+            setTimeout(() => setSuccess(false), 2000);
+        } catch (error: any) {
+            console.error("[Storage] Upload failed:", error);
+
+            // Alert user with specific diagnostic info
+            if (error.message?.includes('404')) {
+                alert(`Upload Failed (404):\n- Ensure Firebase Storage is ENABLED in the console.\n- Check if your bucket in .env.local is correct.\n- Current Configured Bucket: ${storage.app.options.storageBucket}`);
+            } else if (error.code === 'storage/unauthorized') {
+                alert("Security Conflict: Check your Firebase Storage Security Rules.");
+            } else {
+                alert(`Upload Conflict: ${error.message || "Unknown Failure"}`);
+            }
         } finally {
             setLoading(false);
         }
     };
 
-    const handleUpdate = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleUpdate = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         if (!user) return;
         setLoading(true);
         setSuccess(false);
 
         try {
+            // Update Auth display name
             await updateProfile(user, { displayName: formData.displayName });
+
+            // Update Firestore with ALL fields
             await updateDoc(doc(db, "users", user.uid), {
                 displayName: formData.displayName,
                 about: formData.about,
@@ -147,10 +171,12 @@ export default function ProfileEditor() {
                 education: formData.education,
                 location: formData.location,
                 photoURL: formData.photoURL,
+                bannerURL: formData.bannerURL,
                 socialLinks: formData.socialLinks,
                 projects: formData.projects,
                 score: formData.score
             });
+
             setSuccess(true);
             setTimeout(() => setSuccess(false), 3000);
         } catch (error) {
@@ -315,11 +341,15 @@ export default function ProfileEditor() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Main Rail */}
                 <div className="lg:col-span-8 space-y-8">
-                    {/* About Section */}
                     <section className="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 p-10 space-y-6">
                         <div className="flex items-center justify-between">
                             <h3 className="text-xl font-black tracking-tight">About</h3>
-                            <button className="p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-colors text-zinc-400"><Save className="w-4 h-4" /></button>
+                            <button
+                                onClick={() => handleUpdate()}
+                                className="p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-colors text-zinc-400"
+                            >
+                                <Save className="w-4 h-4" />
+                            </button>
                         </div>
                         <textarea
                             value={formData.about}
@@ -330,11 +360,13 @@ export default function ProfileEditor() {
                         />
                     </section>
 
-                    {/* Notable Projects Section */}
                     <section className="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 p-10 space-y-8">
                         <div className="flex items-center justify-between">
                             <h3 className="text-xl font-black tracking-tight">Experience & Ventures</h3>
-                            <button onClick={handleAddProject} className="p-2 bg-indigo-500/10 text-indigo-500 rounded-xl hover:bg-indigo-500/20 transition-all"><Plus className="w-4 h-4" /></button>
+                            <div className="flex items-center gap-2">
+                                <button onClick={handleAddProject} className="p-2 bg-indigo-500/10 text-indigo-500 rounded-xl hover:bg-indigo-500/20 transition-all"><Plus className="w-4 h-4" /></button>
+                                <button onClick={() => handleUpdate()} className="p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-colors text-zinc-400"><Save className="w-4 h-4" /></button>
+                            </div>
                         </div>
                         <div className="space-y-10">
                             {formData.projects.map((project, index) => (
@@ -371,11 +403,10 @@ export default function ProfileEditor() {
                         </div>
                     </section>
 
-                    {/* Skill-sets Section */}
                     <section className="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 p-10 space-y-6">
                         <div className="flex items-center justify-between">
                             <h3 className="text-xl font-black tracking-tight">Ecosystem Skills</h3>
-                            <button className="p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-colors text-zinc-400"><Plus className="w-4 h-4" /></button>
+                            <button onClick={() => handleUpdate()} className="p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-colors text-zinc-400"><Save className="w-4 h-4" /></button>
                         </div>
                         <div className="flex flex-wrap gap-3">
                             {formData.skills.split(',').map((skill, i) => skill.trim() && (
@@ -398,7 +429,10 @@ export default function ProfileEditor() {
                 <div className="lg:col-span-4 space-y-8">
                     {/* Public Links Card */}
                     <section className="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 p-8 space-y-6">
-                        <h3 className="text-lg font-black tracking-tight">Public Registry</h3>
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-black tracking-tight">Public Registry</h3>
+                            <button onClick={() => handleUpdate()} className="p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-colors text-zinc-400"><Save className="w-4 h-4" /></button>
+                        </div>
                         <div className="space-y-4">
                             <div className="flex items-center gap-4 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800">
                                 <Linkedin className="w-5 h-5 text-indigo-500" />
@@ -429,6 +463,10 @@ export default function ProfileEditor() {
 
                     {/* Metadata Section */}
                     <section className="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 p-8 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-black tracking-tight uppercase">Node Registry</h3>
+                            <button onClick={() => handleUpdate()} className="p-1.5 bg-indigo-500/10 text-indigo-500 rounded-lg hover:bg-indigo-500/20 transition-all"><Save className="w-3.5 h-3.5" /></button>
+                        </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5 flex-1">
                                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 pl-1">Age Identity</label>
@@ -436,13 +474,13 @@ export default function ProfileEditor() {
                                     type="number"
                                     value={formData.age}
                                     onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
-                                    className="w-full px-4 py-2.5 text-[11px] font-bold rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/50 outline-none focus:border-indigo-500/50 transition-all"
+                                    className="w-full px-4 py-2.5 text-[11px] font-bold rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/50 outline-none focus:border-indigo-500/50 transition-all font-mono"
                                     placeholder="N/A"
                                 />
                             </div>
                             <div className="space-y-1.5 flex-1">
                                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 pl-1">Venture Role</label>
-                                <div className="px-4 py-3 text-[11px] font-bold rounded-xl bg-zinc-50 dark:bg-zinc-950/50 text-zinc-400 border border-zinc-100 dark:border-zinc-800 italic">
+                                <div className="px-4 py-3 text-[11px] font-bold rounded-xl bg-zinc-50 dark:bg-zinc-950/50 text-zinc-400 border border-zinc-100 dark:border-zinc-800 italic truncate">
                                     {formData.role}
                                 </div>
                             </div>
