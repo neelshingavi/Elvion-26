@@ -102,15 +102,25 @@ export const rejectConnectionRequest = async (requestId: string) => {
 export const getConnectionRequests = (uid: string, callback: (requests: any[]) => void) => {
     const q = query(
         collection(db, "connection_requests"),
-        where("toId", "==", uid),
-        where("status", "==", "pending")
+        where("toId", "==", uid)
     );
 
-    return onSnapshot(q, (snap) => {
-        const requests = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return onSnapshot(q, (snapshot) => {
+        const requests: ConnectionRequest[] = snapshot.docs.map((d) => {
+            const data = d.data() as any;
+            return {
+                id: d.id,
+                fromId: data.fromId,
+                toId: data.toId,
+                status: data.status ?? "pending",
+                timestamp: data.timestamp ?? null
+            };
+        });
         callback(requests);
     });
-};
+}
+
+
 
 export const getConnectedUsersSnapshot = (uid: string, callback: (ids: string[]) => void) => {
     const q = query(
