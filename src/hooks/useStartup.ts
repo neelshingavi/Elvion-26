@@ -65,7 +65,13 @@ export function useStartup() {
         const startupUnsubscribe = onSnapshot(doc(db, "startups", startupId), (doc) => {
             if (doc.exists()) {
                 setStartup({ startupId: doc.id, ...doc.data() } as Startup);
+            } else {
+                console.warn("Startup doc not found for ID:", startupId);
+                setStartup(null);
             }
+            setLoading(false);
+        }, (err) => {
+            console.error("Startup subscription error:", err);
             setLoading(false);
         });
 
@@ -104,7 +110,7 @@ export function useStartup() {
         const memberQuery = query(
             collection(db, "startup_members"),
             where("startupId", "==", startupId),
-            where("userId", "==", user?.uid)
+            where("userId", "==", (user as any)?.uid || "")
         );
         const memberUnsubscribe = onSnapshot(memberQuery, (snapshot) => {
             if (!snapshot.empty) {
