@@ -59,6 +59,7 @@ export default function CreateProjectPage() {
         }
     };
 
+    
     return (
         <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] p-6 flex items-center justify-center font-sans">
             <div className="w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl p-8 md:p-12 animate-in fade-in zoom-in-95 duration-500">
