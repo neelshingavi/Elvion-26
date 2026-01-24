@@ -177,7 +177,7 @@ export default function MatchingPage() {
                                         <div className="mt-auto grid grid-cols-2 gap-3 w-full">
                                             {status === "connected" ? (
                                                 <button
-                                                    onClick={() => router.push("/founder/chat")}
+                                                    onClick={() => router.push("/messages")}
                                                     className="flex items-center justify-center gap-2 py-3.5 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.03] transition-all"
                                                 >
                                                     <MessageSquare className="w-3.5 h-3.5" /> Message

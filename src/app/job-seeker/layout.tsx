@@ -17,7 +17,7 @@ export default function JobSeekerLayout({
     const navItems = [
         { name: "Dashboard", href: "/job-seeker/dashboard", icon: LayoutDashboard },
         { name: "Matches", href: "/job-seeker/matches", icon: Search },
-        { name: "Chat", href: "/founder/chat", icon: MessageSquare },
+        { name: "Chat", href: "/messages", icon: MessageSquare },
         { name: "Profile", href: "/job-seeker/profile", icon: UserCircle },
     ];
 
