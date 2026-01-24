@@ -12,6 +12,7 @@ import { sendConnectionRequest, getConnectedUsers, getSentRequests } from "@/lib
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 
 interface UserWithStartup extends UserData {
@@ -26,6 +27,7 @@ export default function MatchingPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [loading, setLoading] = useState(true);
     const [selectedUser, setSelectedUser] = useState<UserWithStartup | null>(null);
+    const router = useRouter();
 
     // 1. Real-time User Discovery
     useEffect(() => {
@@ -170,24 +172,30 @@ export default function MatchingPage() {
                                         </div>
 
                                         <div className="mt-auto grid grid-cols-2 gap-3 w-full">
-                                            <button
-                                                onClick={() => handleConnect(u.uid)}
-                                                disabled={status !== "none"}
-                                                className={cn(
-                                                    "flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95",
-                                                    status === "connected" && "bg-green-500/10 text-green-500 border border-green-500/20",
-                                                    status === "pending" && "bg-amber-500/10 text-amber-500 border border-amber-500/20",
-                                                    status === "none" && "bg-black dark:bg-white text-white dark:text-black hover:scale-[1.03] shadow-lg shadow-black/5"
-                                                )}
-                                            >
-                                                {status === "connected" ? (
-                                                    <><Check className="w-3.5 h-3.5" /> Connected</>
-                                                ) : status === "pending" ? (
-                                                    <><Clock className="w-3.5 h-3.5" /> Pending</>
-                                                ) : (
-                                                    <><UserPlus className="w-3.5 h-3.5" /> Connect</>
-                                                )}
-                                            </button>
+                                            {status === "connected" ? (
+                                                <button
+                                                    onClick={() => router.push("/founder/chat")}
+                                                    className="flex items-center justify-center gap-2 py-3.5 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.03] transition-all"
+                                                >
+                                                    <MessageSquare className="w-3.5 h-3.5" /> Message
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleConnect(u.uid)}
+                                                    disabled={status !== "none"}
+                                                    className={cn(
+                                                        "flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95",
+                                                        status === "pending" && "bg-amber-500/10 text-amber-500 border border-amber-500/20",
+                                                        status === "none" && "bg-black dark:bg-white text-white dark:text-black hover:scale-[1.03] shadow-lg shadow-black/5"
+                                                    )}
+                                                >
+                                                    {status === "pending" ? (
+                                                        <><Clock className="w-3.5 h-3.5" /> Pending</>
+                                                    ) : (
+                                                        <><UserPlus className="w-3.5 h-3.5" /> Connect</>
+                                                    )}
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={() => setSelectedUser(u)}
                                                 className="flex items-center justify-center gap-2 py-3.5 bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 rounded-2xl font-black text-[10px] uppercase tracking-widest border border-zinc-100 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all"

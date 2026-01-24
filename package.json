@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "description": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).",
+  "homepage": "https://github.com/neelshingavi/Founders-Flow#readme",
+  "bugs": {
+    "url": "https://github.com/neelshingavi/Founders-Flow/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neelshingavi/Founders-Flow.git"
+  },
   "license": "ISC",
   "author": "",
   "type": "module",
