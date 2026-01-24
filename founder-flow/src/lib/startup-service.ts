@@ -17,9 +17,14 @@ export interface Startup {
     startupId: string;
     ownerId: string;
     name: string;
-    idea: string;
-    stage: "idea_submitted" | "idea_validated" | "roadmap_created" | "execution_active";
+    industry: string; // [NEW]
+    stage: "idea_submitted" | "idea_validated" | "roadmap_created" | "execution_active" | "mvp" | "launch" | "growth";
+    projectStatus: "active" | "archived"; // [NEW]
+    vision?: string; // [NEW]
+    problemStatement?: string; // [NEW]
+    idea: string; // Keeping for backward compatibility or as alias for problemStatement/vision mix
     createdAt: any;
+    updatedAt: any; // [NEW]
 }
 
 export interface StartupMemory {
@@ -42,6 +47,8 @@ export interface UserData {
     phone?: string;
     education?: string;
     location?: string;
+    accountStatus?: "active" | "suspended"; // [NEW]
+    lastLoginAt?: any; // [NEW]
     createdAt: any;
 }
 
@@ -91,14 +98,26 @@ export const setActiveStartupId = async (uid: string, startupId: string) => {
 };
 
 // Startup services
-export const createStartup = async (userId: string, name: string, idea: string) => {
+export const createStartup = async (
+    userId: string,
+    name: string,
+    industry: string,
+    idea: string,
+    vision: string = "",
+    problemStatement: string = ""
+) => {
     // 1. Create Startup Doc
     const docRef = await addDoc(collection(db, "startups"), {
         ownerId: userId, // Keep for reference, but auth uses members
         name,
+        industry,
         idea,
+        vision,
+        problemStatement,
         stage: "idea_submitted",
+        projectStatus: "active",
         createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
     });
 
     // 2. Add Owner to Startup Members
@@ -116,6 +135,29 @@ export const createStartup = async (userId: string, name: string, idea: string) 
     await addStartupMemory(docRef.id, "idea", "user", "Startup idea submitted: " + idea);
 
     return docRef.id;
+};
+
+export const getUserStartups = async (userId: string): Promise<Startup[]> => {
+    // Optimized to avoid needing a complex composite index for now.
+    // We fetch all startups for the owner and filter/sort in memory.
+
+    // Simple query: all startups owned by user
+    const q = query(
+        collection(db, "startups"),
+        where("ownerId", "==", userId)
+    );
+
+    const querySnapshot = await getDocs(q);
+    const startups = querySnapshot.docs.map(doc => ({ startupId: doc.id, ...doc.data() })) as Startup[];
+
+    // Client-side filtering and sorting
+    return startups
+        .filter(s => s.projectStatus !== "archived")
+        .sort((a, b) => {
+            const dateA = a.updatedAt?.seconds || a.createdAt?.seconds || 0;
+            const dateB = b.updatedAt?.seconds || b.createdAt?.seconds || 0;
+            return dateB - dateA;
+        });
 };
 
 export const getStartupMember = async (startupId: string, userId: string): Promise<StartupMember | null> => {

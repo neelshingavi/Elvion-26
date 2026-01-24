@@ -52,7 +52,7 @@ export default function IdeaValidationPage() {
             // 1. Get or create startup doc
             let startupId = startup?.startupId;
             if (!startupId) {
-                startupId = await createStartup(user.uid, "My Startup", idea);
+                startupId = await createStartup(user.uid, "My Startup", "General", idea);
             }
 
             // 2. Call AI validation
