@@ -6,13 +6,20 @@ import { useStartup } from "@/hooks/useStartup";
 import {
     Lightbulb, Send, Loader2, AlertCircle, ArrowRight, DollarSign,
     Users, Target, History, Plus, FileText, CheckCircle2, TrendingUp,
-    Scale, BookOpen, Share2, Download
+    Scale, BookOpen, Share2, Download, Trash2, ChevronDown, ChevronUp, Briefcase, Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { createStartup, getStartupMemory, StartupMemory } from "@/lib/startup-service";
+import { createStartup, getStartupMemory, StartupMemory, deleteStartupMemory } from "@/lib/startup-service";
 import { motion, AnimatePresence } from "framer-motion";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+
+interface CapitalStaging {
+    initial_funds: string;
+    registration_legal: string;
+    infrastructure_hardware: string;
+    marketing_launch: string;
+}
 
 interface ValidationResult {
     scoring: number;
@@ -20,7 +27,7 @@ interface ValidationResult {
     risks: string[];
     suggestions: string[];
     implementation_verdict?: string;
-    capital_required_inr?: string;
+    capital_staging?: CapitalStaging;
     team_required?: string[];
     competitors?: string[];
     existing_implementation?: string;
@@ -28,7 +35,53 @@ interface ValidationResult {
     cons?: string[];
     research_papers?: { title: string; url: string }[];
     market_size_india?: string;
+    score_improvement_plan?: string[];
 }
+
+const ShowMoreCard = ({ title, items, icon: Icon, colorClass, borderClass, bgClass }: any) => {
+    const [expanded, setExpanded] = useState(false);
+    // Always show all items, but truncate container height if not expanded
+    const displayItems = items || [];
+    const hasMore = displayItems.length > 2; // Threshold to trigger "Show More"
+
+    return (
+        <div className={cn("rounded-2xl border transition-all h-full flex flex-col relative overflow-hidden", bgClass, borderClass)}>
+            <div className="p-6 pb-2">
+                <h4 className={cn("font-semibold mb-3 flex items-center gap-2", colorClass)}>
+                    {Icon && <Icon className="w-4 h-4" />}
+                    {title}
+                </h4>
+            </div>
+
+            <div className={cn("px-6 space-y-3 transition-all duration-300", expanded ? "pb-4 max-h-[1000px] overflow-visible" : "overflow-hidden max-h-[160px]")}>
+                {displayItems.length > 0 ? displayItems.map((item: string, i: number) => (
+                    <div key={i} className={cn("text-sm leading-relaxed pl-3 border-l-2", colorClass.replace("text-", "border-").replace("500", "500/20"))}>
+                        {item}
+                    </div>
+                )) : <p className="text-zinc-500 italic text-sm">No specific data available.</p>}
+            </div>
+
+            {/* Gradient fade for collapsed state */}
+            {!expanded && hasMore && (
+                <div className={cn("absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t pointer-events-none",
+                    "from-white dark:from-black to-transparent opacity-emulate")}
+                />
+            )}
+
+            {hasMore && (
+                <div className="px-6 pb-4 pt-2 mt-auto z-10 relative">
+                    <button
+                        onClick={() => setExpanded(!expanded)}
+                        className="text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 flex items-center gap-1 transition-colors w-full justify-center py-2 bg-white/50 dark:bg-black/50 backdrop-blur-sm rounded-lg border border-zinc-100 dark:border-zinc-800"
+                    >
+                        {expanded ? "Show Less" : "Read More"}
+                        {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
 
 export default function IdeaValidationPage() {
     const { user } = useAuth();
@@ -41,14 +94,15 @@ export default function IdeaValidationPage() {
     const [view, setView] = useState<"input" | "result">("input");
 
     // Fetch history
+    const fetchHistory = async () => {
+        if (startup?.startupId) {
+            const mems = await getStartupMemory(startup.startupId);
+            const validationMems = mems.filter(m => m.type === "agent-output");
+            setHistory(validationMems);
+        }
+    };
+
     useEffect(() => {
-        const fetchHistory = async () => {
-            if (startup?.startupId) {
-                const mems = await getStartupMemory(startup.startupId);
-                const validationMems = mems.filter(m => m.type === "agent-output");
-                setHistory(validationMems);
-            }
-        };
         fetchHistory();
     }, [startup?.startupId, result]);
 
@@ -83,7 +137,6 @@ export default function IdeaValidationPage() {
     };
 
     const handleNewValidation = () => {
-        // Keep the current idea in the box for easy editing
         setView("input");
     };
 
@@ -91,11 +144,21 @@ export default function IdeaValidationPage() {
         try {
             const data = JSON.parse(memory.content);
             setResult(data);
-            // Also set the idea text if possible, but memory doesn't store the prompt directly in this format usually.
-            // For now, we just show the result.
             setView("result");
         } catch (e) {
             console.error("Failed to parse memory", e);
+        }
+    };
+
+    const handleDeleteHistory = async (e: React.MouseEvent, memoryId: string) => {
+        e.stopPropagation();
+        if (confirm("Are you sure you want to delete this validation result?")) {
+            await deleteStartupMemory(memoryId);
+            fetchHistory(); // Refresh list
+            if (result && history.find(h => h.id === memoryId)?.content.includes(result.summary)) {
+                setResult(null);
+                setView("input");
+            }
         }
     };
 
@@ -103,106 +166,126 @@ export default function IdeaValidationPage() {
         if (!result) return;
         const doc = new jsPDF();
 
-        // Header
+        // --- Header ---
         doc.setFillColor(79, 70, 229); // Indigo 600
         doc.rect(0, 0, 210, 40, 'F');
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(22);
-        doc.text("FounderFlow Idea Report", 20, 25);
-
-        // Date
+        doc.text("FounderFlow Report", 20, 25);
         doc.setFontSize(10);
         doc.text(`Generated on ${new Date().toLocaleDateString()}`, 150, 25);
 
-        let yPos = 50;
+        let yPos = 55;
 
-        // Score & Verdict
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(16);
-        doc.text(`Score: ${result.scoring}/100`, 20, yPos);
-        doc.text(`Verdict: ${result.implementation_verdict}`, 120, yPos);
+        // --- Score & Verdict ---
+        doc.setTextColor(0, 0, 0); // Reset text color to black
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Viability Score:`, 20, yPos);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${result.scoring}/100`, 60, yPos);
+
+        doc.setFont("helvetica", "bold");
+        doc.text(`Verdict:`, 100, yPos);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${result.implementation_verdict}`, 125, yPos);
         yPos += 15;
 
-        // Summary
+        // --- Summary ---
         doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
         doc.text("Executive Summary", 20, yPos);
         yPos += 7;
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
-        const splitSummary = doc.splitTextToSize(result.summary, 170);
+        const splitSummary = doc.splitTextToSize(result.summary, 170); // Max width 170
         doc.text(splitSummary, 20, yPos);
-        yPos += (splitSummary.length * 5) + 10;
+        yPos += (splitSummary.length * 5) + 15;
 
-        // Market Data
+        // --- Financials ---
         doc.setFont("helvetica", "bold");
         doc.setFontSize(12);
-        doc.text("Market & Financials (India)", 20, yPos);
-        yPos += 7;
+        doc.text("Financial Requirements (India)", 20, yPos);
+        yPos += 5;
 
-        const marketData = [
-            ["Metric", "Details"],
-            ["Capital Required", result.capital_required_inr || "N/A"],
-            ["Market Size (TAM/SAM)", result.market_size_india || "N/A"],
-            ["Team Requirements", result.team_required?.join(", ") || "N/A"]
-        ];
+        const investmentBody = result.capital_staging ? [
+            ["Initial Funds (Bootstrap)", result.capital_staging.initial_funds],
+            ["Registration & Legal", result.capital_staging.registration_legal],
+            ["Hardware / Infrastructure", result.capital_staging.infrastructure_hardware],
+            ["Marketing & Launch", result.capital_staging.marketing_launch]
+        ] : [["Total estimate", "N/A"]];
 
         autoTable(doc, {
             startY: yPos,
-            head: [["Metric", "Details"]],
+            head: [["Category", "Estimated Cost (INR)"]],
+            body: investmentBody,
+            theme: 'grid',
+            headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255] },
+            bodyStyles: { textColor: [0, 0, 0] }, // Ensure black text
+            columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 80 } },
+            margin: { left: 20 }
+        });
+
+        // @ts-ignore
+        yPos = doc.lastAutoTable.finalY + 15;
+
+        // --- Market & Improvements ---
+        doc.text("Market & Strategic Improvements", 20, yPos);
+
+        const improvements = result.score_improvement_plan?.join("\n\n• ") || "N/A";
+
+        autoTable(doc, {
+            startY: yPos + 5,
+            head: [["Key Details", "Score Improvement Plan"]],
             body: [
-                ["Capital Required", result.capital_required_inr || "N/A"],
-                ["Market Size", result.market_size_india || "N/A"],
-                ["Team", result.team_required?.join(", ") || "N/A"]
+                [`Market Size: ${result.market_size_india || "N/A"}\n\nTeam: ${result.team_required?.join(", ") || "N/A"}`, `• ${improvements}`]
             ],
             theme: 'grid',
-            headStyles: { fillColor: [79, 70, 229] }
+            headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255] },
+            bodyStyles: { textColor: [0, 0, 0] },
+            margin: { left: 20 }
         });
 
         // @ts-ignore
         yPos = doc.lastAutoTable.finalY + 15;
 
-        // Pros & Cons
-        doc.text("Pros & Cons", 20, yPos);
-        yPos += 7;
+        // --- SWOT ---
+        // Check for page break
+        if (yPos > 240) { doc.addPage(); yPos = 20; }
 
-        const pros = result.pros?.join("\n• ") || "";
-        const cons = result.cons?.join("\n• ") || "";
+        doc.text("SWOT Analysis", 20, yPos);
+        const maxRows = Math.max(result.pros?.length || 0, result.cons?.length || 0);
+        const swotBody = [];
+        for (let i = 0; i < maxRows; i++) {
+            swotBody.push([
+                result.pros?.[i] || "",
+                result.cons?.[i] || ""
+            ]);
+        }
 
         autoTable(doc, {
-            startY: yPos,
-            head: [["Strengths (Pros)", "Weaknesses (Cons)"]],
-            body: [[`• ${pros}`, `• ${cons}`]],
+            startY: yPos + 5,
+            head: [["Strengths", "Weaknesses"]],
+            body: swotBody,
             theme: 'grid',
-            headStyles: { fillColor: [79, 70, 229] }
-        });
-
-        // @ts-ignore
-        yPos = doc.lastAutoTable.finalY + 15;
-
-        // Suggestions
-        doc.text("Strategic Suggestions", 20, yPos);
-        yPos += 7;
-        const suggestions = result.suggestions?.map(s => [s]) || [];
-        autoTable(doc, {
-            startY: yPos,
-            body: suggestions,
-            theme: 'striped',
+            headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255] },
+            bodyStyles: { textColor: [0, 0, 0] },
+            margin: { left: 20 }
         });
 
         doc.save("founderflow-report.pdf");
     };
 
     return (
-        <div className="max-w-7xl mx-auto space-y-6 p-4 md:p-8">
+        <div className="max-w-[1600px] mx-auto space-y-6 p-4 md:p-8">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-                        Idea Validation
+                        Idea Validator
                     </h1>
                     <p className="text-zinc-500 dark:text-zinc-400 text-sm">
-                        Analyze market viability with localized Indian context
+                        Comprehensive market analysis for Indian founders
                     </p>
                 </div>
                 {view === "result" && (
@@ -212,14 +295,14 @@ export default function IdeaValidationPage() {
                             className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-lg transition-colors"
                         >
                             <Plus className="w-4 h-4" />
-                            Edit / New
+                            New Analysis
                         </button>
                         <button
                             onClick={generatePDF}
                             className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-lg shadow-indigo-500/20"
                         >
                             <Download className="w-4 h-4" />
-                            Export PDF
+                            PDF Report
                         </button>
                     </div>
                 )}
@@ -245,13 +328,13 @@ export default function IdeaValidationPage() {
                                             <textarea
                                                 value={idea}
                                                 onChange={(e) => setIdea(e.target.value)}
-                                                placeholder="Describe your startup idea... (e.g. 'A subscription service for authentic home-cooked meals in Bangalore')"
+                                                placeholder="Describe your startup idea detail... e.g. 'Instant grocery delivery in Tier 2 cities in India'"
                                                 className="w-full h-48 bg-transparent p-4 text-base md:text-lg border-none focus:ring-0 resize-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none text-zinc-900 dark:text-zinc-100"
                                                 disabled={loading}
                                             />
                                             <div className="px-4 py-3 flex justify-between items-center border-t border-zinc-100 dark:border-zinc-800">
                                                 <span className="text-xs text-zinc-400 font-medium">
-                                                    AI-Powered Analysis • Indian Market Focus
+                                                    Models trained on Indian Market Data
                                                 </span>
                                                 <button
                                                     type="submit"
@@ -266,11 +349,11 @@ export default function IdeaValidationPage() {
                                                     {loading ? (
                                                         <>
                                                             <Loader2 className="w-4 h-4 animate-spin" />
-                                                            Thinking...
+                                                            Crunching Numbers...
                                                         </>
                                                     ) : (
                                                         <>
-                                                            Validate Idea
+                                                            Validate Now
                                                             <ArrowRight className="w-4 h-4" />
                                                         </>
                                                     )}
@@ -297,170 +380,161 @@ export default function IdeaValidationPage() {
                                     key="result"
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="space-y-6"
+                                    className="space-y-8"
                                 >
-                                    {/* Score Card */}
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden">
-                                            <div className="absolute top-0 right-0 p-4 opacity-10">
-                                                <Target className="w-24 h-24 text-zinc-500" />
+                                    {/* Top Row: Score & Summary */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                                        <div className="lg:col-span-3 p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden flex flex-col justify-center items-center text-center">
+                                            <div className="absolute top-0 right-0 p-4 opacity-5">
+                                                <Target className="w-32 h-32 text-zinc-500" />
                                             </div>
-                                            <div className="text-sm font-medium text-zinc-500 mb-2">Viability Score</div>
-                                            <div className="flex items-baseline gap-1">
-                                                <span className={cn("text-5xl font-black tracking-tighter",
+                                            <div className="text-sm font-bold uppercase tracking-wider text-zinc-500 mb-2">Viability Score</div>
+                                            <div className="relative inline-flex items-center justify-center">
+                                                <svg className="w-32 h-32 transform -rotate-90">
+                                                    <circle cx="64" cy="64" r="60" stroke="#e5e7eb" strokeWidth="8" fill="transparent" className="dark:stroke-zinc-800" />
+                                                    <circle cx="64" cy="64" r="60" stroke={result.scoring > 75 ? "#10b981" : result.scoring > 50 ? "#eab308" : "#ef4444"} strokeWidth="8" fill="transparent" strokeDasharray={`${result.scoring * 3.77} 377`} strokeLinecap="round" />
+                                                </svg>
+                                                <span className={cn("absolute text-4xl font-black",
                                                     result.scoring > 75 ? "text-green-600" : result.scoring > 50 ? "text-yellow-500" : "text-red-500"
                                                 )}>
                                                     {result.scoring}
                                                 </span>
-                                                <span className="text-zinc-400 font-medium">/100</span>
                                             </div>
-                                            <div className="mt-4 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                                            <div className="mt-4 px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-full text-zinc-900 dark:text-zinc-100 font-bold text-sm">
                                                 {result.implementation_verdict}
                                             </div>
                                         </div>
 
-                                        <div className="md:col-span-2 p-6 rounded-2xl bg-gradient-to-br from-indigo-50 to-white dark:from-zinc-900 dark:to-zinc-900 border border-indigo-100 dark:border-zinc-800 shadow-sm">
-                                            <h3 className="font-semibold text-indigo-900 dark:text-indigo-100 mb-2 flex items-center gap-2">
-                                                <Lightbulb className="w-4 h-4 text-indigo-500" />
+                                        <div className="lg:col-span-9 p-8 rounded-2xl bg-gradient-to-br from-indigo-50 to-white dark:from-zinc-900 dark:to-black border border-indigo-100 dark:border-zinc-800/50 shadow-sm flex flex-col justify-center">
+                                            <h3 className="font-semibold text-indigo-900 dark:text-indigo-100 mb-4 flex items-center gap-2 text-lg">
+                                                <Lightbulb className="w-5 h-5 text-indigo-500" />
                                                 Executive Summary
                                             </h3>
-                                            <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed text-sm md:text-base">
+                                            <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed text-lg">
                                                 {result.summary}
                                             </p>
                                         </div>
                                     </div>
 
-                                    {/* Pros & Cons Columns */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-4">
-                                            <div className="flex items-center gap-2 text-green-600 font-semibold text-sm uppercase tracking-wider">
-                                                <CheckCircle2 className="w-4 h-4" />
-                                                Strengths (Pros)
-                                            </div>
-                                            <div className="space-y-3">
-                                                {result.pros?.map((pro, i) => (
-                                                    <div key={i} className="p-4 rounded-xl bg-green-50/50 dark:bg-green-950/10 border border-green-100 dark:border-green-900/20 text-sm text-green-900 dark:text-green-100">
-                                                        {pro}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <div className="space-y-4">
-                                            <div className="flex items-center gap-2 text-red-500 font-semibold text-sm uppercase tracking-wider">
-                                                <AlertCircle className="w-4 h-4" />
-                                                Weaknesses (Cons)
-                                            </div>
-                                            <div className="space-y-3">
-                                                {result.cons?.map((con, i) => (
-                                                    <div key={i} className="p-4 rounded-xl bg-red-50/50 dark:bg-red-950/10 border border-red-100 dark:border-red-900/20 text-sm text-red-900 dark:text-red-100">
-                                                        {con}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Market Data Grid */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        <div className="p-5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                                            <div className="p-2 w-fit rounded-lg bg-emerald-100 text-emerald-600 mb-3">
-                                                <DollarSign className="w-5 h-5" />
-                                            </div>
-                                            <div className="text-xs text-zinc-500 font-medium uppercase">Investment (INR)</div>
-                                            <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mt-1">
-                                                {result.capital_required_inr || "N/A"}
-                                            </div>
-                                        </div>
-
-                                        <div className="p-5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                                            <div className="p-2 w-fit rounded-lg bg-blue-100 text-blue-600 mb-3">
-                                                <TrendingUp className="w-5 h-5" />
-                                            </div>
-                                            <div className="text-xs text-zinc-500 font-medium uppercase">Market Size</div>
-                                            <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mt-1">
-                                                {result.market_size_india || "Analyzing..."}
-                                            </div>
-                                        </div>
-
-                                        <div className="p-5 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 col-span-1 sm:col-span-2">
-                                            <div className="p-2 w-fit rounded-lg bg-purple-100 text-purple-600 mb-3">
-                                                <Users className="w-5 h-5" />
-                                            </div>
-                                            <div className="text-xs text-zinc-500 font-medium uppercase">Team Needed</div>
-                                            <div className="flex flex-wrap gap-2 mt-2">
-                                                {result.team_required?.map((role, i) => (
-                                                    <span key={i} className="px-2 py-1 text-xs font-medium bg-zinc-100 dark:bg-zinc-800 rounded-md">
-                                                        {role}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Research & Competitors */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                                            <h4 className="font-semibold mb-4 flex items-center gap-2">
-                                                <BookOpen className="w-4 h-4 text-indigo-500" />
-                                                Relevant Research / Papers
-                                            </h4>
-                                            <ul className="space-y-3">
-                                                {result.research_papers?.map((paper, i) => (
-                                                    <li key={i} className="flex gap-3 items-start p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded-lg transition-colors cursor-pointer group">
-                                                        <FileText className="w-4 h-4 text-zinc-400 mt-1 group-hover:text-indigo-500" />
-                                                        <div>
-                                                            <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100 group-hover:text-indigo-600 group-hover:underline">
-                                                                {paper.title}
-                                                            </div>
-                                                            <div className="text-xs text-zinc-400 mt-0.5 truncate max-w-[200px]">
-                                                                {paper.url}
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-
-                                        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                                            <h4 className="font-semibold mb-4 flex items-center gap-2">
-                                                <Scale className="w-4 h-4 text-orange-500" />
-                                                Competitors
-                                            </h4>
-                                            <div className="flex flex-wrap gap-2">
-                                                {result.competitors?.map((comp, i) => (
-                                                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm">
-                                                        <div className="w-2 h-2 rounded-full bg-orange-400" />
-                                                        {comp}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Suggestions */}
-                                    <div className="p-6 rounded-2xl bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30">
-                                        <h4 className="font-semibold mb-4 text-indigo-900 dark:text-indigo-200 flex items-center gap-2">
-                                            <Send className="w-4 h-4" />
-                                            Actionable Next Steps
-                                        </h4>
-                                        <div className="grid gap-3">
-                                            {result.suggestions?.map((item, i) => (
-                                                <div key={i} className="flex gap-3 items-start">
-                                                    <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-indigo-200 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-200 text-xs font-bold">
-                                                        {i + 1}
-                                                    </span>
-                                                    <p className="text-sm text-zinc-700 dark:text-zinc-300 pt-0.5">
-                                                        {item}
-                                                    </p>
+                                    {/* Landscape Metrics Grid - Aligned Heights */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+                                        {/* Financial Breakdown */}
+                                        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm h-full flex flex-col">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                                                    <DollarSign className="w-5 h-5" />
                                                 </div>
-                                            ))}
+                                                <h4 className="font-semibold text-lg">Financial Estimates (INR)</h4>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4 flex-1">
+                                                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 flex flex-col justify-center">
+                                                    <div className="text-xs text-zinc-500 mb-1">Initial Funds</div>
+                                                    <div className="font-bold text-zinc-900 dark:text-zinc-100 text-lg">
+                                                        {result.capital_staging?.initial_funds || "N/A"}
+                                                    </div>
+                                                </div>
+                                                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 flex flex-col justify-center">
+                                                    <div className="text-xs text-zinc-500 mb-1">Launch Marketing</div>
+                                                    <div className="font-bold text-zinc-900 dark:text-zinc-100 text-lg">
+                                                        {result.capital_staging?.marketing_launch || "N/A"}
+                                                    </div>
+                                                </div>
+                                                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 flex flex-col justify-center">
+                                                    <div className="text-xs text-zinc-500 mb-1">Registration/Legal</div>
+                                                    <div className="font-bold text-zinc-900 dark:text-zinc-100 text-base">
+                                                        {result.capital_staging?.registration_legal || "N/A"}
+                                                    </div>
+                                                </div>
+                                                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 flex flex-col justify-center">
+                                                    <div className="text-xs text-zinc-500 mb-1">Hardware/Infra</div>
+                                                    <div className="font-bold text-zinc-900 dark:text-zinc-100 text-base">
+                                                        {result.capital_staging?.infrastructure_hardware || "N/A"}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Market & Team - Split Vertical */}
+                                        <div className="flex flex-col gap-6 h-full">
+                                            <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex-1 flex flex-col justify-center">
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                                                        <TrendingUp className="w-5 h-5" />
+                                                    </div>
+                                                    <h4 className="font-semibold text-lg">Market Size (India)</h4>
+                                                </div>
+                                                <div className="text-xl font-bold text-zinc-900 dark:text-zinc-100 pl-1">
+                                                    {result.market_size_india || "Analyzing..."}
+                                                </div>
+                                            </div>
+
+                                            <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex-1 flex flex-col justify-center">
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
+                                                        <Users className="w-5 h-5" />
+                                                    </div>
+                                                    <h4 className="font-semibold text-lg">Team Needs</h4>
+                                                </div>
+                                                <div className="flex flex-wrap gap-2 mt-2">
+                                                    {result.team_required?.map((role, i) => (
+                                                        <span key={i} className="px-3 py-1 text-sm font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-lg">
+                                                            {role}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Expandable Info Cards - Same Heights */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+                                        <div className="h-full">
+                                            <ShowMoreCard
+                                                title="Strengths"
+                                                items={result.pros}
+                                                icon={CheckCircle2}
+                                                colorClass="text-green-600"
+                                                bgClass="bg-green-50/20 dark:bg-green-900/10"
+                                                borderClass="border-green-100 dark:border-green-900/20"
+                                            />
+                                        </div>
+                                        <div className="h-full">
+                                            <ShowMoreCard
+                                                title="Risks"
+                                                items={result.cons}
+                                                icon={AlertCircle}
+                                                colorClass="text-red-500"
+                                                bgClass="bg-red-50/20 dark:bg-red-900/10"
+                                                borderClass="border-red-100 dark:border-red-900/20"
+                                            />
+                                        </div>
+                                        <div className="h-full">
+                                            <ShowMoreCard
+                                                title="Next Steps"
+                                                items={result.suggestions}
+                                                icon={Send}
+                                                colorClass="text-indigo-600"
+                                                bgClass="bg-indigo-50/20 dark:bg-indigo-900/10"
+                                                borderClass="border-indigo-100 dark:border-indigo-900/20"
+                                            />
+                                        </div>
+                                        <div className="h-full">
+                                            <ShowMoreCard
+                                                title="Score Improvements"
+                                                items={result.score_improvement_plan}
+                                                icon={Zap}
+                                                colorClass="text-amber-600"
+                                                bgClass="bg-amber-50/20 dark:bg-amber-900/10"
+                                                borderClass="border-amber-100 dark:border-amber-900/20"
+                                            />
                                         </div>
                                     </div>
 
                                 </motion.div>
                             )
                         )}
-                    </ AnimatePresence>
+                    </AnimatePresence>
                 </div>
 
                 {/* Right Sidebar - History */}
@@ -468,7 +542,7 @@ export default function IdeaValidationPage() {
                     <div className="sticky top-8">
                         <div className="flex items-center gap-2 mb-6 text-zinc-500">
                             <History className="w-4 h-4" />
-                            <span className="text-xs font-bold uppercase tracking-wider">Previous Validations</span>
+                            <span className="text-xs font-bold uppercase tracking-wider">Validation History</span>
                         </div>
                         <div className="space-y-3 max-h-[calc(100vh-150px)] overflow-y-auto pr-2 custom-scrollbar">
                             {history.map((mem) => {
@@ -476,10 +550,10 @@ export default function IdeaValidationPage() {
                                 try { data = JSON.parse(mem.content); } catch (e) { return null; }
 
                                 return (
-                                    <button
+                                    <div
                                         key={mem.id}
+                                        className="w-full text-left p-3 rounded-xl hover:bg-white dark:hover:bg-zinc-900 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all group relative cursor-pointer"
                                         onClick={() => loadFromHistory(mem)}
-                                        className="w-full text-left p-3 rounded-xl hover:bg-white dark:hover:bg-zinc-900 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all group relative"
                                     >
                                         <div className="flex items-center justify-between mb-1.5">
                                             <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded",
@@ -487,19 +561,26 @@ export default function IdeaValidationPage() {
                                             )}>
                                                 {data.scoring}/100
                                             </span>
-                                            <span className="text-[10px] text-zinc-400">
-                                                {mem.timestamp?.toDate ? new Date(mem.timestamp.toDate()).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Today'}
-                                            </span>
+                                            <button
+                                                onClick={(e) => handleDeleteHistory(e, mem.id)}
+                                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 text-red-500 rounded transition-all"
+                                                title="Delete result"
+                                            >
+                                                <Trash2 className="w-3 h-3" />
+                                            </button>
                                         </div>
                                         <div className="text-xs font-medium text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
                                             {data.summary}
                                         </div>
-                                    </button>
+                                        <div className="text-[10px] text-zinc-400 mt-1">
+                                            {mem.timestamp?.toDate ? new Date(mem.timestamp.toDate()).toLocaleDateString() : 'Just now'}
+                                        </div>
+                                    </div>
                                 );
                             })}
                             {!history.length && (
                                 <div className="text-xs text-zinc-400 italic text-center py-8">
-                                    No history yet. Start your first validation!
+                                    No history found.
                                 </div>
                             )}
                         </div>

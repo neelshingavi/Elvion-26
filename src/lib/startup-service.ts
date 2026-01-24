@@ -10,7 +10,8 @@ import {
     updateDoc,
     doc,
     getDoc,
-    setDoc
+    setDoc,
+    deleteDoc
 } from "firebase/firestore";
 
 export interface Startup {
@@ -149,6 +150,10 @@ export const addStartupMemory = async (startupId: string, type: StartupMemory["t
         content,
         timestamp: serverTimestamp(),
     });
+};
+
+export const deleteStartupMemory = async (memoryId: string) => {
+    await deleteDoc(doc(db, "startupMemory", memoryId));
 };
 
 export const getStartupMemory = async (startupId: string): Promise<StartupMemory[]> => {
