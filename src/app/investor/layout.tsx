@@ -1,10 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
     LayoutDashboard,
     Search,
     Kanban,
-    PieChart,
     Settings,
+    Rocket,
+    Shield,
+    PieChart,
+    ChevronRight,
     LogOut
 } from "lucide-react";
 
@@ -13,54 +19,94 @@ export default function InvestorLayout({
 }: {
     children: React.ReactNode;
 }) {
+    const pathname = usePathname();
+
     const navItems = [
-        { name: "Dashboard", href: "/investor/dashboard", icon: LayoutDashboard },
-        { name: "Discover", href: "/investor/startups", icon: Search },
+        { name: "Portfolio", href: "/investor/dashboard", icon: LayoutDashboard },
+        { name: "Discovery", href: "/investor/startups", icon: Search },
         { name: "Deal Flow", href: "/investor/dealflow", icon: Kanban },
         { name: "Profile", href: "/investor/profile", icon: Settings },
     ];
 
     return (
-        <div className="flex min-h-screen bg-[#fafafa] dark:bg-[#050505]">
+        <div className="flex min-h-screen bg-[#fafafa] dark:bg-[#09090b] text-zinc-900 dark:text-zinc-50">
             {/* Sidebar */}
-            <aside className="w-64 border-r border-zinc-200 dark:border-zinc-800 p-6 flex flex-col fixed h-full bg-white dark:bg-zinc-950 z-50 hidden md:flex">
-                <div className="mb-8 px-2">
-                    <h1 className="text-xl font-bold tracking-tight">FounderFlow <span className="text-zinc-400 font-normal">Investor</span></h1>
+            <aside className="w-64 border-r border-zinc-200 dark:border-zinc-800 flex flex-col fixed h-full bg-white dark:bg-zinc-950/50 backdrop-blur-xl z-50 hidden md:flex">
+                <div className="p-8 pb-10">
+                    <div className="flex items-center gap-2 mb-2 group cursor-pointer">
+                        <div className="p-1.5 bg-black dark:bg-white rounded-lg transition-transform group-hover:scale-110">
+                            <Rocket className="w-5 h-5 text-white dark:text-black" />
+                        </div>
+                        <h1 className="text-xl font-bold tracking-tight">
+                            Founder<span className="text-indigo-500">Flow</span>
+                        </h1>
+                    </div>
+                    <div className="px-1">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Investor Terminal</span>
+                    </div>
                 </div>
 
-                <nav className="space-y-1 flex-1">
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white transition-colors"
-                        >
-                            <item.icon className="w-4 h-4" />
-                            {item.name}
-                        </Link>
-                    ))}
+                <nav className="px-4 space-y-1 flex-1">
+                    {navItems.map((item) => {
+                        const isActive = pathname === item.href || (item.href !== "/investor/dashboard" && pathname.startsWith(item.href));
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 group ${isActive
+                                        ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-lg shadow-black/5"
+                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                                    }`}
+                            >
+                                <item.icon className={`w-4 h-4 transition-colors ${isActive ? "" : "group-hover:text-indigo-500"}`} />
+                                {item.name}
+                                {isActive && (
+                                    <ChevronRight className="w-3 h-3 ml-auto opacity-50" />
+                                )}
+                            </Link>
+                        );
+                    })}
                 </nav>
 
-                <div className="pt-6 border-t border-zinc-200 dark:border-zinc-800 space-y-1">
-                    <button className="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-black dark:hover:text-white transition-colors">
-                        <Settings className="w-4 h-4" />
-                        Settings
+                <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
+                    <div className="p-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl border border-zinc-100 dark:border-zinc-800/50 space-y-3">
+                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-400">
+                            <Shield className="w-3 h-3" />
+                            System Health
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] text-green-500 font-bold">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            </span>
+                            OPERATIONAL
+                        </div>
+                    </div>
+                    <button className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-zinc-500 hover:text-red-500 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/20 transition-all group">
+                        <LogOut className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                        Sign Out
                     </button>
-                    {/* Add Logout logic later */}
                 </div>
             </aside>
 
-            {/* Mobile Header (simplified) */}
-            <div className="md:hidden fixed top-0 w-full p-4 bg-white/80 backdrop-blur border-b z-40">
-                <h1 className="font-bold">FounderFlow Investor</h1>
+            {/* Mobile Header */}
+            <div className="md:hidden fixed top-0 w-full p-4 glass z-40 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <Rocket className="w-5 h-5 text-indigo-500" />
+                    <h1 className="font-bold">FounderFlow</h1>
+                </div>
+                <button className="p-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg">
+                    <Search className="w-4 h-4 text-zinc-500" />
+                </button>
             </div>
 
             {/* Main Content */}
-            <main className="flex-1 md:ml-64 p-8 pt-20 md:pt-8 min-h-screen">
-                <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <main className="flex-1 md:ml-64 p-6 md:p-12 pt-24 md:pt-12 min-h-screen overflow-x-hidden">
+                <div className="max-w-6xl mx-auto space-y-12">
                     {children}
                 </div>
             </main>
         </div>
     );
 }
+
