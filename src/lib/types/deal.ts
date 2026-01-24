@@ -159,6 +159,9 @@ export interface Deal {
     /** When the current offer/counter expires */
     validUntil: Timestamp;
 
+    /** Scoped connection ID */
+    connectionId: string;
+
     /** Who needs to take the next action */
     actionRequiredBy: "FOUNDER" | "INVESTOR";
 

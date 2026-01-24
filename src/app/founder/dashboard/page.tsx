@@ -32,30 +32,35 @@ import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { useRouter } from "next/navigation";
 import { createAgentRun } from "@/lib/startup-service";
-import { getConnectionRequests, acceptConnectionRequest, rejectConnectionRequest } from "@/lib/connection-service";
+import {
+    getConnectionRequests,
+    acceptConnectionRequest,
+    rejectConnectionRequest,
+    ConnectionRequest
+} from "@/lib/connection-service";
 import { useAuth } from "@/context/AuthContext";
 
 export default function DashboardPage() {
     const { user: currentUser } = useAuth();
     const { startup, memory, tasks, agentRuns, loading } = useStartup();
     const [selectedTask, setSelectedTask] = useState<any>(null);
-    const [notifications, setNotifications] = useState<any[]>([]);
+    const [notifications, setNotifications] = useState<ConnectionRequest[]>([]);
     const [showNotifications, setShowNotifications] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
         if (!currentUser) return;
-        const unsub = getConnectionRequests(currentUser.uid, (reqs) => {
+        const unsub = getConnectionRequests(currentUser.uid, (reqs: ConnectionRequest[]) => {
             setNotifications(reqs);
         });
         return () => unsub();
     }, [currentUser]);
 
-    const handleAccept = async (req: any) => {
+    const handleAccept = async (req: ConnectionRequest) => {
         await acceptConnectionRequest(req.id, req.fromId, req.toId);
     };
 
-    const handleReject = async (req: any) => {
+    const handleReject = async (req: ConnectionRequest) => {
         await rejectConnectionRequest(req.id);
     };
 
