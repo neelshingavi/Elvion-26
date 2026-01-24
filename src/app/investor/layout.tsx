@@ -9,7 +9,10 @@ import {
     Settings,
     LogOut,
     MessageSquare,
-    UserCircle
+    UserCircle,
+    Rocket,
+    ChevronRight,
+    Shield
 } from "lucide-react";
 
 export default function InvestorLayout({

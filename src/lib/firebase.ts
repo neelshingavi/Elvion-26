@@ -3,6 +3,7 @@ import {
     getAuth,
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -26,8 +27,12 @@ const db = isConfigValid ? getFirestore(app) : new Proxy({}, {
     get: () => { throw new Error("Firebase Firestore is not initialized. Missing environment variables in .env.local"); }
 }) as any;
 
+const storage = isConfigValid ? getStorage(app) : new Proxy({}, {
+    get: () => { throw new Error("Firebase Storage is not initialized. Missing environment variables in .env.local"); }
+}) as any;
+
 if (!isConfigValid) {
-    console.warn("Firebase configuration is missing. Auth and Firestore will not function.");
+    console.warn("Firebase configuration is missing. Auth, Firestore, and Storage will not function.");
 }
 
-export { auth, db, app, isConfigValid };
+export { auth, db, storage, app, isConfigValid };

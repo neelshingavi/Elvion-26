@@ -8,11 +8,14 @@ import { updateProfile, sendPasswordResetEmail, getAuth } from "firebase/auth";
 import {
     User, Mail, Save, Phone, MapPin, GraduationCap, Briefcase,
     Award, Clock, ShieldCheck, Lock, Loader2, Link, Plus,
-    Trash2, Star, Github, Linkedin, Globe, X, ExternalLink, Users, Rocket, ChevronRight
+    Trash2, Star, Github, Linkedin, Globe, X, ExternalLink, Users, Rocket, ChevronRight, Camera, Upload
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserData } from "@/lib/startup-service";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "@/lib/firebase";
+import { onSnapshot } from "firebase/firestore";
 
 export default function ProfileEditor() {
     const { user } = useAuth();
@@ -33,9 +36,11 @@ export default function ProfileEditor() {
         education: "",
         location: "",
         photoURL: "",
+        bannerURL: "",
         role: "Founder",
         socialLinks: { linkedin: "", twitter: "", website: "" },
         projects: [] as Array<{ name: string, description: string, role: string, link: string }>,
+        connectionCount: 0,
         score: 0
     });
 
@@ -46,7 +51,8 @@ export default function ProfileEditor() {
             const snap = await getDoc(docRef);
             if (snap.exists()) {
                 const data = snap.data();
-                setFormData({
+                setFormData(prev => ({
+                    ...prev,
                     displayName: user.displayName || "",
                     email: user.email || "",
                     role: data.role || "Founder",
@@ -57,16 +63,31 @@ export default function ProfileEditor() {
                     education: data.education || "",
                     location: data.location || "",
                     photoURL: data.photoURL || "",
+                    bannerURL: data.bannerURL || "",
                     socialLinks: data.socialLinks || { linkedin: "", twitter: "", website: "" },
                     projects: data.projects || [],
+                    connectionCount: data.connectionCount || 0,
                     score: data.score || 0
-                });
+                }));
             }
         };
+
+        const unsubUser = user ? onSnapshot(doc(db, "users", user.uid), (snap) => {
+            if (snap.exists()) {
+                const data = snap.data();
+                setFormData(prev => ({
+                    ...prev,
+                    connectionCount: data.connectionCount || 0,
+                    photoURL: data.photoURL || prev.photoURL,
+                    bannerURL: data.bannerURL || prev.bannerURL
+                }));
+            }
+        }) : () => { };
+
         fetchProfile();
 
-        // Fetch connections
-        const fetchConnections = async () => {
+        // Fetch connections list for modal
+        const fetchConnectionsList = async () => {
             if (!user) return;
             const { getConnectedUsers } = await import("@/lib/connection-service");
             const { getUserData } = await import("@/lib/startup-service");
@@ -74,8 +95,40 @@ export default function ProfileEditor() {
             const profiles = await Promise.all(ids.map(id => getUserData(id)));
             setConnectedUsers(profiles.filter(Boolean) as UserData[]);
         };
-        fetchConnections();
+        fetchConnectionsList();
+
+        return () => {
+            unsubUser();
+        };
     }, [user]);
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'banner') => {
+        const file = e.target.files?.[0];
+        if (!file || !user) return;
+
+        setLoading(true);
+        try {
+            const fileName = `${type}_${Date.now()}`;
+            const storageRef = ref(storage, `users/${user.uid}/${fileName}`);
+            await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(storageRef);
+
+            const field = type === 'avatar' ? 'photoURL' : 'bannerURL';
+            await updateDoc(doc(db, "users", user.uid), {
+                [field]: downloadURL
+            });
+
+            if (type === 'avatar') {
+                await updateProfile(user, { photoURL: downloadURL });
+            }
+
+            setFormData(prev => ({ ...prev, [field]: downloadURL }));
+        } catch (error) {
+            console.error("Upload failed:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -171,11 +224,18 @@ export default function ProfileEditor() {
             {/* LinkedIn Style Header Card */}
             <div className="relative bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-xl overflow-hidden group">
                 {/* Banner */}
-                <div className="h-48 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 relative">
-                    <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-700" />
-                    <button className="absolute top-6 right-6 p-2 bg-black/20 backdrop-blur-md rounded-xl text-white hover:bg-black/40 transition-all border border-white/10 opacity-0 group-hover:opacity-100">
-                        <Plus className="w-4 h-4" />
-                    </button>
+                <div
+                    className="h-48 w-full relative bg-zinc-100 dark:bg-zinc-800"
+                    style={formData.bannerURL ? { backgroundImage: `url(${formData.bannerURL})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+                >
+                    {!formData.bannerURL && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-80" />
+                    )}
+                    <label className="absolute top-6 right-6 p-3 bg-black/20 backdrop-blur-md rounded-2xl text-white hover:bg-black/40 transition-all border border-white/10 opacity-0 group-hover:opacity-100 cursor-pointer flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                        <Upload className="w-3.5 h-3.5" />
+                        Update Banner
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'banner')} />
+                    </label>
                 </div>
 
                 {/* Profile Identity Section */}
@@ -187,25 +247,28 @@ export default function ProfileEditor() {
                                     src={formData.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.displayName || user?.uid}`}
                                     className="w-full h-full object-cover group-hover/avatar:scale-110 transition-transform duration-700"
                                 />
-                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer">
-                                    <Plus className="w-8 h-8 text-white" />
-                                </div>
+                                <label className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer">
+                                    <Camera className="w-8 h-8 text-white mb-2" />
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-white">Update Photo</span>
+                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'avatar')} />
+                                </label>
                             </div>
                         </div>
                         <div className="flex gap-3">
                             <button
                                 onClick={handleUpdate}
                                 disabled={loading}
-                                className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                                className="px-8 py-3 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg hover:scale-[1.02] active:scale-95 disabled:opacity-50 flex items-center gap-2"
                             >
                                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                Update Registry
+                                Sync Registry
                             </button>
                             <button
                                 onClick={() => setShowConnections(true)}
-                                className="px-8 py-3 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 rounded-2xl font-black text-xs uppercase tracking-widest transition-all text-zinc-600 dark:text-zinc-400"
+                                className="px-8 py-3 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 rounded-2xl font-black text-xs uppercase tracking-widest transition-all text-zinc-600 dark:text-zinc-400 flex items-center gap-2"
                             >
-                                Partners ({connectedUsers.length})
+                                <Users className="w-4 h-4" />
+                                Connections ({formData.connectionCount})
                             </button>
                         </div>
                     </div>
@@ -225,8 +288,8 @@ export default function ProfileEditor() {
                                         {formData.location || "Global Node"}
                                     </div>
                                     <div className="w-1 h-1 bg-zinc-300 rounded-full" />
-                                    <div className="text-indigo-500 text-xs font-black uppercase tracking-widest">
-                                        {connectedUsers.length} Connections
+                                    <div className="text-indigo-500 text-xs font-black uppercase tracking-widest cursor-pointer hover:underline" onClick={() => setShowConnections(true)}>
+                                        {formData.connectionCount} Connections
                                     </div>
                                 </div>
                             </div>
@@ -362,45 +425,39 @@ export default function ProfileEditor() {
                         </div>
                     </section>
 
+                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-zinc-500/10 rounded-full blur-3xl opacity-20" />
+
                     {/* Metadata Section */}
-                    <section className="bg-zinc-950 dark:bg-white p-8 rounded-[2rem] text-white dark:text-black space-y-6 relative overflow-hidden">
-                        <div className="relative z-10 space-y-6">
-                            <div>
-                                <h3 className="text-lg font-black tracking-tight">Executive Parameters</h3>
-                                <p className="text-[10px] opacity-60 font-medium">Manage your biometric/auth keys.</p>
+                    <section className="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 p-8 space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5 flex-1">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 pl-1">Age Identity</label>
+                                <input
+                                    type="number"
+                                    value={formData.age}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
+                                    className="w-full px-4 py-2.5 text-[11px] font-bold rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/50 outline-none focus:border-indigo-500/50 transition-all"
+                                    placeholder="N/A"
+                                />
                             </div>
+                            <div className="space-y-1.5 flex-1">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 pl-1">Venture Role</label>
+                                <div className="px-4 py-3 text-[11px] font-bold rounded-xl bg-zinc-50 dark:bg-zinc-950/50 text-zinc-400 border border-zinc-100 dark:border-zinc-800 italic">
+                                    {formData.role}
+                                </div>
+                            </div>
+                        </div>
+                        <InputField label="Contact Vector" icon={Phone} name="phone" placeholder="+91 00000 00000" />
+
+                        <div className="pt-4 border-t border-zinc-50 dark:border-zinc-800">
                             <button
                                 onClick={handlePasswordReset}
-                                className="w-full flex items-center justify-between p-4 rounded-2xl bg-white/5 dark:bg-black/5 border border-white/10 dark:border-black/5 hover:bg-white/10 transition-all"
+                                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
                             >
-                                <span className="text-xs font-black uppercase tracking-widest flex items-center gap-2"><Lock className="w-4 h-4 opacity-40" /> Reset Keys</span>
-                                <ChevronRight className="w-4 h-4 opacity-20" />
+                                <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-zinc-400"><Lock className="w-3.5 h-3.5 opacity-40" /> Reset Auth Keys</span>
+                                <ChevronRight className="w-3.5 h-3.5 opacity-20" />
                             </button>
-                            {resetSent && <p className="text-center text-[10px] text-indigo-400 font-bold">Reset sequence initiated.</p>}
-                        </div>
-                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-3xl" />
-                    </section>
-
-                    {/* Notification/Stats Card */}
-                    <section className="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 p-8">
-                        <div className="flex flex-col gap-6 text-center">
-                            <div className="flex gap-4">
-                                <div className="flex-1 p-5 bg-zinc-50 dark:bg-zinc-800 rounded-3xl space-y-1">
-                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Age</p>
-                                    <p className="text-lg font-black text-indigo-500">{formData.age || "N/A"}</p>
-                                </div>
-                                <div className="flex-1 p-5 bg-zinc-50 dark:bg-zinc-800 rounded-3xl space-y-1">
-                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Status</p>
-                                    <p className="text-lg font-black text-green-500">Active</p>
-                                </div>
-                            </div>
-                            <InputField label="Phone Node" icon={Phone} name="phone" placeholder="+91..." />
-                            <input
-                                placeholder="Avatar URL"
-                                className="w-full p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-800 text-[10px] font-bold outline-none"
-                                value={formData.photoURL}
-                                onChange={(e) => setFormData(prev => ({ ...prev, photoURL: e.target.value }))}
-                            />
+                            {resetSent && <p className="mt-2 text-center text-[10px] text-indigo-500 font-bold uppercase tracking-widest">Reset Link Dispatched</p>}
                         </div>
                     </section>
                 </div>

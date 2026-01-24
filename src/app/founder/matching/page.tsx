@@ -133,8 +133,11 @@ export default function MatchingPage() {
                                     animate={{ opacity: 1, y: 0 }}
                                     className="group relative bg-white dark:bg-zinc-950 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-2xl transition-all duration-700 flex flex-col overflow-hidden"
                                 >
-                                    {/* Gradient Header */}
-                                    <div className="h-24 w-full bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 dark:from-indigo-500/5 dark:via-purple-500/5 dark:to-pink-500/5" />
+                                    {/* Gradient Header or User Banner */}
+                                    <div
+                                        className="h-24 w-full bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 dark:from-indigo-500/5 dark:via-purple-500/5 dark:to-pink-500/5"
+                                        style={u.bannerURL ? { backgroundImage: `url(${u.bannerURL})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+                                    />
 
                                     {/* Circular Avatar Body */}
                                     <div className="px-6 pb-8 -mt-12 flex flex-col items-center text-center flex-1">
@@ -229,14 +232,21 @@ export default function MatchingPage() {
                             initial={{ scale: 0.95, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                            className="relative w-full max-w-2xl bg-white dark:bg-zinc-950 rounded-[3rem] overflow-hidden shadow-2xl border border-white/5 p-12"
+                            className="relative w-full max-w-2xl bg-white dark:bg-zinc-950 rounded-[3rem] overflow-hidden shadow-2xl border border-white/5"
                         >
-                            <div className="flex flex-col items-center text-center space-y-6">
-                                <div className="w-32 h-32 rounded-full bg-zinc-50 dark:bg-zinc-900 p-1 border border-zinc-100 dark:border-zinc-800 shadow-xl">
-                                    <img
-                                        src={selectedUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedUser.displayName || selectedUser.uid}`}
-                                        className="w-full h-full rounded-full"
-                                    />
+                            <div
+                                className="h-32 w-full bg-zinc-100 dark:bg-zinc-900"
+                                style={selectedUser.bannerURL ? { backgroundImage: `url(${selectedUser.bannerURL})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { backgroundImage: 'linear-gradient(to right, #6366f1, #a855f7, #ec4899)', opacity: 0.2 }}
+                            />
+                            <div className="px-12 pb-12 -mt-16 flex flex-col items-center text-center space-y-6">
+                                <div className="relative group">
+                                    <div className="absolute inset-0 bg-white dark:bg-zinc-950 rounded-full -m-1.5" />
+                                    <div className="relative w-32 h-32 rounded-full bg-zinc-50 dark:bg-zinc-900 p-1 border border-zinc-100 dark:border-zinc-800 shadow-xl overflow-hidden">
+                                        <img
+                                            src={selectedUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedUser.displayName || selectedUser.uid}`}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">
