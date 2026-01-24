@@ -86,7 +86,7 @@ export default function PlanningPage() {
     }
 
     return (
-        <div className="max-w-6xl mx-auto space-y-8 p-4">
+        <div className="space-y-12 pb-24 max-w-full mx-auto animate-in fade-in duration-700">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-indigo-500/10 text-indigo-500 rounded-2xl">

@@ -25,8 +25,8 @@ export default function FounderLayout({
     return (
         <div className="flex h-screen bg-[#fafafa] dark:bg-[#050505]">
             <Sidebar />
-            <main className="flex-1 overflow-y-auto p-8">
-                <div className="mx-auto max-w-5xl">
+            <main className="flex-1 overflow-y-auto p-4">
+                <div className="mx-auto max-w-[1600px]">
                     {children}
                 </div>
             </main>

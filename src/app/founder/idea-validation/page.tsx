@@ -53,42 +53,42 @@ const ShowMoreCard = ({ title, items, icon: Icon, colorClass, bgClass }: any) =>
             )}
         >
             <div className="p-10 flex flex-col min-w-0">
-                <div className="flex items-center gap-3 mb-8 shrink-0">
+                <div className="flex items-center gap-4 mb-8 shrink-0">
                     <div className={cn("p-3 rounded-2xl shrink-0", colorClass.replace("text-", "bg-").replace("600", "500/10").replace("500", "500/10"))}>
                         {Icon && <Icon className={cn("w-5 h-5", colorClass)} />}
                     </div>
-                    <h4 className="font-bold text-[11px] tracking-[0.2em] text-zinc-400 uppercase">
+                    <h4 className="font-black text-[11px] tracking-[0.25em] text-zinc-400 uppercase">
                         {title}
                     </h4>
                 </div>
 
                 <div className={cn(
                     "min-w-0 transition-all duration-500 ease-in-out relative",
-                    expanded ? "opacity-100" : "max-h-[160px] overflow-hidden"
+                    expanded ? "opacity-100" : "max-h-[110px] overflow-hidden"
                 )}>
-                    <div className="space-y-4 pb-4">
+                    <div className="space-y-5 pb-6">
                         {displayItems.length > 0 ? displayItems.map((item: string, i: number) => (
                             <div key={i} className="flex gap-4 min-w-0">
-                                <div className={cn("mt-2 w-1.5 h-1.5 rounded-full shrink-0", colorClass.replace("text-", "bg-"))} />
-                                <p className="text-[15px] leading-relaxed text-zinc-600 dark:text-zinc-400 break-words">
+                                <div className={cn("mt-2.5 w-1.5 h-1.5 rounded-full shrink-0", colorClass.replace("text-", "bg-"))} />
+                                <p className="text-[15px] leading-relaxed text-zinc-600 dark:text-zinc-400 font-medium break-words">
                                     {item}
                                 </p>
                             </div>
-                        )) : <p className="text-zinc-500 italic text-[13px]">No data available.</p>}
+                        )) : <p className="text-zinc-500 italic text-[14px]">No data available.</p>}
                     </div>
                     {!expanded && hasMore && (
-                        <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-white dark:from-zinc-950 to-transparent pointer-events-none" />
+                        <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-white dark:from-zinc-950 to-transparent pointer-events-none" />
                     )}
                 </div>
 
                 {hasMore && (
-                    <div className="pt-6 mt-2 border-t border-zinc-50 dark:border-zinc-900/50">
+                    <div className="pt-8 mt-2 border-t border-zinc-50 dark:border-zinc-900/50">
                         <button
                             onClick={() => setExpanded(!expanded)}
-                            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 hover:text-indigo-600 transition-colors"
+                            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-indigo-500 hover:text-indigo-600 transition-colors"
                         >
-                            {expanded ? "Show Less" : "Read More"}
-                            {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                            {expanded ? "Collapse Intel" : "Deep Analysis"}
+                            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </button>
                     </div>
                 )}
@@ -286,7 +286,7 @@ export default function IdeaValidationPage() {
     };
 
     return (
-        <div className="max-w-7xl mx-auto space-y-12 p-6 md:p-12 animate-in fade-in duration-1000">
+        <div className="max-w-full mx-auto space-y-12 p-3 md:p-6 animate-in fade-in duration-1000">
             {/* Minimalist Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-zinc-100 dark:border-zinc-800 pb-10">
                 <div className="space-y-4">
@@ -393,7 +393,7 @@ export default function IdeaValidationPage() {
                                     key="result"
                                     initial={{ opacity: 0, scale: 0.98 }}
                                     animate={{ opacity: 1, scale: 1 }}
-                                    className="space-y-12 pb-20 pt-8"
+                                    className="space-y-12 pb-20 max-w-full mx-auto"
                                 >
                                     {/* Score Card - Classy Refinement */}
                                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
@@ -408,25 +408,25 @@ export default function IdeaValidationPage() {
                                                     <circle cx="88" cy="88" r="80" stroke="currentColor" strokeWidth="6" fill="transparent" strokeDasharray={`${result.scoring * 5.02} 502`} strokeLinecap="round" className="text-indigo-500 transition-all duration-1000 ease-out" />
                                                 </svg>
                                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                    <span className="text-6xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                                                    <span className="text-7xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50">
                                                         {result.scoring}
                                                     </span>
-                                                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">PQ INDEX</span>
+                                                    <span className="text-[11px] font-black text-zinc-400 uppercase tracking-[0.3em]">PQ INDEX</span>
                                                 </div>
                                             </div>
-                                            <div className="mt-12 px-8 py-2.5 bg-indigo-500/10 dark:bg-indigo-500/30 text-indigo-600 dark:text-indigo-400 font-bold text-[10px] rounded-full uppercase tracking-[0.2em] shrink-0">
+                                            <div className="mt-12 px-8 py-3 bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-500 font-black text-[10px] rounded-2xl uppercase tracking-[0.3em] shrink-0 border border-indigo-500/10">
                                                 {result.implementation_verdict}
                                             </div>
                                         </div>
 
                                         <div className="lg:col-span-8 p-12 rounded-[2.5rem] bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-100 dark:border-zinc-800 flex flex-col justify-center min-w-0 overflow-hidden">
-                                            <div className="flex items-center gap-3 mb-8 shrink-0">
+                                            <div className="flex items-center gap-4 mb-10 shrink-0">
                                                 <div className="p-3 bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-zinc-100 dark:border-zinc-700/50">
                                                     <Lightbulb className="w-5 h-5 text-indigo-500" />
                                                 </div>
-                                                <h3 className="font-bold text-[11px] uppercase tracking-[0.2em] text-zinc-400">Executive Intelligence</h3>
+                                                <h3 className="font-black text-[11px] uppercase tracking-[0.3em] text-zinc-400">Executive Intelligence</h3>
                                             </div>
-                                            <p className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 leading-[1.5] line-clamp-4 break-words">
+                                            <p className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 leading-snug line-clamp-4 break-words">
                                                 {result.summary}
                                             </p>
                                         </div>
@@ -443,26 +443,26 @@ export default function IdeaValidationPage() {
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-100 dark:bg-zinc-800/50 rounded-3xl overflow-hidden border border-zinc-100 dark:border-zinc-800/50">
                                             <div className="p-10 bg-white dark:bg-zinc-950 flex flex-col justify-center min-w-0">
-                                                <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3 shrink-0">Liquidity Strategy</div>
-                                                <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight break-words">
+                                                <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-4 shrink-0">Liquidity Strategy</div>
+                                                <div className="text-lg font-bold text-zinc-900 dark:text-zinc-50 tracking-tight break-words">
                                                     {result.capital_staging?.initial_funds || "N/A"}
                                                 </div>
                                             </div>
                                             <div className="p-10 bg-white dark:bg-zinc-950 flex flex-col justify-center min-w-0">
-                                                <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3 shrink-0">Acquisition Capital</div>
-                                                <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight break-words">
+                                                <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-4 shrink-0">Acquisition Capital</div>
+                                                <div className="text-lg font-bold text-zinc-900 dark:text-zinc-50 tracking-tight break-words">
                                                     {result.capital_staging?.marketing_launch || "N/A"}
                                                 </div>
                                             </div>
                                             <div className="p-10 bg-white dark:bg-zinc-950 flex flex-col justify-center min-w-0">
-                                                <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3 shrink-0">Compliance & Legal</div>
-                                                <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight break-words">
+                                                <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-4 shrink-0">Compliance & Legal</div>
+                                                <div className="text-lg font-bold text-zinc-900 dark:text-zinc-50 tracking-tight break-words">
                                                     {result.capital_staging?.registration_legal || "N/A"}
                                                 </div>
                                             </div>
                                             <div className="p-10 bg-white dark:bg-zinc-950 flex flex-col justify-center min-w-0">
-                                                <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3 shrink-0">Infrastructure Depth</div>
-                                                <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight break-words">
+                                                <div className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-4 shrink-0">Infrastructure Depth</div>
+                                                <div className="text-lg font-bold text-zinc-900 dark:text-zinc-50 tracking-tight break-words">
                                                     {result.capital_staging?.infrastructure_hardware || "N/A"}
                                                 </div>
                                             </div>
@@ -590,13 +590,13 @@ export default function IdeaValidationPage() {
                                             </span>
                                             <button
                                                 onClick={(e) => handleDeleteHistory(e, mem.id)}
-                                                className="opacity-0 group-hover:opacity-100 p-2 hover:bg-red-500 hover:text-white dark:hover:bg-red-500 rounded-xl transition-all text-zinc-400 shadow-sm"
+                                                className="opacity-0 group-hover:opacity-100 p-2.5 hover:bg-red-500 hover:text-white dark:hover:bg-red-500 rounded-xl transition-all text-zinc-400 shadow-sm"
                                                 title="Drop Record"
                                             >
-                                                <Trash2 className="w-3.5 h-3.5" />
+                                                <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>
-                                        <div className="text-[11px] font-bold text-zinc-500 line-clamp-2 leading-relaxed group-hover:text-zinc-900 dark:group-hover:text-zinc-100 uppercase tracking-tight transition-colors break-words">
+                                        <div className="text-[15px] font-bold text-zinc-700 dark:text-zinc-300 line-clamp-2 leading-snug group-hover:text-zinc-900 dark:group-hover:text-zinc-50 transition-colors break-words">
                                             {data.summary}
                                         </div>
                                     </div>

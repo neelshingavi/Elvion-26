@@ -64,18 +64,18 @@ export default function InvestorPortfolioDashboard() {
     }
 
     return (
-        <div className="space-y-12 pb-20 max-w-7xl mx-auto">
+        <div className="space-y-12 pb-20 max-w-full mx-auto">
             {/* Header Section */}
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="space-y-2">
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className="px-2 py-0.5 bg-indigo-500/10 text-indigo-500 text-[10px] font-bold uppercase tracking-wider rounded">Portfolio OS</div>
+                <div className="space-y-3">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="px-3 py-1 bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-[0.3em] rounded-lg border border-indigo-500/10">Portfolio Command</div>
                     </div>
-                    <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                        Portfolio Intelligence
+                    <h1 className="text-5xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50">
+                        Portfolio <span className="text-zinc-400 dark:text-zinc-600">Intelligence</span>
                     </h1>
-                    <p className="text-zinc-500 dark:text-zinc-400 text-lg leading-relaxed">
-                        Continuous monitoring of {portfolio.length} active technology assets.
+                    <p className="text-zinc-500 dark:text-zinc-400 text-lg font-medium leading-relaxed max-w-2xl">
+                        Real-time signal extraction from {portfolio.length} high-velocity technology assets.
                     </p>
                 </div>
                 <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900/50 p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800">
@@ -275,33 +275,41 @@ export default function InvestorPortfolioDashboard() {
 }
 
 // Sub-components for cleaner structure and 8px alignment
-function MetricCard({ label, value, trend, icon: Icon, color = "zinc", customContent }: any) {
-    const colors: any = {
-        indigo: "text-indigo-600 dark:text-indigo-400",
-        green: "text-green-600 dark:text-green-500",
-        zinc: "text-zinc-400"
+const MetricCard = ({ label, value, trend, icon: Icon, color = "zinc", customContent }: any) => {
+    const colorMap: any = {
+        indigo: "text-indigo-500 bg-indigo-500/10 border-indigo-500/10",
+        green: "text-emerald-500 bg-emerald-500/10 border-emerald-500/10",
+        zinc: "text-zinc-500 bg-zinc-500/10 border-zinc-500/10"
     };
 
     return (
-        <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all flex flex-col min-w-0 overflow-hidden">
-            <div className="flex items-center gap-3 mb-8 text-zinc-400 shrink-0">
-                <Icon className="w-4 h-4 shrink-0" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] line-clamp-1">{label}</span>
-            </div>
-            <div className="flex-1 min-w-0">
-                {customContent || (
-                    <div className={cn("text-4xl font-bold tracking-tight line-clamp-1 truncate", colors[color])}>
-                        {value}
+        <div className="p-10 rounded-[2.5rem] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden group">
+            <div className="relative z-10 space-y-8">
+                <div className="flex items-center justify-between">
+                    <div className={cn("p-3 rounded-2xl border", colorMap[color])}>
+                        <Icon className="w-5 h-5" />
                     </div>
-                )}
-            </div>
-            <div className="mt-8 pt-6 border-t border-zinc-50 dark:border-zinc-800/50 flex items-center gap-1.5 text-xs font-bold text-zinc-500 uppercase tracking-widest shrink-0">
-                <TrendingUp className="w-3.5 h-3.5 text-green-500 shrink-0" />
-                <span className="line-clamp-1">{trend}</span>
+                    {trend && (
+                        <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                            {trend}
+                        </div>
+                    )}
+                </div>
+                <div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-3">
+                        {label}
+                    </div>
+                    {value && (
+                        <div className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                            {value}
+                        </div>
+                    )}
+                    {customContent}
+                </div>
             </div>
         </div>
     );
-}
+};
 
 function ProjectCard({ item }: { item: any }) {
     return (
