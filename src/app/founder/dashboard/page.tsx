@@ -25,6 +25,7 @@ import {
     Sparkles,
     ArrowUpRight,
     Mail,
+
 } from "lucide-react";
 import { getPrimaryAction } from "@/lib/orchestrator";
 import { formatDistanceToNow } from "date-fns";
@@ -65,7 +66,7 @@ export default function DashboardPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
                 <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Loading Intelligence...</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Loading Intelligence...</span>
             </div>
         );
     }
@@ -76,15 +77,15 @@ export default function DashboardPage() {
                 <div className="p-8 bg-zinc-50 dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-sm">
                     <Rocket className="w-16 h-16 text-zinc-300 dark:text-zinc-700" />
                 </div>
-                <div className="space-y-3">
-                    <h2 className="text-3xl font-bold tracking-tight">Initiate Venture</h2>
-                    <p className="text-zinc-500 font-medium max-w-sm mx-auto leading-relaxed">
+                <div className="space-y-4">
+                    <h2 className="text-4xl font-black tracking-tighter">Initiate <span className="text-zinc-400">Venture</span></h2>
+                    <p className="text-zinc-500 font-medium text-lg max-w-sm mx-auto leading-relaxed">
                         Your strategic command center is ready. Initialize your first project to begin execution.
                     </p>
                 </div>
                 <button
                     onClick={() => router.push("/projects")}
-                    className="px-10 py-4 bg-zinc-950 dark:bg-zinc-50 text-white dark:text-black rounded-2xl font-bold text-sm tracking-tight hover:scale-105 active:scale-95 transition-all shadow-xl"
+                    className="px-10 py-4 bg-zinc-950 dark:bg-zinc-50 text-white dark:text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl"
                 >
                     Project Registry
                 </button>
@@ -157,31 +158,31 @@ export default function DashboardPage() {
     ];
 
     return (
-        <div className="space-y-12 pb-24 max-w-7xl mx-auto animate-in fade-in duration-700">
+        <div className="space-y-12 pb-24 max-w-full mx-auto animate-in fade-in duration-700">
             {/* Header Section */}
-            <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 border-b border-zinc-100 dark:border-zinc-800/50 pb-12">
-                <div className="space-y-6">
-                    <div className="flex items-center gap-2">
-                        <div className="px-2 py-0.5 bg-indigo-500/10 text-indigo-500 text-[10px] font-bold uppercase tracking-wider rounded">Executive OS</div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <h1 className="text-5xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                            {startup.name}
-                        </h1>
+            <header className="flex flex-col md:flex-row md:items-end justify-between items-start gap-8 border-b border-zinc-100 dark:border-zinc-800 pb-12">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className="px-3 py-1 bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-[0.3em] rounded-lg border border-indigo-500/10">Venture Command</div>
                         <button
                             onClick={() => router.push("/projects")}
-                            className="p-3 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-800 transition-all text-zinc-400 hover:text-indigo-500 shadow-sm"
-                            title="Switch Context"
+                            className="p-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-400 hover:text-indigo-500 transition-colors"
                         >
-                            <ArrowLeftRight className="w-5 h-5" />
+                            <ArrowLeftRight className="w-3.5 h-3.5" />
                         </button>
                     </div>
-                    <div className="flex items-center gap-3 px-6 py-2.5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm w-fit">
+                    <h1 className="text-5xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50">
+                        {startup.name} <span className="text-zinc-400 dark:text-zinc-600">Workspace</span>
+                    </h1>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-xl font-medium leading-relaxed max-w-2xl">
+                        {startup.idea}
+                    </p>
+                    <div className="flex items-center gap-3 px-6 py-2.5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm w-fit mt-4">
                         <div className="relative">
                             <div className="w-2 h-2 bg-green-500 rounded-full" />
                             <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping" />
                         </div>
-                        <span className="text-[10px] font-bold tracking-[0.2em] text-zinc-500 uppercase">
+                        <span className="text-[10px] font-black tracking-[0.2em] text-zinc-500 uppercase">
                             {activeRuns.length > 0 ? `${activeRuns.length} Intel Streams Running` : "Decision Cycle IDLE"}
                         </span>
                     </div>
@@ -212,7 +213,7 @@ export default function DashboardPage() {
                                         className="absolute right-0 mt-3 w-80 bg-white dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 rounded-[2rem] shadow-2xl z-50 overflow-hidden"
                                     >
                                         <div className="p-6 border-b border-zinc-50 dark:border-zinc-900 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/50">
-                                            <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Signal Intelligence</h3>
+                                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Signal Intelligence</h3>
                                             <button onClick={() => setShowNotifications(false)} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg"><X className="w-3 h-3 text-zinc-400" /></button>
                                         </div>
                                         <div className="max-h-[400px] overflow-y-auto p-4 space-y-4">
@@ -223,17 +224,17 @@ export default function DashboardPage() {
                                                             <Users className="w-5 h-5 text-indigo-500" />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Connection Link</p>
+                                                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">Connection Link</p>
                                                             <p className="text-xs font-bold text-zinc-900 dark:text-zinc-50 truncate">Protocol: {req.fromId.slice(0, 8)}</p>
                                                         </div>
                                                     </div>
                                                     <div className="grid grid-cols-2 gap-2">
-                                                        <button onClick={() => handleAccept(req)} className="py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-transform">Connect</button>
-                                                        <button onClick={() => handleReject(req)} className="py-2.5 bg-zinc-50 dark:bg-zinc-800 text-zinc-400 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:text-red-500 transition-colors">Dismiss</button>
+                                                        <button onClick={() => handleAccept(req)} className="py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 transition-transform">Connect</button>
+                                                        <button onClick={() => handleReject(req)} className="py-2.5 bg-zinc-50 dark:bg-zinc-800 text-zinc-400 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:text-red-500 transition-colors">Dismiss</button>
                                                     </div>
                                                 </div>
                                             )) : (
-                                                <div className="py-12 text-center text-zinc-300 italic">No signals detected.</div>
+                                                <div className="py-12 text-center text-zinc-300 italic font-medium">No signals detected.</div>
                                             )}
                                         </div>
                                     </motion.div>
@@ -266,8 +267,8 @@ export default function DashboardPage() {
                                 <stat.icon className="w-7 h-7" />
                             </div>
                             <div className="min-w-0">
-                                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 line-clamp-1">{stat.name}</p>
-                                <p className="text-2xl font-bold tracking-tight line-clamp-1 truncate">{stat.value}</p>
+                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.25em] mb-2 line-clamp-1">{stat.name}</p>
+                                <p className="text-3xl font-bold tracking-tight line-clamp-1 truncate">{stat.value}</p>
                             </div>
                         </div>
                     </motion.div>
@@ -275,18 +276,16 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-12 items-start">
-                {/* Main Action Channel */}
                 <div className="xl:col-span-8 space-y-12">
-
                     {/* Primary Strategic Focus */}
-                    <div className="p-12 rounded-[3rem] bg-zinc-900 text-white shadow-2xl relative overflow-hidden group min-w-0">
+                    <div className="p-12 rounded-[3.5rem] bg-zinc-900 text-white shadow-2xl relative overflow-hidden group min-w-0">
                         <div className="relative z-10 space-y-8 min-w-0">
-                            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-xl rounded-full text-[9px] font-bold tracking-[0.3em] uppercase text-indigo-400 shrink-0">
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-xl rounded-full text-[9px] font-black tracking-[0.4em] uppercase text-indigo-400 shrink-0 border border-white/5">
                                 <Sparkles className="w-3.5 h-3.5" />
                                 Optimal Next Phase
                             </div>
                             <div className="space-y-4 min-w-0">
-                                <h3 className="text-4xl font-bold tracking-tight line-clamp-2 break-words">
+                                <h3 className="text-4xl font-black tracking-tighter line-clamp-2 break-words">
                                     {primaryAction.label}
                                 </h3>
                                 <p className="opacity-60 text-lg font-medium leading-relaxed max-w-xl line-clamp-3">
@@ -295,94 +294,94 @@ export default function DashboardPage() {
                             </div>
                             <button
                                 onClick={() => router.push('/founder/planning')}
-                                className="flex items-center gap-3 px-8 py-4 bg-white text-black rounded-2xl font-bold text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shrink-0 w-fit"
+                                className="flex items-center gap-3 px-8 py-4 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shrink-0 w-fit"
                             >
                                 Execute Protocol
                                 <ArrowUpRight className="w-4 h-4" />
                             </button>
                         </div>
-                        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[100px] rounded-full translate-x-1/4 -translate-y-1/4 pointer-events-none" />
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/20 blur-[100px] rounded-full translate-x-1/4 -translate-y-1/4 pointer-events-none" />
                     </div>
 
                     {/* Agent Grid */}
-                    <section className="space-y-6">
-                        <h3 className="text-xl font-bold tracking-tight flex items-center gap-3 px-2">
-                            <Bot className="w-5 h-5 text-indigo-500" /> Intelligence Ecosystem
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <section className="space-y-8">
+                        <div className="flex items-center gap-3 px-2">
+                            <div className="p-2.5 bg-indigo-500/10 rounded-xl">
+                                <Bot className="w-5 h-5 text-indigo-500" />
+                            </div>
+                            <h3 className="text-2xl font-black tracking-tighter uppercase text-zinc-400">Intelligence Ecosystem</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {agents.map((agent) => (
-                                <div key={agent.id} className="p-8 rounded-[2.5rem] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-all hover:shadow-xl hover:border-indigo-500/20 group relative overflow-hidden min-w-0">
-                                    <div className="flex flex-col gap-6 relative z-10 h-full min-w-0">
+                                <div key={agent.id} className="p-10 rounded-[3rem] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-all hover:shadow-xl hover:border-indigo-500/20 group relative overflow-hidden min-w-0">
+                                    <div className="flex flex-col gap-8 relative z-10 h-full min-w-0">
                                         <div className="flex items-center justify-between shrink-0">
-                                            <div className="p-3.5 bg-zinc-50 dark:bg-zinc-950 rounded-2xl group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-500 transition-colors">
+                                            <div className="p-4 bg-zinc-50 dark:bg-zinc-950 rounded-2xl group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-500 transition-colors border border-zinc-100 dark:border-zinc-800">
                                                 <agent.icon className="w-6 h-6" />
                                             </div>
-                                            <div className={cn("h-2 w-2 rounded-full", activeRuns.find(r => r.agentType === agent.id) ? "bg-green-500 animate-pulse shadow-[0_0_12px_rgba(34,197,94,0.5)]" : "bg-zinc-100 dark:bg-zinc-800")} />
+                                            <div className={cn("h-2.5 w-2.5 rounded-full", activeRuns.find(r => r.agentType === agent.id) ? "bg-green-500 animate-pulse shadow-[0_0_12px_rgba(34,197,94,0.5)]" : "bg-zinc-100 dark:bg-zinc-800")} />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <h4 className="font-bold text-base tracking-tight mb-1 group-hover:text-indigo-500 transition-colors line-clamp-1">{agent.name}</h4>
-                                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest line-clamp-1">{agent.description}</p>
+                                            <h4 className="font-black text-lg tracking-tight mb-2 group-hover:text-indigo-500 transition-colors line-clamp-1 uppercase">{agent.name}</h4>
+                                            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.25em] line-clamp-2">{agent.description}</p>
                                         </div>
                                         <button
                                             onClick={() => handleAgentAction(agent)}
                                             className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-950 text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-all border border-zinc-100 dark:border-zinc-800 shrink-0"
+
                                         >
-                                            <Play className="w-3 h-3" />
+                                            <Play className="w-3.5 h-3.5" />
                                             Trigger Intel
                                         </button>
                                     </div>
-                                    <button
-                                        onClick={() => handleAgentAction(agent)}
-                                        className="relative z-10 mt-2 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all border border-zinc-100 dark:border-zinc-800"
-                                    >
-                                        <Play className="w-3 h-3" />
-                                        Trigger
-                                    </button>
                                 </div>
                             ))}
                         </div>
                     </section>
 
                     {/* Execution Nodes */}
-                    <section className="space-y-6">
+                    <section className="space-y-8">
                         <div className="flex items-center justify-between px-2">
-                            <h3 className="text-xl font-bold tracking-tight flex items-center gap-3">
-                                <Activity className="w-5 h-5 text-indigo-500" /> Node Registry
-                            </h3>
-                            <button className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:text-indigo-500 transition-colors">Historical Logs</button>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-indigo-500/10 rounded-xl">
+                                    <Activity className="w-5 h-5 text-indigo-500" />
+                                </div>
+                                <h3 className="text-2xl font-black tracking-tighter uppercase text-zinc-400">Node Registry</h3>
+                            </div>
+                            <button className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 hover:text-indigo-500 transition-colors">Historical Logs</button>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {[...pendingTasks.slice(0, 4), ...completedTasks.slice(0, 2)].map((task) => (
                                 <div
                                     key={task.id}
                                     onClick={() => task.status === "done" && setSelectedTask(task)}
                                     className={cn(
-                                        "group p-8 rounded-[2.5rem] bg-white dark:bg-zinc-900 border transition-all cursor-pointer shadow-sm hover:shadow-xl min-w-0 overflow-hidden flex flex-col",
-                                        task.status === "done" ? "border-green-500/20 bg-green-50/10" : "border-zinc-200 dark:border-zinc-800"
+                                        "group p-10 rounded-[3rem] bg-white dark:bg-zinc-900 border transition-all cursor-pointer shadow-sm hover:shadow-xl min-w-0 overflow-hidden flex flex-col h-full",
+                                        task.status === "done" ? "border-green-500/20 bg-green-50/5" : "border-zinc-200 dark:border-zinc-800"
                                     )}
                                 >
-                                    <div className="flex items-center justify-between mb-6 shrink-0">
-                                        <div className="flex items-center gap-3">
+                                    <div className="flex items-center justify-between mb-8 shrink-0">
+                                        <div className="flex items-center gap-4">
                                             {task.status === "done" ? (
-                                                <div className="w-6 h-6 bg-green-500 rounded-lg flex items-center justify-center shrink-0">
+                                                <div className="w-7 h-7 bg-green-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-green-500/20">
                                                     <CheckCircle2 className="w-4 h-4 text-white" />
                                                 </div>
                                             ) : (
-                                                <div className="w-6 h-6 rounded-lg border-2 border-zinc-100 dark:border-zinc-800 shrink-0" />
+                                                <div className="w-7 h-7 rounded-xl border-2 border-zinc-100 dark:border-zinc-800 shrink-0" />
                                             )}
-                                            <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 line-clamp-1">
+                                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 line-clamp-1">
                                                 {task.status === "done" ? "VERIFIED" : `${task.priority} INTEL`}
                                             </span>
                                         </div>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h4 className="font-bold text-sm tracking-tight mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors uppercase leading-relaxed line-clamp-2 break-words">{task.title}</h4>
-                                        <p className="text-[10px] text-zinc-500 font-medium leading-relaxed italic line-clamp-2 break-words">"{task.instruction || task.reason}"</p>
+                                        <h4 className="font-bold text-base tracking-tight mb-4 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors uppercase leading-snug line-clamp-2 break-words">{task.title}</h4>
+                                        <p className="text-[11px] text-zinc-500 font-medium leading-relaxed italic line-clamp-3 break-words">"{task.instruction || task.reason}"</p>
                                     </div>
                                     {task.status === "done" && (
-                                        <div className="mt-8 pt-6 border-t border-zinc-100 dark:border-zinc-800/50 flex items-center justify-between shrink-0">
-                                            <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Access Evidence →</span>
+                                        <div className="mt-8 pt-8 border-t border-zinc-50 dark:border-zinc-800/50 flex items-center justify-between shrink-0">
+                                            <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em]">Access Evidence →</span>
                                             <ArrowUpRight className="w-4 h-4 text-zinc-300" />
                                         </div>
                                     )}
@@ -393,19 +392,16 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Vertical Stream Sidecar */}
-                <aside className="xl:col-span-4 space-y-12 h-fit xl:sticky xl:top-12">
-                    <div className="bg-zinc-50 dark:bg-zinc-900/50 p-8 rounded-[3rem] border border-zinc-100 dark:border-zinc-800/50 shadow-sm space-y-10">
-                        <div className="flex items-center gap-3 text-zinc-400">
+                <aside className="xl:col-span-4 space-y-12 h-fit xl:sticky xl:top-24">
+                    <div className="bg-zinc-50 dark:bg-zinc-900/50 p-10 rounded-[3.5rem] border border-zinc-100 dark:border-zinc-800/50 shadow-sm space-y-12">
+                        <div className="flex items-center gap-4 text-zinc-400">
                             <Clock className="w-5 h-5" />
-                            <h3 className="text-[10px] font-bold tracking-[0.3em] uppercase">Decision Stream</h3>
+                            <h3 className="text-[11px] font-black tracking-[0.4em] uppercase">Decision Stream</h3>
                         </div>
 
                         <div className="relative space-y-12 before:absolute before:inset-0 before:ml-[15px] before:h-full before:w-[1.5px] before:bg-zinc-200 dark:before:bg-zinc-800/50">
                             {memory.slice(0, 8).map((entry) => (
-                                <div
-                                    key={entry.id}
-                                    className="relative flex items-start pl-12 group min-w-0"
-                                >
+                                <div key={entry.id} className="relative flex items-start pl-12 group min-w-0">
                                     <div className={cn(
                                         "absolute left-0 mt-0 w-8 h-8 rounded-xl border-4 border-white dark:border-black flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 shrink-0",
                                         entry.source === "agent" ? "bg-zinc-900 text-white dark:bg-white dark:text-black" : "bg-white text-zinc-400 dark:bg-zinc-800 border-zinc-50 dark:border-zinc-900"
@@ -415,11 +411,11 @@ export default function DashboardPage() {
                                         {entry.type === "decision" && <Target className="w-3.5 h-3.5" />}
                                         {entry.type === "pivot" && <AlertTriangle className="w-3.5 h-3.5" />}
                                     </div>
-                                    <div className="space-y-1 min-w-0">
-                                        <div className="text-[9px] font-bold text-indigo-500 uppercase tracking-widest line-clamp-1">
+                                    <div className="space-y-1.5 min-w-0">
+                                        <div className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] line-clamp-1">
                                             {formatDistanceToNow(entry.timestamp.toDate())} ago
                                         </div>
-                                        <p className="text-[11px] font-medium leading-relaxed text-zinc-600 dark:text-zinc-300 group-hover:text-black dark:group-hover:text-white transition-colors line-clamp-3 break-words">
+                                        <p className="text-[13px] font-medium leading-relaxed text-zinc-600 dark:text-zinc-300 group-hover:text-black dark:group-hover:text-white transition-colors line-clamp-4 break-words">
                                             {entry.content}
                                         </p>
                                     </div>
@@ -443,18 +439,18 @@ export default function DashboardPage() {
                             initial={{ scale: 0.95, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                            className="relative w-full max-w-3xl max-h-[85vh] bg-white dark:bg-zinc-950 rounded-[3rem] overflow-hidden shadow-2xl border border-white/5 flex flex-col"
+                            className="relative w-full max-w-4xl max-h-[85vh] bg-white dark:bg-zinc-950 rounded-[3.5rem] overflow-hidden shadow-2xl border border-white/5 flex flex-col"
                         >
-                            <div className="flex items-center justify-between p-10 bg-zinc-100/50 dark:bg-zinc-900/50 border-b border-zinc-100 dark:border-zinc-800">
+                            <div className="flex items-center justify-between p-12 bg-zinc-100/50 dark:bg-zinc-900/50 border-b border-zinc-100 dark:border-zinc-800">
                                 <div>
-                                    <h2 className="text-xl font-bold tracking-tight mb-1">{selectedTask.title}</h2>
-                                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-indigo-500">Extracted Evidence Packet</p>
+                                    <h2 className="text-2xl font-black tracking-tighter uppercase mb-2">{selectedTask.title}</h2>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-500">Extracted Evidence Packet</p>
                                 </div>
-                                <button onClick={() => setSelectedTask(null)} className="p-3 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-2xl transition-all">
+                                <button onClick={() => setSelectedTask(null)} className="p-4 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-2xl transition-all">
                                     <X className="w-6 h-6" />
                                 </button>
                             </div>
-                            <div className="p-12 overflow-y-auto flex-1 prose prose-zinc dark:prose-invert prose-p:text-sm prose-headings:text-lg prose-headings:font-bold prose-headings:tracking-tight max-w-none">
+                            <div className="p-16 overflow-y-auto flex-1 prose prose-zinc dark:prose-invert prose-p:text-base prose-p:leading-relaxed prose-headings:text-xl prose-headings:font-black prose-headings:tracking-tighter prose-headings:uppercase max-w-none">
                                 <ReactMarkdown>{selectedTask.aiResponse || "_SECURE DATA LAYER UPLOADING_"}</ReactMarkdown>
                             </div>
                         </motion.div>
