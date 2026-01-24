@@ -104,7 +104,7 @@ export function useStartup() {
         const memberQuery = query(
             collection(db, "startup_members"),
             where("startupId", "==", startupId),
-            where("userId", "==", user?.uid)
+            where("userId", "==", (user as any)?.uid || "")
         );
         const memberUnsubscribe = onSnapshot(memberQuery, (snapshot) => {
             if (!snapshot.empty) {
