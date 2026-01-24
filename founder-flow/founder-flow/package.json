@@ -3,14 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "description": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).",
-  "homepage": "https://github.com/neelshingavi/Founders-Flow#readme",
-  "bugs": {
-    "url": "https://github.com/neelshingavi/Founders-Flow/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/neelshingavi/Founders-Flow.git"
-  },
   "license": "ISC",
   "author": "",
   "type": "module",
@@ -29,8 +21,6 @@
     "firebase-admin": "^13.6.0",
     "framer-motion": "^12.26.2",
     "js-cookie": "^3.0.5",
-    "jspdf": "^4.0.0",
-    "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.562.0",
     "next": "16.1.3",
     "react": "19.2.3",
