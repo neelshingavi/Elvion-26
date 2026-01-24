@@ -22,10 +22,10 @@ import {
     X as CloseX,
     Users,
     MessageSquare,
-    Mail,
     Sparkles,
+    ArrowUpRight,
+    Mail,
 
-    ArrowUpRight
 } from "lucide-react";
 import { getPrimaryAction } from "@/lib/orchestrator";
 import { formatDistanceToNow } from "date-fns";
@@ -327,7 +327,7 @@ export default function DashboardPage() {
                                         </div>
                                         <button
                                             onClick={() => handleAgentAction(agent)}
-                                            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-950 text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all border border-zinc-100 dark:border-zinc-800"
+                                            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-950 text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-all border border-zinc-100 dark:border-zinc-800 shrink-0"
 
                                         >
                                             <Play className="w-3.5 h-3.5" />

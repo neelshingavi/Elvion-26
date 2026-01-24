@@ -12,7 +12,8 @@ import {
     UserCircle,
     Rocket,
     ChevronRight,
-    Shield
+    Shield,
+    Briefcase
 } from "lucide-react";
 
 export default function InvestorLayout({
@@ -25,6 +26,7 @@ export default function InvestorLayout({
     const navItems = [
         { name: "Portfolio", href: "/investor/dashboard", icon: LayoutDashboard },
         { name: "Discovery", href: "/investor/startups", icon: Search },
+        { name: "Deals", href: "/investor/deals", icon: Briefcase },
         { name: "Deal Flow", href: "/investor/dealflow", icon: Kanban },
         { name: "Chat", href: "/founder/chat", icon: MessageSquare },
         { name: "Profile", href: "/investor/profile", icon: UserCircle },
