@@ -17,7 +17,7 @@ export default function CustomerLayout({
         { name: "Dashboard", href: "/customer/dashboard", icon: LayoutDashboard },
         { name: "Explore Products", href: "/customer/products", icon: ShoppingBag },
         { name: "My Reviews", href: "/customer/reviews", icon: Star },
-        { name: "Chat", href: "/founder/chat", icon: MessageSquare },
+        { name: "Chat", href: "/messages", icon: MessageSquare },
         { name: "Profile", href: "/customer/profile", icon: UserCircle },
     ];
 

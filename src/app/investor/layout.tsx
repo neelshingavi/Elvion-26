@@ -11,9 +11,11 @@ import {
     MessageSquare,
     UserCircle,
     Rocket,
+
     ChevronRight,
     Shield,
     Briefcase
+
 } from "lucide-react";
 
 export default function InvestorLayout({
@@ -28,7 +30,7 @@ export default function InvestorLayout({
         { name: "Discovery", href: "/investor/startups", icon: Search },
         { name: "Deals", href: "/investor/deals", icon: Briefcase },
         { name: "Deal Flow", href: "/investor/dealflow", icon: Kanban },
-        { name: "Chat", href: "/founder/chat", icon: MessageSquare },
+        { name: "Chat", href: "/messages", icon: MessageSquare },
         { name: "Profile", href: "/investor/profile", icon: UserCircle },
     ];
 
