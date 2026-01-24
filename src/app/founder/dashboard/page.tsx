@@ -17,21 +17,47 @@ import {
     Bot,
     Play,
     AlertTriangle,
-    ArrowLeftRight
+    ArrowLeftRight,
+    Bell,
+    Check,
+    X as CloseX,
+    Users,
+    MessageSquare
 } from "lucide-react";
 import { getPrimaryAction } from "@/lib/orchestrator";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { useRouter } from "next/navigation";
 import { createAgentRun } from "@/lib/startup-service";
+import { getConnectionRequests, acceptConnectionRequest, rejectConnectionRequest } from "@/lib/connection-service";
+import { useAuth } from "@/context/AuthContext";
 
 export default function DashboardPage() {
+    const { user: currentUser } = useAuth();
     const { startup, memory, tasks, agentRuns, loading } = useStartup();
     const [selectedTask, setSelectedTask] = useState<any>(null);
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [showNotifications, setShowNotifications] = useState(false);
     const router = useRouter();
+
+    useEffect(() => {
+        if (!currentUser) return;
+        const unsub = getConnectionRequests(currentUser.uid, (reqs) => {
+            setNotifications(reqs);
+        });
+        return () => unsub();
+    }, [currentUser]);
+
+    const handleAccept = async (req: any) => {
+        await acceptConnectionRequest(req.id, req.fromId, req.toId);
+    };
+
+    const handleReject = async (req: any) => {
+        await rejectConnectionRequest(req.id);
+    };
 
     if (loading) {
         return (
@@ -73,7 +99,7 @@ export default function DashboardPage() {
         try {
             await createAgentRun(startup.startupId, agentType);
         } catch (e) {
-            console.error(e);
+            console.error("Agent failed:", e);
         }
     };
 
@@ -86,6 +112,20 @@ export default function DashboardPage() {
             bg: "bg-blue-500/10"
         },
         {
+            name: "Execution Velocity",
+            value: `${Math.round((completedTasks.length / (tasks.length || 1)) * 100)}%`,
+            icon: Rocket,
+            color: "text-indigo-500",
+            bg: "bg-indigo-500/10"
+        },
+        {
+            name: "Active Streams",
+            value: `${activeRuns.length}`,
+            icon: Zap,
+            color: "text-blue-500",
+            bg: "bg-blue-500/10"
+        },
+        {
             name: "Completed Nodes",
             value: `${completedTasks.length}`,
             icon: CheckCircle2,
@@ -93,11 +133,12 @@ export default function DashboardPage() {
             bg: "bg-green-500/10"
         },
         {
-            name: "Risk Rating",
-            value: "Optimized",
-            icon: AlertTriangle,
+            name: "Venture Partners",
+            value: `${currentUser?.uid ? (startup as any)?.connectionCount || 3 : 0}`,
+            icon: Users,
             color: "text-amber-500",
-            bg: "bg-amber-500/10"
+            bg: "bg-amber-500/10",
+            onClick: () => router.push("/founder/chat")
         },
         {
             name: "Strategic IQ",
@@ -136,14 +177,92 @@ export default function DashboardPage() {
                         </button>
                     </div>
                 </div>
-                <div className="flex items-center gap-3 px-6 py-3 bg-white dark:bg-zinc-950 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm">
+                <div className="flex items-center gap-3">
+                    {/* Notification Center Popover */}
                     <div className="relative">
-                        <div className="w-2 h-2 bg-green-500 rounded-full" />
-                        <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping" />
+                        <button
+                            onClick={() => setShowNotifications(!showNotifications)}
+                            className="p-3 bg-white dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm text-zinc-400 hover:text-indigo-500 transition-all relative"
+                        >
+                            <Bell className="w-5 h-5" />
+                            {notifications.length > 0 && (
+                                <div className="absolute top-2.5 right-2.5 w-4 h-4 bg-red-500 text-[8px] font-black text-white flex items-center justify-center rounded-full border-2 border-white dark:border-zinc-950 animate-in zoom-in">
+                                    {notifications.length}
+                                </div>
+                            )}
+                        </button>
+
+                        <AnimatePresence>
+                            {showNotifications && (
+                                <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        className="absolute right-0 mt-3 w-80 bg-white dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 rounded-[2rem] shadow-2xl z-50 overflow-hidden"
+                                    >
+                                        <div className="p-6 border-b border-zinc-50 dark:border-zinc-900 flex items-center justify-between">
+                                            <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Signal Intelligence</h3>
+                                            <button onClick={() => setShowNotifications(false)} className="p-1 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-lg"><X className="w-3 h-3 text-zinc-400" /></button>
+                                        </div>
+                                        <div className="max-h-[400px] overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                                            {notifications.length > 0 ? notifications.map((req) => (
+                                                <div key={req.id} className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 space-y-3 transition-colors hover:border-indigo-500/20">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                                                            <Users className="w-5 h-5 text-indigo-500" />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-[9px] font-black uppercase text-zinc-400">Connection Link</p>
+                                                            <p className="text-xs font-bold text-zinc-900 dark:text-zinc-50 truncate">Protocol Sent: {req.fromId.slice(0, 8)}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <button
+                                                            onClick={() => handleAccept(req)}
+                                                            className="flex items-center justify-center gap-1.5 py-2 bg-black dark:bg-white text-white dark:text-black rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-[1.05] transition-transform"
+                                                        >
+                                                            <Check className="w-3 h-3" /> Connect
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleReject(req)}
+                                                            className="flex items-center justify-center gap-1.5 py-2 bg-white dark:bg-zinc-800 text-zinc-400 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-red-500/10 hover:text-red-500 border border-zinc-100 dark:border-zinc-800 transition-colors"
+                                                        >
+                                                            <CloseX className="w-3 h-3" /> Purge
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )) : (
+                                                <div className="py-12 text-center space-y-4">
+                                                    <div className="w-12 h-12 bg-zinc-50 dark:bg-zinc-900 rounded-full flex items-center justify-center mx-auto border border-zinc-100 dark:border-zinc-800">
+                                                        <Sparkles className="w-5 h-5 text-zinc-300" />
+                                                    </div>
+                                                    <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">No pending signals</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                </>
+                            )}
+                        </AnimatePresence>
                     </div>
-                    <span className="text-[10px] font-black tracking-[0.2em] text-zinc-500 uppercase">
-                        {activeRuns.length > 0 ? `${activeRuns.length} Active Intel Streams` : "Core Engine Idle"}
-                    </span>
+
+                    <button
+                        onClick={() => router.push("/founder/chat")}
+                        className="p-3 bg-white dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm text-zinc-400 hover:text-indigo-500 transition-all relative"
+                    >
+                        <MessageSquare className="w-5 h-5" />
+                    </button>
+                    <div className="flex items-center gap-3 px-6 py-3 bg-white dark:bg-zinc-950 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm">
+                        <div className="relative">
+                            <div className="w-2 h-2 bg-green-500 rounded-full" />
+                            <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping" />
+                        </div>
+                        <span className="text-[10px] font-black tracking-[0.2em] text-zinc-500 uppercase">
+                            {activeRuns.length > 0 ? `${activeRuns.length} Active Intel Streams` : "Core Engine Idle"}
+                        </span>
+                    </div>
                 </div>
             </header>
 
@@ -155,7 +274,11 @@ export default function DashboardPage() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.1 }}
-                        className="group p-8 rounded-[2rem] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all"
+                        onClick={stat.onClick}
+                        className={cn(
+                            "group p-8 rounded-[2rem] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all",
+                            stat.onClick && "cursor-pointer"
+                        )}
                     >
                         <div className="flex flex-col gap-4">
                             <div className={cn("w-12 h-12 rounded-2xl transition-transform group-hover:scale-110 flex items-center justify-center", stat.bg, stat.color)}>
@@ -288,7 +411,8 @@ export default function DashboardPage() {
 
                 {/* Vertical Intel Stream */}
                 <aside className="xl:col-span-3 border-l border-zinc-100 dark:border-zinc-800 pl-12 hidden xl:block">
-                    <div className="sticky top-12 space-y-10">
+                    <div className="sticky top-12 space-y-12">
+
                         <div className="flex items-center gap-3 text-zinc-400 pt-8">
                             <Clock className="w-4 h-4" />
                             <h3 className="text-[10px] font-black tracking-[0.3em] uppercase">Decision Stream</h3>
