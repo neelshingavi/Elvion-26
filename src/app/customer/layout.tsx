@@ -56,8 +56,8 @@ export default function CustomerLayout({
             </div>
 
             {/* Main Content */}
-            <main className="flex-1 md:ml-64 p-8 pt-20 md:pt-8 min-h-screen">
-                <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <main className="flex-1 md:ml-64 p-4 pt-20 md:pt-4 min-h-screen">
+                <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
                     {children}
                 </div>
             </main>
