@@ -41,56 +41,59 @@ interface ValidationResult {
 const ShowMoreCard = ({ title, items, icon: Icon, colorClass, bgClass }: any) => {
     const [expanded, setExpanded] = useState(false);
     const displayItems = items || [];
-    const hasMore = displayItems.length > 2;
+    const hasMore = displayItems.length > 3; // Slight adjustment to allow 3-4 lines as requested
 
     return (
-        <div className={cn(
-            "rounded-3xl border transition-all h-full flex flex-col relative bg-white dark:bg-zinc-950 overflow-hidden",
-            "border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md",
-            bgClass
-        )}>
-            <div className="p-8 pb-4 flex-1 flex flex-col min-w-0">
-                <div className="flex items-center gap-3 mb-6 shrink-0">
-                    <div className={cn("p-2.5 rounded-xl shrink-0", colorClass.replace("text-", "bg-").replace("600", "500/10").replace("500", "500/10"))}>
-                        {Icon && <Icon className={cn("w-4 h-4", colorClass)} />}
+        <motion.div
+            layout
+            className={cn(
+                "rounded-[2.5rem] border transition-all relative bg-white dark:bg-zinc-950 overflow-hidden w-full",
+                "border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md",
+                bgClass
+            )}
+        >
+            <div className="p-10 flex flex-col min-w-0">
+                <div className="flex items-center gap-3 mb-8 shrink-0">
+                    <div className={cn("p-3 rounded-2xl shrink-0", colorClass.replace("text-", "bg-").replace("600", "500/10").replace("500", "500/10"))}>
+                        {Icon && <Icon className={cn("w-5 h-5", colorClass)} />}
                     </div>
-                    <h4 className="font-bold text-[11px] tracking-[0.15em] text-zinc-400 uppercase line-clamp-1">
+                    <h4 className="font-bold text-[11px] tracking-[0.2em] text-zinc-400 uppercase">
                         {title}
                     </h4>
                 </div>
 
                 <div className={cn(
-                    "flex-1 min-w-0 transition-all duration-500 ease-in-out",
-                    expanded ? "opacity-100" : "max-h-[140px] opacity-100 overflow-hidden relative"
+                    "min-w-0 transition-all duration-500 ease-in-out relative",
+                    expanded ? "opacity-100" : "max-h-[160px] overflow-hidden"
                 )}>
-                    <div className="space-y-4">
+                    <div className="space-y-4 pb-4">
                         {displayItems.length > 0 ? displayItems.map((item: string, i: number) => (
-                            <div key={i} className="flex gap-3 min-w-0">
-                                <div className={cn("mt-1.5 w-1.5 h-1.5 rounded-full shrink-0", colorClass.replace("text-", "bg-"))} />
-                                <p className="text-[13px] leading-relaxed text-zinc-600 dark:text-zinc-400 break-words line-clamp-3">
+                            <div key={i} className="flex gap-4 min-w-0">
+                                <div className={cn("mt-2 w-1.5 h-1.5 rounded-full shrink-0", colorClass.replace("text-", "bg-"))} />
+                                <p className="text-[15px] leading-relaxed text-zinc-600 dark:text-zinc-400 break-words">
                                     {item}
                                 </p>
                             </div>
                         )) : <p className="text-zinc-500 italic text-[13px]">No data available.</p>}
                     </div>
                     {!expanded && hasMore && (
-                        <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-white dark:from-zinc-950 to-transparent pointer-events-none" />
+                        <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-white dark:from-zinc-950 to-transparent pointer-events-none" />
                     )}
                 </div>
-            </div>
 
-            {hasMore && (
-                <div className="px-8 pb-8 pt-2 shrink-0">
-                    <button
-                        onClick={() => setExpanded(!expanded)}
-                        className="w-full flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-zinc-50 dark:bg-zinc-900 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all border border-zinc-100 dark:border-zinc-800 shadow-inner"
-                    >
-                        {expanded ? "Show Less" : "Read More"}
-                        {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                    </button>
-                </div>
-            )}
-        </div>
+                {hasMore && (
+                    <div className="pt-6 mt-2 border-t border-zinc-50 dark:border-zinc-900/50">
+                        <button
+                            onClick={() => setExpanded(!expanded)}
+                            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 hover:text-indigo-600 transition-colors"
+                        >
+                            {expanded ? "Show Less" : "Read More"}
+                            {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                        </button>
+                    </div>
+                )}
+            </div>
+        </motion.div>
     );
 };
 
@@ -429,105 +432,102 @@ export default function IdeaValidationPage() {
                                         </div>
                                     </div>
 
-                                    {/* Strategic Intelligence Grid */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-                                        {/* Financial Architecture */}
-                                        <div className="p-10 rounded-[2.5rem] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col min-w-0 overflow-hidden h-full">
-                                            <div className="flex items-center gap-3 mb-10 shrink-0">
-                                                <div className="p-3 bg-emerald-500/10 text-emerald-600 rounded-2xl">
-                                                    <DollarSign className="w-5 h-5" />
-                                                </div>
-                                                <h4 className="font-bold text-[11px] uppercase tracking-[0.2em] text-zinc-400">Capital Architecture (INR)</h4>
+                                    {/* 1. Capital Architecture (Full Width Table) */}
+                                    <div className="w-full p-10 rounded-[3rem] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col min-w-0 overflow-hidden">
+                                        <div className="flex items-center gap-4 mb-10 shrink-0">
+                                            <div className="p-3.5 bg-emerald-500/10 text-emerald-600 rounded-2xl">
+                                                <DollarSign className="w-6 h-6" />
                                             </div>
-
-                                            <div className="grid grid-cols-2 gap-px bg-zinc-100 dark:bg-zinc-800/50 rounded-3xl overflow-hidden border border-zinc-100 dark:border-zinc-800/50 flex-1">
-                                                <div className="p-8 bg-white dark:bg-zinc-950 flex flex-col justify-center min-w-0">
-                                                    <div className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-2 shrink-0">Liquidity</div>
-                                                    <div className="text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight line-clamp-1 break-all">
-                                                        {result.capital_staging?.initial_funds || "N/A"}
-                                                    </div>
-                                                </div>
-                                                <div className="p-8 bg-white dark:bg-zinc-950 flex flex-col justify-center min-w-0">
-                                                    <div className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-2 shrink-0">Acquisition</div>
-                                                    <div className="text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight line-clamp-1 break-all">
-                                                        {result.capital_staging?.marketing_launch || "N/A"}
-                                                    </div>
-                                                </div>
-                                                <div className="p-8 bg-white dark:bg-zinc-950 flex flex-col justify-center min-w-0">
-                                                    <div className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-2 shrink-0">Compliance</div>
-                                                    <div className="text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight line-clamp-1 break-all">
-                                                        {result.capital_staging?.registration_legal || "N/A"}
-                                                    </div>
-                                                </div>
-                                                <div className="p-8 bg-white dark:bg-zinc-950 flex flex-col justify-center min-w-0">
-                                                    <div className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-2 shrink-0">Compute</div>
-                                                    <div className="text-xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight line-clamp-1 break-all">
-                                                        {result.capital_staging?.infrastructure_hardware || "N/A"}
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <h4 className="font-bold text-[12px] uppercase tracking-[0.3em] text-zinc-400">Capital Architecture Intelligence (INR)</h4>
                                         </div>
 
-                                        {/* Market & Human Resources */}
-                                        <div className="grid grid-rows-2 gap-8 h-full">
-                                            <div className="p-10 rounded-[2.5rem] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col justify-center relative overflow-hidden min-w-0">
-                                                <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none">
-                                                    <TrendingUp className="w-32 h-32" />
-                                                </div>
-                                                <div className="flex items-center gap-3 mb-6 shrink-0">
-                                                    <div className="p-3 bg-blue-500/10 text-blue-600 rounded-2xl">
-                                                        <TrendingUp className="w-5 h-5" />
-                                                    </div>
-                                                    <h4 className="font-bold text-[11px] uppercase tracking-[0.2em] text-zinc-400">Market Potential</h4>
-                                                </div>
-                                                <div className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight pr-12 line-clamp-2 break-words">
-                                                    {result.market_size_india || "Calculating..."}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-100 dark:bg-zinc-800/50 rounded-3xl overflow-hidden border border-zinc-100 dark:border-zinc-800/50">
+                                            <div className="p-10 bg-white dark:bg-zinc-950 flex flex-col justify-center min-w-0">
+                                                <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3 shrink-0">Liquidity Strategy</div>
+                                                <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight break-words">
+                                                    {result.capital_staging?.initial_funds || "N/A"}
                                                 </div>
                                             </div>
-
-                                            <div className="p-10 rounded-[2.5rem] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col justify-center min-w-0 overflow-hidden">
-                                                <div className="flex items-center gap-3 mb-6 shrink-0">
-                                                    <div className="p-3 bg-purple-500/10 text-purple-600 rounded-2xl">
-                                                        <Users className="w-5 h-5" />
-                                                    </div>
-                                                    <h4 className="font-bold text-[11px] uppercase tracking-[0.2em] text-zinc-400">Talent Architecture</h4>
+                                            <div className="p-10 bg-white dark:bg-zinc-950 flex flex-col justify-center min-w-0">
+                                                <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3 shrink-0">Acquisition Capital</div>
+                                                <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight break-words">
+                                                    {result.capital_staging?.marketing_launch || "N/A"}
                                                 </div>
-                                                <div className="flex flex-wrap gap-2.5 overflow-hidden">
-                                                    {result.team_required?.map((role, i) => (
-                                                        <span key={i} className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 rounded-xl border border-zinc-100 dark:border-zinc-800/50 whitespace-nowrap overflow-hidden text-ellipsis max-w-[140px]">
-                                                            {role}
-                                                        </span>
-                                                    ))}
+                                            </div>
+                                            <div className="p-10 bg-white dark:bg-zinc-950 flex flex-col justify-center min-w-0">
+                                                <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3 shrink-0">Compliance & Legal</div>
+                                                <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight break-words">
+                                                    {result.capital_staging?.registration_legal || "N/A"}
+                                                </div>
+                                            </div>
+                                            <div className="p-10 bg-white dark:bg-zinc-950 flex flex-col justify-center min-w-0">
+                                                <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3 shrink-0">Infrastructure Depth</div>
+                                                <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 tracking-tight break-words">
+                                                    {result.capital_staging?.infrastructure_hardware || "N/A"}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Classy Refinement Grid */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                                    {/* 2. Market Potential (Full Width) */}
+                                    <div className="w-full p-12 rounded-[3rem] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col justify-center relative overflow-hidden min-w-0">
+                                        <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
+                                            <TrendingUp className="w-64 h-64" />
+                                        </div>
+                                        <div className="flex items-center gap-4 mb-8 shrink-0">
+                                            <div className="p-3.5 bg-blue-500/10 text-blue-600 rounded-2xl">
+                                                <TrendingUp className="w-6 h-6" />
+                                            </div>
+                                            <h4 className="font-bold text-[12px] uppercase tracking-[0.3em] text-zinc-400">Market Potential Assessment</h4>
+                                        </div>
+                                        <div className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight max-w-4xl break-words">
+                                            {result.market_size_india || "Calculating depth..."}
+                                        </div>
+                                    </div>
+
+                                    {/* 3. Talent Architecture (Full Width) */}
+                                    <div className="w-full p-12 rounded-[3rem] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col justify-center min-w-0 overflow-hidden">
+                                        <div className="flex items-center gap-4 mb-10 shrink-0">
+                                            <div className="p-3.5 bg-purple-500/10 text-purple-600 rounded-2xl">
+                                                <Users className="w-6 h-6" />
+                                            </div>
+                                            <h4 className="font-bold text-[12px] uppercase tracking-[0.3em] text-zinc-400">Human Capital Architecture</h4>
+                                        </div>
+                                        <div className="flex flex-wrap gap-4">
+                                            {result.team_required?.map((role, i) => (
+                                                <span key={i} className="px-6 py-3 text-[11px] font-bold uppercase tracking-[0.2em] bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 dark:text-zinc-400 rounded-2xl border border-zinc-100 dark:border-zinc-800/50 whitespace-nowrap">
+                                                    {role}
+                                                </span>
+                                            ))}
+                                            {!result.team_required?.length && <p className="text-zinc-400 italic font-medium">No roles specified.</p>}
+                                        </div>
+                                    </div>
+
+                                    {/* 4. Stacked Collapsible Cards */}
+                                    <div className="w-full space-y-8">
                                         <ShowMoreCard
-                                            title="Strengths"
+                                            title="Operational Strengths"
                                             items={result.pros}
                                             icon={CheckCircle2}
                                             colorClass="text-emerald-500"
                                             bgClass="bg-white"
                                         />
                                         <ShowMoreCard
-                                            title="Structural Risks"
+                                            title="Structural & Market Risks"
                                             items={result.cons}
                                             icon={AlertCircle}
                                             colorClass="text-orange-500"
                                             bgClass="bg-white"
                                         />
                                         <ShowMoreCard
-                                            title="Strategic Roadmap"
+                                            title="Strategic Intelligence Roadmap"
                                             items={result.suggestions}
                                             icon={Send}
                                             colorClass="text-indigo-500"
                                             bgClass="bg-white"
                                         />
                                         <ShowMoreCard
-                                            title="Optimization Plan"
+                                            title="Viability Core Optimization Plan"
                                             items={result.score_improvement_plan}
                                             icon={Zap}
                                             colorClass="text-amber-500"
@@ -535,22 +535,22 @@ export default function IdeaValidationPage() {
                                         />
                                     </div>
 
-                                    {/* Competitors - Minimalist Row */}
-                                    <div className="p-10 rounded-[3rem] bg-zinc-900 border border-white/5 shadow-2xl overflow-hidden relative group min-w-0">
-                                        <div className="absolute top-0 right-0 p-10 opacity-[0.05] group-hover:scale-110 transition-transform duration-700 pointer-events-none">
-                                            <Scale className="w-40 h-40 text-white" />
+                                    {/* Competitors - Final Row */}
+                                    <div className="w-full p-12 rounded-[3rem] bg-zinc-900 border border-white/5 shadow-2xl overflow-hidden relative group min-w-0">
+                                        <div className="absolute top-0 right-0 p-12 opacity-[0.05] group-hover:scale-110 transition-transform duration-700 pointer-events-none">
+                                            <Scale className="w-48 h-48 text-white" />
                                         </div>
-                                        <div className="relative z-10 space-y-8 min-w-0">
-                                            <div className="flex items-center gap-3 shrink-0">
-                                                <div className="p-3 bg-white/10 rounded-2xl">
-                                                    <Scale className="w-5 h-5 text-indigo-400" />
+                                        <div className="relative z-10 space-y-10 min-w-0">
+                                            <div className="flex items-center gap-4 shrink-0">
+                                                <div className="p-3.5 bg-white/10 rounded-2xl">
+                                                    <Scale className="w-6 h-6 text-indigo-400" />
                                                 </div>
-                                                <h4 className="font-bold text-[11px] uppercase tracking-[0.2em] text-zinc-500">Competitive Landscape</h4>
+                                                <h4 className="font-bold text-[12px] uppercase tracking-[0.3em] text-zinc-500">Competitive Intelligence Landscape</h4>
                                             </div>
-                                            <div className="flex flex-wrap gap-3 min-w-0 overflow-hidden">
+                                            <div className="flex flex-wrap gap-4 min-w-0">
                                                 {result.competitors?.map((comp, i) => (
-                                                    <div key={i} className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-[13px] font-bold text-white hover:bg-white/10 transition-colors whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">
-                                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
+                                                    <div key={i} className="flex items-center gap-4 px-8 py-4 rounded-2xl bg-white/5 border border-white/10 text-[15px] font-bold text-white hover:bg-white/10 transition-all">
+                                                        <div className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
                                                         {comp}
                                                     </div>
                                                 ))}
