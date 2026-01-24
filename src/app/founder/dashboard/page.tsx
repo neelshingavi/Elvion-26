@@ -9,7 +9,6 @@ import {
     Clock,
     ChevronRight,
     Activity,
-    Brain,
     LayoutDashboard,
     X,
     FileText,
@@ -19,13 +18,11 @@ import {
     ArrowLeftRight,
     Bell,
     Check,
-    X as CloseX,
     Users,
     MessageSquare,
     Sparkles,
     ArrowUpRight,
     Mail,
-
 } from "lucide-react";
 import { getPrimaryAction } from "@/lib/orchestrator";
 import { formatDistanceToNow } from "date-fns";
@@ -143,7 +140,7 @@ export default function DashboardPage() {
         {
             name: "Strategic IQ",
             value: "85/100",
-            icon: Brain,
+            icon: Target,
             color: "text-purple-600 dark:text-purple-400",
             bg: "bg-purple-500/10"
         },
@@ -244,7 +241,7 @@ export default function DashboardPage() {
                     </div>
 
                     <button
-                        onClick={() => router.push("/messages")}
+                        onClick={() => router.push("/founder/messages")}
                         className="p-4 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm text-zinc-400 hover:text-indigo-500 transition-all"
                     >
                         <MessageSquare className="w-5 h-5" />

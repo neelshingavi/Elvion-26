@@ -229,8 +229,25 @@ export default function TasksPage() {
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
-                            <div className="p-6 overflow-y-auto max-h-[70vh] prose prose-xs dark:prose-invert prose-indigo prose-p:text-xs prose-p:leading-relaxed">
-                                <ReactMarkdown>{selectedTask.aiResponse || "_Processing intelligence..._"}</ReactMarkdown>
+                            <div className="p-8 overflow-y-auto max-h-[70vh]">
+                                <ReactMarkdown
+                                    components={{
+                                        h1: ({ node, ...props }) => <h1 className="text-2xl font-black tracking-tighter mb-6 mt-8 text-zinc-900 dark:text-zinc-50 border-b border-zinc-100 dark:border-zinc-800 pb-2" {...props} />,
+                                        h2: ({ node, ...props }) => <h2 className="text-xl font-bold tracking-tight mb-4 mt-6 text-indigo-600 dark:text-indigo-400" {...props} />,
+                                        h3: ({ node, ...props }) => <h3 className="text-lg font-bold tracking-tight mb-3 mt-4 text-zinc-800 dark:text-zinc-100" {...props} />,
+                                        p: ({ node, ...props }) => <p className="mb-4 leading-relaxed text-zinc-600 dark:text-zinc-300 text-sm font-medium" {...props} />,
+                                        ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-4 space-y-1 text-zinc-600 dark:text-zinc-300 marker:text-indigo-500" {...props} />,
+                                        ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-4 space-y-1 text-zinc-600 dark:text-zinc-300 marker:text-indigo-500" {...props} />,
+                                        li: ({ node, ...props }) => <li className="pl-1 text-sm leading-relaxed" {...props} />,
+                                        code: ({ node, ...props }) => <code className="px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-indigo-500 font-mono text-xs font-bold" {...props} />,
+                                        pre: ({ node, ...props }) => <div className="overflow-x-auto rounded-xl bg-zinc-900 dark:bg-zinc-950 p-4 border border-zinc-800 my-4 shadow-xl"><pre className="text-zinc-50 text-xs font-mono" {...props} /></div>,
+                                        blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-indigo-500 pl-4 py-1 my-4 bg-indigo-50/10 italic text-zinc-500 dark:text-zinc-400" {...props} />,
+                                        strong: ({ node, ...props }) => <strong className="font-black text-zinc-900 dark:text-zinc-100" {...props} />,
+                                        a: ({ node, ...props }) => <a className="text-indigo-500 hover:underline font-bold" {...props} />
+                                    }}
+                                >
+                                    {selectedTask.aiResponse || "_Processing intelligence..._"}
+                                </ReactMarkdown>
                             </div>
                         </motion.div>
                     </div>

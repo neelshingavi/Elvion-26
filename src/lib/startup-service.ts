@@ -70,6 +70,7 @@ export interface Task {
     status: "pending" | "done";
     createdByAgent: string;
     createdAt: any;
+    rating?: 1 | 2 | 3 | 4 | 5; // User rating of AI output quality
 }
 
 export interface AgentRun {
@@ -251,6 +252,12 @@ export const updateTaskStatus = async (taskId: string, status: Task["status"]) =
     await updateDoc(taskRef, { status });
 };
 
+// Save user rating for a completed task
+export const saveTaskRating = async (taskId: string, rating: 1 | 2 | 3 | 4 | 5) => {
+    const taskRef = doc(db, "tasks", taskId);
+    await updateDoc(taskRef, { rating });
+};
+
 // Agent run services
 export const createAgentRun = async (startupId: string, agentType: string) => {
     const docRef = await addDoc(collection(db, "agentRuns"), {
@@ -260,6 +267,20 @@ export const createAgentRun = async (startupId: string, agentType: string) => {
         createdAt: serverTimestamp(),
     });
     return docRef.id;
+};
+
+// Complete an agent run with final status and optional result
+export const completeAgentRun = async (
+    runId: string,
+    status: "success" | "failure",
+    result?: string
+) => {
+    const runRef = doc(db, "agentRuns", runId);
+    await updateDoc(runRef, {
+        status,
+        result: result || null,
+        completedAt: serverTimestamp(),
+    });
 };
 
 export const createTaskDirectly = async (
