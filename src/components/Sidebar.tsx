@@ -18,8 +18,8 @@ import { signOut } from "firebase/auth";
 
 const navItems = [
     { name: "Dashboard", href: "/founder/dashboard", icon: LayoutDashboard },
-    { name: "Timeline", href: "/founder/timeline", icon: History },
     { name: "Idea Check", href: "/founder/idea-validation", icon: Lightbulb },
+    { name: "Timeline", href: "/founder/timeline", icon: History },
     { name: "Roadmap", href: "/founder/planning", icon: Map },
     { name: "Tasks", href: "/founder/tasks", icon: CheckSquare },
     { name: "Matches", href: "/founder/matching", icon: Users },
