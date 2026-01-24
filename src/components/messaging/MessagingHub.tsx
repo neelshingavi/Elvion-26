@@ -29,16 +29,14 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
     const [loadingRooms, setLoadingRooms] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
-    const [currentUserData, setCurrentUserData] = useState<UserData | null>(null);
 
     // Initial Data & Real-time Listeners
     useEffect(() => {
         if (!currentUser) return;
 
-        getUserData(currentUser.uid).then(setCurrentUserData);
-
         // 1. Real-time Connection Listener
         const unsubConnections = getConnectedUsersSnapshot(currentUser.uid, (ids) => {
+            console.log("Connected Users Sync:", ids);
             setConnectedUserIds(ids);
             // Fetch names for anyone missing
             ids.forEach(id => {
@@ -66,9 +64,15 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
             });
         });
 
+        // Lock body scroll to prevent layout jump on focus
+        document.body.style.overflow = "hidden";
+        document.documentElement.style.overflow = "hidden";
+
         return () => {
             unsubConnections();
             unsubRooms();
+            document.body.style.overflow = "unset";
+            document.documentElement.style.overflow = "unset";
         };
     }, [currentUser]);
 
@@ -83,7 +87,7 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
             setMessages(msgs);
             // Immediate scroll to bottom
             setTimeout(() => {
-                scrollRef.current?.scrollIntoView({ behavior: "instant" });
+                scrollRef.current?.scrollIntoView({ behavior: "instant", block: "end" });
             }, 50);
         });
         return () => unsub();
@@ -113,20 +117,20 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
             const msgMatch = item.room?.lastMessage?.toLowerCase().includes(searchTerm.toLowerCase());
             return nameMatch || msgMatch;
         });
-    }, [connectedUserIds, rooms, roomUsers, searchTerm, currentUser]);
+    }, [connectedUserIds, rooms, roomUsers, searchTerm]);
 
     const handleSend = async (e?: React.FormEvent) => {
         e?.preventDefault();
         if (!messageText.trim() || !activeOtherId || !currentUser) return;
 
         const text = messageText;
-        setMessageText(""); // Clear for UX responsiveness
+        setMessageText("");
 
         try {
             await sendMessage(currentUser.uid, activeOtherId, text);
         } catch (error) {
             console.error("Transmission failed:", error);
-            setMessageText(text); // Restore on failure
+            setMessageText(text);
         }
     };
 
@@ -135,11 +139,11 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
     if (!currentUser) return null;
 
     return (
-        <div className="flex h-full bg-white dark:bg-[#09090b] rounded-[3rem] border border-zinc-100 dark:border-zinc-800/50 overflow-hidden shadow-2xl relative overscroll-contain">
+        <div className="flex h-full w-full bg-white dark:bg-[#050505] overflow-hidden relative overscroll-none touch-none">
 
             {/* Conversations List */}
             <div className={cn(
-                "w-full md:w-[380px] border-r border-zinc-50 dark:border-zinc-800/50 flex flex-col bg-zinc-50/20 dark:bg-black/20 backdrop-blur-3xl z-20",
+                "w-full md:w-[380px] border-r border-zinc-200 dark:border-zinc-800/10 flex flex-col bg-zinc-50/50 dark:bg-black/40 backdrop-blur-3xl z-20",
                 activeOtherId ? "hidden md:flex" : "flex"
             )}>
                 <div className="p-8 space-y-6">
@@ -153,7 +157,6 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                     </div>
 
                     <div className="relative group">
-                        <div className="absolute -inset-1 bg-indigo-500/5 rounded-2xl blur-lg group-focus-within:bg-indigo-500/10 transition duration-500" />
                         <div className="relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                             <input
@@ -161,7 +164,7 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                                 placeholder="Locate connection..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all font-medium placeholder:text-zinc-500"
+                                className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all font-medium placeholder:text-zinc-500"
                             />
                         </div>
                     </div>
@@ -190,7 +193,7 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                                     )}
                                 >
                                     <div className="relative shrink-0">
-                                        <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-zinc-200 dark:border-zinc-700 group-hover:scale-105 transition-transform">
+                                        <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-zinc-200 dark:border-zinc-700">
                                             <img
                                                 src={u?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u?.displayName || item.userId}`}
                                                 className="w-full h-full object-cover"
@@ -233,13 +236,13 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
 
             {/* Chat Window */}
             <div className={cn(
-                "flex-1 flex flex-col bg-white dark:bg-[#09090b] relative",
-                !activeOtherId && "hidden md:flex items-center justify-center bg-zinc-50/20 dark:bg-transparent"
+                "flex-1 flex flex-col bg-white dark:bg-[#050505] relative",
+                !activeOtherId && "hidden md:flex items-center justify-center bg-zinc-50/20 dark:bg-[#050505]"
             )}>
                 {activeOtherId ? (
                     <>
                         {/* Header */}
-                        <div className="p-6 md:px-12 border-b border-zinc-50 dark:border-zinc-800/50 flex items-center justify-between z-30 bg-white/80 dark:bg-[#09090b]/80 backdrop-blur-xl">
+                        <div className="p-6 md:px-12 border-b border-zinc-200 dark:border-zinc-800/20 flex items-center justify-between z-30 bg-white/80 dark:bg-[#050505]/80 backdrop-blur-xl">
                             <div className="flex items-center gap-6">
                                 <button
                                     onClick={() => setActiveOtherId(null)}
@@ -256,7 +259,7 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                                                 alt=""
                                             />
                                         </div>
-                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-4 border-white dark:border-[#09090b] rounded-full" />
+                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-4 border-white dark:border-[#050505] rounded-full" />
                                     </div>
                                     <div>
                                         <h3 className="text-sm font-black uppercase tracking-tight text-zinc-900 dark:text-white">
@@ -271,21 +274,10 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <button className="p-3.5 text-zinc-400 hover:text-indigo-500 hover:bg-indigo-500/5 rounded-2xl transition-all border border-transparent hover:border-zinc-100 dark:hover:border-zinc-800">
-                                    <Phone className="w-4.5 h-4.5" />
-                                </button>
-                                <button className="p-3.5 text-zinc-400 hover:text-indigo-500 hover:bg-indigo-500/5 rounded-2xl transition-all border border-transparent hover:border-zinc-100 dark:hover:border-zinc-800">
-                                    <Video className="w-4.5 h-4.5" />
-                                </button>
-                                <button className="p-3.5 text-zinc-400 hover:text-indigo-500 hover:bg-indigo-500/5 rounded-2xl transition-all">
-                                    <MoreHorizontal className="w-4.5 h-4.5" />
-                                </button>
-                            </div>
                         </div>
 
                         {/* Stream Area */}
-                        <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-10 custom-scrollbar bg-gradient-to-b from-zinc-50/10 to-white dark:from-zinc-900/5 dark:to-[#09090b]">
+                        <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-10 custom-scrollbar bg-[#050505]">
                             {messages.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center opacity-20 gap-6">
                                     <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center">
@@ -322,24 +314,19 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                             <div ref={scrollRef} className="h-4" />
                         </div>
 
-                        {/* Interactive Input Hub */}
-                        <div className="p-10 border-t border-zinc-50 dark:border-zinc-800 bg-white dark:bg-[#09090b] z-30 shadow-[0_-20px_40px_rgba(0,0,0,0.02)]">
+                        {/* Interactive Input Hub - Absolute fixed to bottom of container */}
+                        <div className="p-10 border-t border-zinc-200 dark:border-zinc-800/10 bg-white dark:bg-[#050505] z-30">
                             <div className="relative group flex items-end gap-5">
                                 <div className="flex-1 relative">
-                                    <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-[2.2rem] opacity-0 group-focus-within:opacity-[0.05] blur-xl transition duration-500" />
-                                    <div className="relative flex items-center bg-zinc-50 dark:bg-zinc-900/50 rounded-[2.2rem] border border-zinc-100 dark:border-zinc-800 px-6 py-2 transition-all focus-within:border-indigo-500/50 focus-within:bg-white dark:focus-within:bg-zinc-900">
+                                    <div className="relative flex items-center bg-zinc-50 dark:bg-zinc-900/50 rounded-[2.2rem] border border-zinc-100 dark:border-zinc-800 px-6 py-2 transition-all focus-within:ring-1 focus-within:ring-indigo-500/50">
                                         <button className="p-3 text-zinc-400 hover:text-indigo-500 transition-colors">
                                             <Paperclip className="w-5 h-5" />
                                         </button>
                                         <textarea
                                             rows={1}
                                             value={messageText}
-                                            onFocus={() => {
-                                                // Removed redundant scroll that causes UI jump
-                                            }}
                                             onChange={(e) => {
                                                 setMessageText(e.target.value);
-                                                // Auto-resize logic
                                                 e.target.style.height = 'auto';
                                                 e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px';
                                             }}
@@ -385,24 +372,9 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                                 </p>
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4 w-full pt-10">
-                            {[
-                                { icon: Shield, label: "Encrypted" },
-                                { icon: Star, label: "Verified" }
-                            ].map((item, i) => (
-                                <div key={i} className="p-6 bg-zinc-50/50 dark:bg-zinc-950/50 rounded-3xl border border-zinc-100 dark:border-zinc-800/50 flex flex-col items-center gap-3">
-                                    <item.icon className="w-5 h-5 text-indigo-500" />
-                                    <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">{item.label}</span>
-                                </div>
-                            ))}
-                        </div>
                     </div>
                 )}
             </div>
-
-            {/* Aesthetic Background Overlays */}
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none z-0" />
-            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-500/5 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none z-0" />
         </div>
     );
 }

@@ -48,7 +48,7 @@ export default function MatchingPage() {
         });
 
         // 2. Real-time Connection Tracking
-        const unsubSent = getSentRequests(currentUser.uid, (ids) => setSentRequests(ids));
+        const unsubSent = getSentRequests(currentUser.uid, (ids: string[]) => setSentRequests(ids));
 
         const fetchConnections = async () => {
             const myConns = await getConnectedUsers(currentUser.uid);
@@ -124,10 +124,10 @@ export default function MatchingPage() {
                         ))
                     ) : filteredUsers.length > 0 ? (
                         filteredUsers.map((u) => {
-                            const status = getStatus(u.uid);
+                            const status = getStatus(u.uid as string);
                             return (
                                 <motion.div
-                                    key={u.uid}
+                                    key={u.uid as string}
                                     layout
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -243,7 +243,7 @@ export default function MatchingPage() {
                                     <div className="absolute inset-0 bg-white dark:bg-zinc-950 rounded-full -m-1.5" />
                                     <div className="relative w-32 h-32 rounded-full bg-zinc-50 dark:bg-zinc-900 p-1 border border-zinc-100 dark:border-zinc-800 shadow-xl overflow-hidden">
                                         <img
-                                            src={selectedUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedUser.displayName || selectedUser.uid}`}
+                                            src={selectedUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedUser.displayName || (selectedUser as any).uid}`}
                                             className="w-full h-full object-cover"
                                         />
                                     </div>
@@ -297,11 +297,11 @@ export default function MatchingPage() {
 
                                 <div className="pt-10 w-full flex gap-4">
                                     <button
-                                        onClick={() => handleConnect(selectedUser.uid)}
-                                        disabled={getStatus(selectedUser.uid) !== "none"}
+                                        onClick={() => handleConnect((selectedUser as any).uid)}
+                                        disabled={getStatus((selectedUser as any).uid) !== "none"}
                                         className="flex-1 py-4 bg-black dark:bg-white text-white dark:text-black rounded-[1.5rem] font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-black/10 disabled:opacity-50"
                                     >
-                                        {getStatus(selectedUser.uid) === "none" ? "Request Connection" : "Already Traversed"}
+                                        {getStatus((selectedUser as any).uid) === "none" ? "Request Connection" : "Already Traversed"}
                                     </button>
                                     <button
                                         onClick={() => setSelectedUser(null)}

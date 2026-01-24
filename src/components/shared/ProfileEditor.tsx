@@ -92,7 +92,7 @@ export default function ProfileEditor() {
             const { getConnectedUsers } = await import("@/lib/connection-service");
             const { getUserData } = await import("@/lib/startup-service");
             const ids = await getConnectedUsers(user.uid);
-            const profiles = await Promise.all(ids.map(id => getUserData(id)));
+            const profiles = await Promise.all(ids.map((id: string) => getUserData(id)));
             setConnectedUsers(profiles.filter(Boolean) as UserData[]);
         };
         fetchConnectionsList();
