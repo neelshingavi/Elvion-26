@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { geminiModel } from "@/lib/gemini";
+import { callGemini } from "@/lib/gemini";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 
@@ -26,9 +26,7 @@ export async function POST(request: Request) {
             RESPONSE FORMAT: Return your response in clear Markdown. Use bold headers, bullet points, and tables where appropriate to make it look professional.
         `;
 
-        const result = await geminiModel.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+        const text = await callGemini(prompt, false);
 
         // Update task in Firestore
         const taskRef = doc(db, "tasks", taskId);

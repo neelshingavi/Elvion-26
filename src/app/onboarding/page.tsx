@@ -50,10 +50,32 @@ export default function OnboardingPage() {
     const router = useRouter();
     const [step, setStep] = useState(1);
     const [selectedRole, setSelectedRole] = useState<string | null>(null);
-    const [idea, setIdea] = useState("");
-    const [startupName, setStartupName] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Form Data
+    const [formData, setFormData] = useState({
+        name: "",
+        industry: "",
+        idea: "",
+        vision: "",
+        problemStatement: ""
+    });
+
+    // Industries List
+    const industries = [
+        "SaaS / B2B Software",
+        "Consumer App / B2C",
+        "Fintech",
+        "HealthTech",
+        "E-commerce",
+        "EdTech",
+        "Artificial Intelligence",
+        "GreenTech / Sustainability",
+        "Web3 / Blockchain",
+        "Hardware / IoT",
+        "Other"
+    ];
 
     // Timeout helper
     const withTimeout = <T,>(promise: Promise<T>, ms: number = 8000, errorMessage: string = "Request timed out"): Promise<T> => {
@@ -95,23 +117,27 @@ export default function OnboardingPage() {
             console.error("Error saving role:", err);
             setError(err.message || "Failed to save role. Please try again.");
         } finally {
-            // Only stop loading if we're not navigating away or if we encountered an error
-            // If strictly navigating, we might want to keep loading to avoid flash, but safely resetting here is okay too.
-            // If we are setting step 2, we must stop loading.
             setLoading(false);
         }
     };
 
     const handleStartupSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!idea || !startupName || !user) return;
+        if (!user) return;
 
         setLoading(true);
         setError(null);
 
         try {
             await withTimeout(
-                createStartup(user.uid, startupName, idea),
+                createStartup(
+                    user.uid,
+                    formData.name,
+                    formData.industry,
+                    formData.idea,
+                    formData.vision,
+                    formData.problemStatement
+                ),
                 15000,
                 "Startup initialization timed out. Please check your connection."
             );
@@ -203,60 +229,106 @@ export default function OnboardingPage() {
                         </div>
                     </>
                 ) : (
-                    <form onSubmit={handleStartupSubmit} className="max-w-md mx-auto w-full space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                    <form onSubmit={handleStartupSubmit} className="max-w-2xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
                         <button
                             type="button"
                             onClick={() => setStep(1)}
                             className="flex items-center gap-2 text-sm font-bold text-zinc-400 hover:text-black dark:hover:text-white transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4" />
-                            Back
+                            Back to Roles
                         </button>
 
                         <div className="space-y-3">
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-full text-[10px] font-bold tracking-widest uppercase text-zinc-500">
-                                Step 2: The Vision
+                                Step 2: New Project
                             </div>
-                            <h1 className="text-4xl font-bold tracking-tight">
-                                What are you building?
+                            <h1 className="text-3xl font-bold tracking-tight">
+                                Launch Project Workspace
                             </h1>
                             <p className="text-zinc-500">
-                                Describe your startup idea in one or two sentences. Our agents will take it from there.
+                                Your agents will be scoped to this project.
                             </p>
                         </div>
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold mb-2 text-zinc-500">Startup Name</label>
-                                <input
-                                    value={startupName}
-                                    onChange={(e) => setStartupName(e.target.value)}
-                                    placeholder="e.g. FounderFlow"
-                                    className="w-full p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-lg focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all"
-                                    required
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                                        Project Name
+                                    </label>
+                                    <input
+                                        required
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        placeholder="e.g. Acme Corp"
+                                        className="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                                        Industry
+                                    </label>
+                                    <select
+                                        required
+                                        value={formData.industry}
+                                        onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
+                                        className="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all appearance-none"
+                                    >
+                                        <option value="" disabled>Select Industry</option>
+                                        {industries.map(ind => (
+                                            <option key={ind} value={ind}>{ind}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                                    Problem Statement
+                                </label>
+                                <textarea
+                                    value={formData.problemStatement}
+                                    onChange={(e) => setFormData({ ...formData, problemStatement: e.target.value })}
+                                    placeholder="What painful problem are you solving?"
+                                    className="w-full h-24 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all resize-none"
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-bold mb-2 text-zinc-500">The Idea</label>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                                    One-Liner Solution (The Idea)
+                                </label>
                                 <textarea
-                                    value={idea}
-                                    onChange={(e) => setIdea(e.target.value)}
-                                    placeholder="A platform that uses AI agents to help founders scale..."
-                                    className="w-full h-32 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-lg focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all resize-none"
                                     required
+                                    value={formData.idea}
+                                    onChange={(e) => setFormData({ ...formData, idea: e.target.value })}
+                                    placeholder="Describe your solution in one sentence..."
+                                    className="w-full h-24 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all resize-none"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                                    Long-Term Vision (Optional)
+                                </label>
+                                <textarea
+                                    value={formData.vision}
+                                    onChange={(e) => setFormData({ ...formData, vision: e.target.value })}
+                                    placeholder="Where do you see this in 5 years?"
+                                    className="w-full h-24 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all resize-none"
                                 />
                             </div>
 
                             <button
                                 type="submit"
-                                disabled={!idea || !startupName || loading}
+                                disabled={!formData.idea || !formData.name || !formData.industry || loading}
                                 className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-black dark:bg-zinc-50 text-white dark:text-black rounded-2xl font-bold hover:scale-[1.02] transition-all shadow-xl shadow-black/10 disabled:opacity-50"
                             >
                                 {loading ? "Initializing Agents..." : (
                                     <>
                                         <Sparkles className="w-5 h-5" />
-                                        Initialize Startup
+                                        Launch Project Workspace
                                     </>
                                 )}
                             </button>
