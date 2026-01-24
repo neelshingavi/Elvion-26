@@ -42,6 +42,7 @@ export interface UserData {
     role: "founder" | "admin";
     displayName?: string;
     photoURL?: string;
+    bannerURL?: string;
     activeStartupId?: string;
     // Expanded profile fields
     about?: string;
