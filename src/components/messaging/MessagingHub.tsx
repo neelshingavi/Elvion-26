@@ -66,9 +66,13 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
             });
         });
 
+        // Lock body scroll to prevent layout jump on focus
+        document.body.style.overflow = "hidden";
+
         return () => {
             unsubConnections();
             unsubRooms();
+            document.body.style.overflow = "unset";
         };
     }, [currentUser]);
 
@@ -135,7 +139,7 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
     if (!currentUser) return null;
 
     return (
-        <div className="flex h-full bg-white dark:bg-[#09090b] rounded-[3rem] border border-zinc-100 dark:border-zinc-800/50 overflow-hidden shadow-2xl relative overscroll-contain">
+        <div className="flex h-full w-full bg-white dark:bg-[#050505] overflow-hidden relative overscroll-contain">
 
             {/* Conversations List */}
             <div className={cn(
