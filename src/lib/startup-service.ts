@@ -39,7 +39,7 @@ export interface StartupMemory {
 
 export interface UserData {
     uid: string;
-    role: "founder" | "admin";
+    role: "founder" | "admin" | "investor" | "customer" | "job-seeker";
     displayName?: string;
     photoURL?: string;
     bannerURL?: string;

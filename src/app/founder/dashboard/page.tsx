@@ -249,7 +249,7 @@ export default function DashboardPage() {
                     </div>
 
                     <button
-                        onClick={() => router.push("/founder/chat")}
+                        onClick={() => router.push("/messages")}
                         className="p-4 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm text-zinc-400 hover:text-indigo-500 transition-all"
                     >
                         <MessageSquare className="w-5 h-5" />
@@ -298,7 +298,7 @@ export default function DashboardPage() {
                                 </p>
                             </div>
                             <button
-                                onClick={() => router.push('/founder/planning')}
+                                onClick={() => router.push(`/founder/${primaryAction.agentType}`)}
                                 className="flex items-center gap-3 px-8 py-4 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shrink-0 w-fit"
                             >
                                 Execute Protocol

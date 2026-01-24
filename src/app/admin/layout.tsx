@@ -9,7 +9,8 @@ import {
     Users,
     Rocket,
     LogOut,
-    Shield
+    Shield,
+    MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +42,7 @@ export default function AdminLayout({
         { name: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
         { name: "User Base", href: "/admin/users", icon: Users },
         { name: "Startups", href: "/admin/startups", icon: Rocket },
+        { name: "Chat", href: "/admin/messages", icon: MessageSquare },
     ];
 
     return (
@@ -89,7 +91,7 @@ export default function AdminLayout({
 
             {/* Main Content */}
             <main className="flex-1 p-4 overflow-y-auto">
-                <div className="max-w-[1600px] mx-auto">
+                <div className="max-w-[1600px] mx-auto h-full">
                     {children}
                 </div>
             </main>

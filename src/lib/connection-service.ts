@@ -207,6 +207,7 @@ export async function rejectConnectionRequest(requestId: string): Promise<void> 
  * Gets the IDs of all users the specified user is connected to.
  */
 export async function getConnectedUsers(userId: string): Promise<string[]> {
+
     const q = query(
         collection(db, SOCIAL_CONNECTIONS_COLLECTION),
         where("users", "array-contains", userId)

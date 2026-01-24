@@ -11,9 +11,11 @@ import {
     MessageSquare,
     UserCircle,
     Rocket,
+
     ChevronRight,
     Shield,
     Briefcase
+
 } from "lucide-react";
 
 export default function InvestorLayout({
@@ -28,7 +30,7 @@ export default function InvestorLayout({
         { name: "Discovery", href: "/investor/startups", icon: Search },
         { name: "Deals", href: "/investor/deals", icon: Briefcase },
         { name: "Deal Flow", href: "/investor/dealflow", icon: Kanban },
-        { name: "Chat", href: "/founder/chat", icon: MessageSquare },
+        { name: "Chat", href: "/investor/messages", icon: MessageSquare },
         { name: "Profile", href: "/investor/profile", icon: UserCircle },
     ];
 
@@ -105,12 +107,11 @@ export default function InvestorLayout({
             </div>
 
             {/* Main Content */}
-            <main className="flex-1 md:ml-64 p-3 md:p-6 pt-20 md:pt-6 min-h-screen overflow-x-hidden">
-                <div className="max-w-[1600px] mx-auto space-y-12">
+            <main className="flex-1 md:ml-64 flex flex-col h-screen overflow-hidden">
+                <div className="flex-1 h-full overflow-hidden">
                     {children}
                 </div>
             </main>
         </div>
     );
 }
-
