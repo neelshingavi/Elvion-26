@@ -9,9 +9,9 @@ import {
     getRoleAwareStatusLabel,
     ValidityDuration,
     VALIDITY_DURATION_LABELS,
-    createDealTerms,
-    canUserActOnDeal
+    createDealTerms
 } from "@/lib/types/deal";
+import { canUserActOnDeal } from "@/lib/deal-service";
 import {
     X,
     DollarSign,
