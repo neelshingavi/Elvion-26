@@ -25,6 +25,12 @@ import {
     isDealExpired,
     InstrumentType
 } from "./types/deal";
+import {
+    getOrCreateConnection,
+    updateConnectionActivity,
+    isConnectionActive
+} from "./connection-service";
+import { generateDealAnalysis } from "./ai-service";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -78,6 +84,15 @@ export async function createDeal(
         throw new Error("An active deal already exists between these parties for this project.");
     }
 
+    // 1. Explicit Connection Layer
+    const connectionId = await getOrCreateConnection(investorId, founderId, projectId, {
+        projectName: "Project " + projectId.slice(0, 4), // Placeholder or fetch actual
+    });
+
+    if (!(await isConnectionActive(connectionId))) {
+        throw new Error("Cannot create deal: Connection is not ACTIVE.");
+    }
+
     const terms = createDealTerms(investmentAmount, equityPercentage, instrumentType, conditions);
     const now = Timestamp.now();
     const validUntil = calculateValidUntil(validityDays);
@@ -105,6 +120,7 @@ export async function createDeal(
         projectId,
         investorId,
         founderId,
+        connectionId,
         initiatedBy: initiatorRole,
         status: "PROPOSED",
         currentTerms: terms,
@@ -118,7 +134,17 @@ export async function createDeal(
     };
 
     const docRef = await addDoc(collection(db, DEALS_COLLECTION), dealData);
-    return docRef.id;
+    const dealId = docRef.id;
+
+    // 2. Trigger AI Analysis Pipeline (Recipient perspective)
+    const recipientRole = initiatorRole === "FOUNDER" ? "INVESTOR" : "FOUNDER";
+    const fullDeal = { dealId, ...dealData } as Deal;
+    await generateDealAnalysis(fullDeal, recipientRole);
+
+    // 3. Update Connection metadata
+    await updateConnectionActivity(connectionId);
+
+    return dealId;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -302,7 +328,7 @@ export async function counterDeal(
     const newActionRequiredBy: "FOUNDER" | "INVESTOR" = userRole === "FOUNDER" ? "INVESTOR" : "FOUNDER";
 
     const docRef = doc(db, DEALS_COLLECTION, dealId);
-    await updateDoc(docRef, {
+    const updatedDealData = {
         status: targetStatus,
         currentTerms: newTerms,
         versionNumber: deal.versionNumber + 1,
@@ -311,7 +337,16 @@ export async function counterDeal(
         versionHistory: [...deal.versionHistory, newVersion],
         updatedAt: now,
         activityLog: [...deal.activityLog, counterActivity]
-    });
+    };
+
+    await updateDoc(docRef, updatedDealData);
+
+    // AI Analysis for recipient
+    const recipientTarget = userRole === "FOUNDER" ? "INVESTOR" : "FOUNDER";
+    await generateDealAnalysis({ ...deal, ...updatedDealData } as Deal, recipientTarget);
+
+    // Update Connection activity
+    await updateConnectionActivity(deal.connectionId);
 }
 
 /**
