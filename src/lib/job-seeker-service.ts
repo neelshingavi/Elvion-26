@@ -63,7 +63,7 @@ export const getJobMatches = async (profile: JobSeekerProfile): Promise<{ startu
                 matchScore: score,
                 reason: "High alignment with your skill set in AI/ML.",
                 missingSkills: ["Kubernetes"],
-                urgency: score > 80 ? "high" : "medium"
+                urgency: (score > 80 ? "high" : "medium") as "high" | "medium" | "low"
             }
         };
     }).sort((a, b) => b.match.matchScore - a.match.matchScore);
