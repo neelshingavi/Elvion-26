@@ -6,7 +6,7 @@ import { useStartup } from "@/hooks/useStartup";
 import {
     Lightbulb, Send, Loader2, AlertCircle, ArrowRight, DollarSign,
     Users, Target, History, Plus, FileText, CheckCircle2, TrendingUp,
-    Scale, BookOpen, Share2, Download, Trash2, ChevronDown, ChevronUp, Briefcase, Zap
+    Scale, BookOpen, Download, Trash2, ChevronDown, ChevronUp, Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createStartup, getStartupMemory, StartupMemory, deleteStartupMemory } from "@/lib/startup-service";
@@ -40,39 +40,45 @@ interface ValidationResult {
 
 const ShowMoreCard = ({ title, items, icon: Icon, colorClass, borderClass, bgClass }: any) => {
     const [expanded, setExpanded] = useState(false);
-    // Always show all items, but truncate container height if not expanded
     const displayItems = items || [];
-    const hasMore = displayItems.length > 2; // Threshold to trigger "Show More"
+    const hasMore = displayItems.length > 2;
 
     return (
-        <div className={cn("rounded-2xl border transition-all h-full flex flex-col relative overflow-hidden", bgClass, borderClass)}>
-            <div className="p-6 pb-2">
-                <h4 className={cn("font-semibold mb-3 flex items-center gap-2", colorClass)}>
-                    {Icon && <Icon className="w-4 h-4" />}
-                    {title}
-                </h4>
-            </div>
-
-            <div className={cn("px-6 space-y-3 transition-all duration-300", expanded ? "pb-4 max-h-[1000px] overflow-visible" : "overflow-hidden max-h-[160px]")}>
-                {displayItems.length > 0 ? displayItems.map((item: string, i: number) => (
-                    <div key={i} className={cn("text-sm leading-relaxed pl-3 border-l-2", colorClass.replace("text-", "border-").replace("500", "500/20"))}>
-                        {item}
+        <div className={cn(
+            "rounded-3xl border transition-all h-full flex flex-col relative bg-white dark:bg-zinc-950",
+            "border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-md",
+            bgClass
+        )}>
+            <div className="p-6 pb-4">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className={cn("p-2 rounded-xl", colorClass.replace("text-", "bg-").replace("600", "500/10").replace("500", "500/10"))}>
+                        {Icon && <Icon className={cn("w-4 h-4", colorClass)} />}
                     </div>
-                )) : <p className="text-zinc-500 italic text-sm">No specific data available.</p>}
-            </div>
+                    <h4 className="font-bold text-sm tracking-tight text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">
+                        {title}
+                    </h4>
+                </div>
 
-            {/* Gradient fade for collapsed state */}
-            {!expanded && hasMore && (
-                <div className={cn("absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t pointer-events-none",
-                    "from-white dark:from-black to-transparent opacity-emulate")}
-                />
-            )}
+                <div className={cn(
+                    "space-y-4 transition-all duration-500 ease-in-out",
+                    expanded ? "max-h-[1000px] opacity-100" : "max-h-[140px] opacity-100 overflow-hidden"
+                )}>
+                    {displayItems.length > 0 ? displayItems.map((item: string, i: number) => (
+                        <div key={i} className="flex gap-3">
+                            <div className={cn("mt-1.5 w-1.5 h-1.5 rounded-full shrink-0", colorClass.replace("text-", "bg-"))} />
+                            <p className="text-[13px] leading-relaxed text-zinc-600 dark:text-zinc-400">
+                                {item}
+                            </p>
+                        </div>
+                    )) : <p className="text-zinc-500 italic text-[13px]">No data available.</p>}
+                </div>
+            </div>
 
             {hasMore && (
-                <div className="px-6 pb-4 pt-2 mt-auto z-10 relative">
+                <div className="px-6 pb-6 pt-2 mt-auto">
                     <button
                         onClick={() => setExpanded(!expanded)}
-                        className="text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 flex items-center gap-1 transition-colors w-full justify-center py-2 bg-white/50 dark:bg-black/50 backdrop-blur-sm rounded-lg border border-zinc-100 dark:border-zinc-800"
+                        className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all border border-zinc-100 dark:border-zinc-800"
                     >
                         {expanded ? "Show Less" : "Read More"}
                         {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -93,7 +99,6 @@ export default function IdeaValidationPage() {
     const [history, setHistory] = useState<StartupMemory[]>([]);
     const [view, setView] = useState<"input" | "result">("input");
 
-    // Fetch history
     const fetchHistory = async () => {
         if (startup?.startupId) {
             const mems = await getStartupMemory(startup.startupId);
@@ -115,7 +120,7 @@ export default function IdeaValidationPage() {
         try {
             let startupId = startup?.startupId;
             if (!startupId) {
-                startupId = await createStartup(user.uid, "My Startup", "General", idea);
+                startupId = await createStartup(user.uid, "My Startup", idea);
             }
 
             const res = await fetch("/api/validate-idea", {
@@ -152,9 +157,9 @@ export default function IdeaValidationPage() {
 
     const handleDeleteHistory = async (e: React.MouseEvent, memoryId: string) => {
         e.stopPropagation();
-        if (confirm("Are you sure you want to delete this validation result?")) {
+        if (confirm("Permanently delete this validation node?")) {
             await deleteStartupMemory(memoryId);
-            fetchHistory(); // Refresh list
+            fetchHistory();
             if (result && history.find(h => h.id === memoryId)?.content.includes(result.summary)) {
                 setResult(null);
                 setView("input");
@@ -166,194 +171,194 @@ export default function IdeaValidationPage() {
         if (!result) return;
         const doc = new jsPDF();
 
-        // --- Header ---
-        doc.setFillColor(79, 70, 229); // Indigo 600
-        doc.rect(0, 0, 210, 40, 'F');
+        doc.setFillColor(24, 24, 27); // Zinc 900
+        doc.rect(0, 0, 210, 45, 'F');
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(22);
-        doc.text("FounderFlow Report", 20, 25);
-        doc.setFontSize(10);
-        doc.text(`Generated on ${new Date().toLocaleDateString()}`, 150, 25);
+        doc.setFontSize(24);
+        doc.setFont("helvetica", "bold");
+        doc.text("VENTURE VIABILITY REPORT", 20, 28);
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.text(`DATE: ${new Date().toLocaleDateString().toUpperCase()}`, 150, 28);
+        doc.text("FOUNDERFLOW INTEL ENGINE (INDIA)", 20, 36);
 
-        let yPos = 55;
+        let yPos = 65;
 
-        // --- Score & Verdict ---
-        doc.setTextColor(0, 0, 0); // Reset text color to black
+        // Score & Verdict
+        doc.setTextColor(24, 24, 27);
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
-        doc.text(`Viability Score:`, 20, yPos);
+        doc.text("CORE METRICS", 20, yPos);
+        yPos += 10;
+
+        doc.setFontSize(11);
+        doc.text("VIABILITY SCORE:", 20, yPos);
         doc.setFont("helvetica", "normal");
         doc.text(`${result.scoring}/100`, 60, yPos);
 
         doc.setFont("helvetica", "bold");
-        doc.text(`Verdict:`, 100, yPos);
+        doc.text("STRATEGIC VERDICT:", 100, yPos);
         doc.setFont("helvetica", "normal");
-        doc.text(`${result.implementation_verdict}`, 125, yPos);
+        doc.text(`${result.implementation_verdict?.toUpperCase()}`, 145, yPos);
         yPos += 15;
 
-        // --- Summary ---
-        doc.setFontSize(12);
+        // Executive Summary
         doc.setFont("helvetica", "bold");
-        doc.text("Executive Summary", 20, yPos);
+        doc.text("EXECUTIVE SUMMARY", 20, yPos);
         yPos += 7;
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
-        const splitSummary = doc.splitTextToSize(result.summary, 170); // Max width 170
+        const splitSummary = doc.splitTextToSize(result.summary, 170);
         doc.text(splitSummary, 20, yPos);
-        yPos += (splitSummary.length * 5) + 15;
+        yPos += (splitSummary.length * 6) + 15;
 
-        // --- Financials ---
+        // Financials Table
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(12);
-        doc.text("Financial Requirements (India)", 20, yPos);
+        doc.setFontSize(11);
+        doc.text("FINANCIAL ARCHITECTURE (INR)", 20, yPos);
         yPos += 5;
 
         const investmentBody = result.capital_staging ? [
-            ["Initial Funds (Bootstrap)", result.capital_staging.initial_funds],
-            ["Registration & Legal", result.capital_staging.registration_legal],
-            ["Hardware / Infrastructure", result.capital_staging.infrastructure_hardware],
-            ["Marketing & Launch", result.capital_staging.marketing_launch]
-        ] : [["Total estimate", "N/A"]];
+            ["INITIAL FUNDS (BOOTSTRAP)", result.capital_staging.initial_funds],
+            ["GOVERNMENT & LEGAL FILINGS", result.capital_staging.registration_legal],
+            ["INFRASTRUCTURE & COMPUTE", result.capital_staging.infrastructure_hardware],
+            ["GO-TO-MARKET / ACQUISITION", result.capital_staging.marketing_launch]
+        ] : [["DATA", "ANALYSIS INCOMPLETE"]];
 
         autoTable(doc, {
             startY: yPos,
-            head: [["Category", "Estimated Cost (INR)"]],
+            head: [["CATEGORY", "ESTIMATED CAPITAL (₹)"]],
             body: investmentBody,
-            theme: 'grid',
-            headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255] },
-            bodyStyles: { textColor: [0, 0, 0] }, // Ensure black text
-            columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 80 } },
-            margin: { left: 20 }
+            theme: 'striped',
+            headStyles: { fillColor: [24, 24, 27], textColor: [255, 255, 255], fontStyle: 'bold' },
+            bodyStyles: { textColor: [24, 24, 27], fontSize: 9 },
+            margin: { left: 20 },
+            styles: { font: "helvetica" }
         });
 
         // @ts-ignore
-        yPos = doc.lastAutoTable.finalY + 15;
+        yPos = doc.lastAutoTable.finalY + 20;
 
-        // --- Market & Improvements ---
-        doc.text("Market & Strategic Improvements", 20, yPos);
+        // Strategic Roadmap (Improvements)
+        if (yPos > 240) { doc.addPage(); yPos = 25; }
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.text("STRATEGIC REFINEMENT PLAN", 20, yPos);
+        yPos += 7;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        result.score_improvement_plan?.forEach((step, i) => {
+            const stepLines = doc.splitTextToSize(`${i + 1}. ${step}`, 170);
+            doc.text(stepLines, 20, yPos);
+            yPos += (stepLines.length * 5) + 3;
+        });
 
-        const improvements = result.score_improvement_plan?.join("\n\n• ") || "N/A";
+        yPos += 10;
+
+        // Market & Team
+        if (yPos > 240) { doc.addPage(); yPos = 25; }
+        doc.setFont("helvetica", "bold");
+        doc.text("MARKET & HUMAN CAPITAL", 20, yPos);
 
         autoTable(doc, {
             startY: yPos + 5,
-            head: [["Key Details", "Score Improvement Plan"]],
+            head: [["METRIC", "INTELLIGENCE"]],
             body: [
-                [`Market Size: ${result.market_size_india || "N/A"}\n\nTeam: ${result.team_required?.join(", ") || "N/A"}`, `• ${improvements}`]
+                ["MARKET SIZE (INDIA)", result.market_size_india || "N/A"],
+                ["CORE TEAM ROLES", result.team_required?.join(", ").toUpperCase() || "N/A"],
+                ["KEY COMPETITORS", result.competitors?.join(", ").toUpperCase() || "N/A"]
             ],
             theme: 'grid',
-            headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255] },
-            bodyStyles: { textColor: [0, 0, 0] },
+            headStyles: { fillColor: [24, 24, 27], textColor: [255, 255, 255] },
+            bodyStyles: { textColor: [24, 24, 27], fontSize: 9 },
             margin: { left: 20 }
         });
 
-        // @ts-ignore
-        yPos = doc.lastAutoTable.finalY + 15;
-
-        // --- SWOT ---
-        // Check for page break
-        if (yPos > 240) { doc.addPage(); yPos = 20; }
-
-        doc.text("SWOT Analysis", 20, yPos);
-        const maxRows = Math.max(result.pros?.length || 0, result.cons?.length || 0);
-        const swotBody = [];
-        for (let i = 0; i < maxRows; i++) {
-            swotBody.push([
-                result.pros?.[i] || "",
-                result.cons?.[i] || ""
-            ]);
-        }
-
-        autoTable(doc, {
-            startY: yPos + 5,
-            head: [["Strengths", "Weaknesses"]],
-            body: swotBody,
-            theme: 'grid',
-            headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255] },
-            bodyStyles: { textColor: [0, 0, 0] },
-            margin: { left: 20 }
-        });
-
-        doc.save("founderflow-report.pdf");
+        doc.save(`founderflow-${startup?.name || "report"}.pdf`);
     };
 
     return (
-        <div className="max-w-[1600px] mx-auto space-y-6 p-4 md:p-8">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-                        Idea Validator
+        <div className="max-w-7xl mx-auto space-y-12 p-6 md:p-12 animate-in fade-in duration-1000">
+            {/* Minimalist Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-zinc-100 dark:border-zinc-800 pb-10">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-indigo-500">
+                        <Target className="w-3.5 h-3.5" />
+                        Venture Intelligence
+                    </div>
+                    <h1 className="text-5xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50">
+                        Idea <span className="text-zinc-400 dark:text-zinc-600">Validator</span>
                     </h1>
-                    <p className="text-zinc-500 dark:text-zinc-400 text-sm">
-                        Comprehensive market analysis for Indian founders
+                    <p className="text-zinc-500 font-medium text-lg max-w-xl leading-relaxed">
+                        Classify market viability using foundational data sets and Indian economic indicators.
                     </p>
                 </div>
                 {view === "result" && (
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={handleNewValidation}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-lg transition-colors"
+                            className="flex items-center gap-2 px-6 py-3 text-xs font-black uppercase tracking-widest bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-2xl transition-all"
                         >
                             <Plus className="w-4 h-4" />
-                            New Analysis
+                            Reset
                         </button>
                         <button
                             onClick={generatePDF}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-lg shadow-indigo-500/20"
+                            className="flex items-center gap-2 px-6 py-3 text-xs font-black uppercase tracking-widest bg-black dark:bg-zinc-50 text-white dark:text-black rounded-2xl transition-all shadow-xl shadow-black/10 hover:scale-105 active:scale-95"
                         >
                             <Download className="w-4 h-4" />
-                            PDF Report
+                            PDF Extract
                         </button>
                     </div>
                 )}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Main Content */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                {/* Main Hub */}
                 <div className="lg:col-span-9">
                     <AnimatePresence mode="wait">
                         {view === "input" ? (
                             <motion.div
                                 key="input"
-                                initial={{ opacity: 0, scale: 0.98 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.98 }}
-                                transition={{ duration: 0.3 }}
-                                className="max-w-3xl mx-auto mt-8"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                className="max-w-4xl pt-8"
                             >
-                                <form onSubmit={handleSubmit} className="space-y-6">
+                                <form onSubmit={handleSubmit} className="space-y-8">
                                     <div className="relative group">
-                                        <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl opacity-20 group-hover:opacity-30 transition blur-xl"></div>
-                                        <div className="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 p-2">
+                                        <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-[3rem] opacity-0 group-hover:opacity-10 transition duration-500 blur-2xl"></div>
+                                        <div className="relative bg-white dark:bg-zinc-950 rounded-[2.5rem] shadow-sm border border-zinc-200 dark:border-zinc-800 p-3 overflow-hidden">
                                             <textarea
                                                 value={idea}
                                                 onChange={(e) => setIdea(e.target.value)}
-                                                placeholder="Describe your startup idea detail... e.g. 'Instant grocery delivery in Tier 2 cities in India'"
-                                                className="w-full h-48 bg-transparent p-4 text-base md:text-lg border-none focus:ring-0 resize-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none text-zinc-900 dark:text-zinc-100"
+                                                placeholder="Articulate your vision... (e.g. 'Decentralized energy grid for hyper-local communities in Maharashtra')"
+                                                className="w-full h-56 bg-transparent p-10 text-xl md:text-2xl border-none focus:ring-0 resize-none placeholder:text-zinc-300 dark:placeholder:text-zinc-800 focus:outline-none text-zinc-900 dark:text-zinc-100 font-medium leading-normal"
                                                 disabled={loading}
                                             />
-                                            <div className="px-4 py-3 flex justify-between items-center border-t border-zinc-100 dark:border-zinc-800">
-                                                <span className="text-xs text-zinc-400 font-medium">
-                                                    Models trained on Indian Market Data
-                                                </span>
+                                            <div className="px-10 py-6 flex justify-between items-center border-t border-zinc-50 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-900/20">
+                                                <div className="flex items-center gap-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                                                    <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                                                    Ready for Extraction
+                                                </div>
                                                 <button
                                                     type="submit"
                                                     disabled={loading || !idea}
                                                     className={cn(
-                                                        "flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm text-white transition-all transform active:scale-95",
+                                                        "flex items-center gap-3 px-10 py-4 rounded-[1.5rem] font-black text-xs uppercase tracking-widest text-white transition-all transform active:scale-95 shadow-2xl",
                                                         loading || !idea
-                                                            ? "bg-zinc-300 dark:bg-zinc-700 cursor-not-allowed"
-                                                            : "bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-500/20"
+                                                            ? "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed"
+                                                            : "bg-black dark:bg-white dark:text-black hover:scale-105"
                                                     )}
                                                 >
                                                     {loading ? (
                                                         <>
                                                             <Loader2 className="w-4 h-4 animate-spin" />
-                                                            Crunching Numbers...
+                                                            Processing
                                                         </>
                                                     ) : (
                                                         <>
-                                                            Validate Now
+                                                            Analyze Idea
                                                             <ArrowRight className="w-4 h-4" />
                                                         </>
                                                     )}
@@ -364,9 +369,9 @@ export default function IdeaValidationPage() {
 
                                     {error && (
                                         <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 flex items-center gap-3 text-sm"
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            className="p-6 rounded-[2rem] bg-red-500/5 border border-red-500/10 text-red-500 flex items-center gap-4 text-xs font-bold uppercase tracking-widest"
                                         >
                                             <AlertCircle className="w-5 h-5 flex-shrink-0" />
                                             {error}
@@ -378,107 +383,113 @@ export default function IdeaValidationPage() {
                             result && (
                                 <motion.div
                                     key="result"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="space-y-8"
+                                    initial={{ opacity: 0, scale: 0.98 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="space-y-12 pb-20 pt-8"
                                 >
-                                    {/* Top Row: Score & Summary */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-                                        <div className="lg:col-span-3 p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden flex flex-col justify-center items-center text-center">
-                                            <div className="absolute top-0 right-0 p-4 opacity-5">
-                                                <Target className="w-32 h-32 text-zinc-500" />
+                                    {/* Score Card - Classy Refinement */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                                        <div className="lg:col-span-4 p-10 rounded-[2.5rem] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden flex flex-col justify-center items-center text-center">
+                                            <div className="absolute top-0 right-0 p-8 opacity-[0.02]">
+                                                <Target className="w-48 h-48 text-zinc-950 dark:text-zinc-50" />
                                             </div>
-                                            <div className="text-sm font-bold uppercase tracking-wider text-zinc-500 mb-2">Viability Score</div>
-                                            <div className="relative inline-flex items-center justify-center">
-                                                <svg className="w-32 h-32 transform -rotate-90">
-                                                    <circle cx="64" cy="64" r="60" stroke="#e5e7eb" strokeWidth="8" fill="transparent" className="dark:stroke-zinc-800" />
-                                                    <circle cx="64" cy="64" r="60" stroke={result.scoring > 75 ? "#10b981" : result.scoring > 50 ? "#eab308" : "#ef4444"} strokeWidth="8" fill="transparent" strokeDasharray={`${result.scoring * 3.77} 377`} strokeLinecap="round" />
+                                            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-8">Viability Matrix</div>
+                                            <div className="relative">
+                                                <svg className="w-44 h-44 transform -rotate-90">
+                                                    <circle cx="88" cy="88" r="80" stroke="#f4f4f5" strokeWidth="4" fill="transparent" className="dark:stroke-zinc-900" />
+                                                    <circle cx="88" cy="88" r="80" stroke="#6366f1" strokeWidth="6" fill="transparent" strokeDasharray={`${result.scoring * 5.02} 502`} strokeLinecap="round" className="transition-all duration-1000 ease-out" />
                                                 </svg>
-                                                <span className={cn("absolute text-4xl font-black",
-                                                    result.scoring > 75 ? "text-green-600" : result.scoring > 50 ? "text-yellow-500" : "text-red-500"
-                                                )}>
-                                                    {result.scoring}
-                                                </span>
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                    <span className="text-6xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50">
+                                                        {result.scoring}
+                                                    </span>
+                                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Index</span>
+                                                </div>
                                             </div>
-                                            <div className="mt-4 px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-full text-zinc-900 dark:text-zinc-100 font-bold text-sm">
+                                            <div className="mt-10 px-6 py-2 bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-black text-[10px] rounded-full uppercase tracking-widest">
                                                 {result.implementation_verdict}
                                             </div>
                                         </div>
 
-                                        <div className="lg:col-span-9 p-8 rounded-2xl bg-gradient-to-br from-indigo-50 to-white dark:from-zinc-900 dark:to-black border border-indigo-100 dark:border-zinc-800/50 shadow-sm flex flex-col justify-center">
-                                            <h3 className="font-semibold text-indigo-900 dark:text-indigo-100 mb-4 flex items-center gap-2 text-lg">
-                                                <Lightbulb className="w-5 h-5 text-indigo-500" />
-                                                Executive Summary
-                                            </h3>
-                                            <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed text-lg">
+                                        <div className="lg:col-span-8 p-12 rounded-[2.5rem] bg-zinc-50 dark:bg-zinc-900/30 border border-zinc-100 dark:border-zinc-800 flex flex-col justify-center">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <div className="p-2.5 bg-white dark:bg-zinc-800 rounded-xl shadow-sm">
+                                                    <Lightbulb className="w-5 h-5 text-indigo-500" />
+                                                </div>
+                                                <h3 className="font-black text-xs uppercase tracking-[0.2em] text-zinc-400">Executive Summary</h3>
+                                            </div>
+                                            <p className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 leading-[1.4]">
                                                 {result.summary}
                                             </p>
                                         </div>
                                     </div>
 
-                                    {/* Landscape Metrics Grid - Aligned Heights */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-                                        {/* Financial Breakdown */}
-                                        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm h-full flex flex-col">
-                                            <div className="flex items-center gap-3 mb-6">
-                                                <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                                    {/* Strategic Intelligence Grid */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+                                        {/* Pure Minimalist Financials */}
+                                        <div className="p-10 rounded-[2.5rem] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col h-full">
+                                            <div className="flex items-center gap-3 mb-10">
+                                                <div className="p-2.5 bg-green-500/10 text-green-600 rounded-xl">
                                                     <DollarSign className="w-5 h-5" />
                                                 </div>
-                                                <h4 className="font-semibold text-lg">Financial Estimates (INR)</h4>
+                                                <h4 className="font-black text-xs uppercase tracking-[0.2em] text-zinc-400">Capital Architecture (INR)</h4>
                                             </div>
 
-                                            <div className="grid grid-cols-2 gap-4 flex-1">
-                                                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 flex flex-col justify-center">
-                                                    <div className="text-xs text-zinc-500 mb-1">Initial Funds</div>
-                                                    <div className="font-bold text-zinc-900 dark:text-zinc-100 text-lg">
+                                            <div className="grid grid-cols-2 gap-px bg-zinc-100 dark:bg-zinc-800 rounded-3xl overflow-hidden border border-zinc-100 dark:border-zinc-800 flex-1">
+                                                <div className="p-8 bg-white dark:bg-zinc-950">
+                                                    <div className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">Initial Liquidity</div>
+                                                    <div className="text-xl font-black text-zinc-900 dark:text-zinc-50 uppercase tracking-tighter">
                                                         {result.capital_staging?.initial_funds || "N/A"}
                                                     </div>
                                                 </div>
-                                                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 flex flex-col justify-center">
-                                                    <div className="text-xs text-zinc-500 mb-1">Launch Marketing</div>
-                                                    <div className="font-bold text-zinc-900 dark:text-zinc-100 text-lg">
+                                                <div className="p-8 bg-white dark:bg-zinc-950">
+                                                    <div className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">Marketing Ops</div>
+                                                    <div className="text-xl font-black text-zinc-900 dark:text-zinc-50 uppercase tracking-tighter">
                                                         {result.capital_staging?.marketing_launch || "N/A"}
                                                     </div>
                                                 </div>
-                                                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 flex flex-col justify-center">
-                                                    <div className="text-xs text-zinc-500 mb-1">Registration/Legal</div>
-                                                    <div className="font-bold text-zinc-900 dark:text-zinc-100 text-base">
+                                                <div className="p-8 bg-white dark:bg-zinc-950">
+                                                    <div className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">Legal Compliance</div>
+                                                    <div className="text-xl font-black text-zinc-900 dark:text-zinc-50 uppercase tracking-tighter">
                                                         {result.capital_staging?.registration_legal || "N/A"}
                                                     </div>
                                                 </div>
-                                                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 flex flex-col justify-center">
-                                                    <div className="text-xs text-zinc-500 mb-1">Hardware/Infra</div>
-                                                    <div className="font-bold text-zinc-900 dark:text-zinc-100 text-base">
+                                                <div className="p-8 bg-white dark:bg-zinc-950">
+                                                    <div className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-2">Hard Asset Cost</div>
+                                                    <div className="text-xl font-black text-zinc-900 dark:text-zinc-50 uppercase tracking-tighter">
                                                         {result.capital_staging?.infrastructure_hardware || "N/A"}
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* Market & Team - Split Vertical */}
-                                        <div className="flex flex-col gap-6 h-full">
-                                            <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex-1 flex flex-col justify-center">
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                                        {/* Market & Human Resources */}
+                                        <div className="flex flex-col gap-8 h-full">
+                                            <div className="p-10 rounded-[2.5rem] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm flex-1 flex flex-col justify-center relative overflow-hidden">
+                                                <div className="absolute top-0 right-0 p-8 opacity-[0.02]">
+                                                    <TrendingUp className="w-32 h-32" />
+                                                </div>
+                                                <div className="flex items-center gap-3 mb-6">
+                                                    <div className="p-2.5 bg-blue-500/10 text-blue-600 rounded-xl">
                                                         <TrendingUp className="w-5 h-5" />
                                                     </div>
-                                                    <h4 className="font-semibold text-lg">Market Size (India)</h4>
+                                                    <h4 className="font-black text-xs uppercase tracking-[0.2em] text-zinc-400">Market Potential</h4>
                                                 </div>
-                                                <div className="text-xl font-bold text-zinc-900 dark:text-zinc-100 pl-1">
+                                                <div className="text-2xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50 leading-tight pr-12">
                                                     {result.market_size_india || "Analyzing..."}
                                                 </div>
                                             </div>
 
-                                            <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex-1 flex flex-col justify-center">
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
+                                            <div className="p-10 rounded-[2.5rem] bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-sm flex-1 flex flex-col justify-center">
+                                                <div className="flex items-center gap-3 mb-6">
+                                                    <div className="p-2.5 bg-purple-500/10 text-purple-600 rounded-xl">
                                                         <Users className="w-5 h-5" />
                                                     </div>
-                                                    <h4 className="font-semibold text-lg">Team Needs</h4>
+                                                    <h4 className="font-black text-xs uppercase tracking-[0.2em] text-zinc-400">Team Allocation</h4>
                                                 </div>
-                                                <div className="flex flex-wrap gap-2 mt-2">
+                                                <div className="flex flex-wrap gap-2.5">
                                                     {result.team_required?.map((role, i) => (
-                                                        <span key={i} className="px-3 py-1 text-sm font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-lg">
+                                                        <span key={i} className="px-4 py-2 text-[11px] font-black uppercase tracking-widest bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 rounded-xl border border-zinc-100 dark:border-zinc-800">
                                                             {role}
                                                         </span>
                                                     ))}
@@ -487,47 +498,58 @@ export default function IdeaValidationPage() {
                                         </div>
                                     </div>
 
-                                    {/* Expandable Info Cards - Same Heights */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
-                                        <div className="h-full">
-                                            <ShowMoreCard
-                                                title="Strengths"
-                                                items={result.pros}
-                                                icon={CheckCircle2}
-                                                colorClass="text-green-600"
-                                                bgClass="bg-green-50/20 dark:bg-green-900/10"
-                                                borderClass="border-green-100 dark:border-green-900/20"
-                                            />
+                                    {/* Classy Refinement Grid */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                                        <ShowMoreCard
+                                            title="Strengths"
+                                            items={result.pros}
+                                            icon={CheckCircle2}
+                                            colorClass="text-emerald-500"
+                                            bgClass="bg-white"
+                                        />
+                                        <ShowMoreCard
+                                            title="Structural Risks"
+                                            items={result.cons}
+                                            icon={AlertCircle}
+                                            colorClass="text-orange-500"
+                                            bgClass="bg-white"
+                                        />
+                                        <ShowMoreCard
+                                            title="Strategic Roadmap"
+                                            items={result.suggestions}
+                                            icon={Send}
+                                            colorClass="text-indigo-500"
+                                            bgClass="bg-white"
+                                        />
+                                        <ShowMoreCard
+                                            title="Optimization Plan"
+                                            items={result.score_improvement_plan}
+                                            icon={Zap}
+                                            colorClass="text-amber-500"
+                                            bgClass="bg-white"
+                                        />
+                                    </div>
+
+                                    {/* Competitors - Minimalist Row */}
+                                    <div className="p-10 rounded-[2.5rem] bg-zinc-900 border border-zinc-800 shadow-2xl overflow-hidden relative group">
+                                        <div className="absolute top-0 right-0 p-10 opacity-[0.05] group-hover:scale-110 transition-transform duration-700">
+                                            <Scale className="w-40 h-40 text-white" />
                                         </div>
-                                        <div className="h-full">
-                                            <ShowMoreCard
-                                                title="Risks"
-                                                items={result.cons}
-                                                icon={AlertCircle}
-                                                colorClass="text-red-500"
-                                                bgClass="bg-red-50/20 dark:bg-red-900/10"
-                                                borderClass="border-red-100 dark:border-red-900/20"
-                                            />
-                                        </div>
-                                        <div className="h-full">
-                                            <ShowMoreCard
-                                                title="Next Steps"
-                                                items={result.suggestions}
-                                                icon={Send}
-                                                colorClass="text-indigo-600"
-                                                bgClass="bg-indigo-50/20 dark:bg-indigo-900/10"
-                                                borderClass="border-indigo-100 dark:border-indigo-900/20"
-                                            />
-                                        </div>
-                                        <div className="h-full">
-                                            <ShowMoreCard
-                                                title="Score Improvements"
-                                                items={result.score_improvement_plan}
-                                                icon={Zap}
-                                                colorClass="text-amber-600"
-                                                bgClass="bg-amber-50/20 dark:bg-amber-900/10"
-                                                borderClass="border-amber-100 dark:border-amber-900/20"
-                                            />
+                                        <div className="relative z-10 space-y-8">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2.5 bg-white/10 rounded-xl">
+                                                    <Scale className="w-5 h-5 text-indigo-400" />
+                                                </div>
+                                                <h4 className="font-black text-xs uppercase tracking-[0.2em] text-zinc-500">Competitive Landscape</h4>
+                                            </div>
+                                            <div className="flex flex-wrap gap-4">
+                                                {result.competitors?.map((comp, i) => (
+                                                    <div key={i} className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-sm font-bold text-white hover:bg-white/10 transition-colors">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                                                        {comp}
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
 
@@ -537,50 +559,46 @@ export default function IdeaValidationPage() {
                     </AnimatePresence>
                 </div>
 
-                {/* Right Sidebar - History */}
-                <div className="lg:col-span-3 border-l border-zinc-200 dark:border-zinc-800 pl-0 lg:pl-8">
-                    <div className="sticky top-8">
-                        <div className="flex items-center gap-2 mb-6 text-zinc-500">
+                {/* Vertical History Rail */}
+                <div className="lg:col-span-3 border-l border-zinc-100 dark:border-zinc-800 pl-12 hidden lg:block">
+                    <div className="sticky top-12 space-y-10">
+                        <div className="flex items-center gap-3 text-zinc-400 pt-8">
                             <History className="w-4 h-4" />
-                            <span className="text-xs font-bold uppercase tracking-wider">Validation History</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em]">Temporal Registry</span>
                         </div>
-                        <div className="space-y-3 max-h-[calc(100vh-150px)] overflow-y-auto pr-2 custom-scrollbar">
-                            {history.map((mem) => {
+                        <div className="space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto pr-6 custom-scrollbar">
+                            {history.length > 0 ? history.map((mem) => {
                                 let data;
                                 try { data = JSON.parse(mem.content); } catch (e) { return null; }
 
                                 return (
                                     <div
                                         key={mem.id}
-                                        className="w-full text-left p-3 rounded-xl hover:bg-white dark:hover:bg-zinc-900 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all group relative cursor-pointer"
+                                        className="w-full text-left p-6 rounded-3xl hover:bg-zinc-50 dark:hover:bg-zinc-900/50 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all group relative cursor-pointer"
                                         onClick={() => loadFromHistory(mem)}
                                     >
-                                        <div className="flex items-center justify-between mb-1.5">
-                                            <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded",
+                                        <div className="flex items-center justify-between mb-3">
+                                            <span className={cn("text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider",
                                                 data.scoring > 70 ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
                                             )}>
-                                                {data.scoring}/100
+                                                {data.scoring} PQ
                                             </span>
                                             <button
                                                 onClick={(e) => handleDeleteHistory(e, mem.id)}
-                                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 text-red-500 rounded transition-all"
-                                                title="Delete result"
+                                                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-500 hover:text-white dark:hover:bg-red-500 rounded-lg transition-all text-zinc-400"
+                                                title="Drop Record"
                                             >
                                                 <Trash2 className="w-3 h-3" />
                                             </button>
                                         </div>
-                                        <div className="text-xs font-medium text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                                        <div className="text-[11px] font-bold text-zinc-500 dark:text-zinc-500 line-clamp-3 leading-relaxed group-hover:text-zinc-900 dark:group-hover:text-zinc-100 uppercase tracking-tighter transition-colors">
                                             {data.summary}
-                                        </div>
-                                        <div className="text-[10px] text-zinc-400 mt-1">
-                                            {mem.timestamp?.toDate ? new Date(mem.timestamp.toDate()).toLocaleDateString() : 'Just now'}
                                         </div>
                                     </div>
                                 );
-                            })}
-                            {!history.length && (
-                                <div className="text-xs text-zinc-400 italic text-center py-8">
-                                    No history found.
+                            }) : (
+                                <div className="text-[10px] text-zinc-300 font-black uppercase tracking-widest text-center py-10 opacity-50">
+                                    Zero Records Found
                                 </div>
                             )}
                         </div>
