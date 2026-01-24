@@ -4,7 +4,8 @@ import {
     ShoppingBag,
     MessageSquare,
     Settings,
-    Star
+    Star,
+    UserCircle
 } from "lucide-react";
 
 export default function CustomerLayout({
@@ -16,7 +17,8 @@ export default function CustomerLayout({
         { name: "Dashboard", href: "/customer/dashboard", icon: LayoutDashboard },
         { name: "Explore Products", href: "/customer/products", icon: ShoppingBag },
         { name: "My Reviews", href: "/customer/reviews", icon: Star },
-        { name: "Profile", href: "/customer/profile", icon: Settings },
+        { name: "Chat", href: "/founder/chat", icon: MessageSquare },
+        { name: "Profile", href: "/customer/profile", icon: UserCircle },
     ];
 
     return (

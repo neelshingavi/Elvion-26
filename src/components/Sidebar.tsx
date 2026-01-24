@@ -10,6 +10,7 @@ import {
     Map,
     CheckSquare,
     Users,
+    MessageSquare,
     LogOut,
     UserCircle
 } from "lucide-react";
@@ -23,6 +24,7 @@ const navItems = [
     { name: "Roadmap", href: "/founder/planning", icon: Map },
     { name: "Tasks", href: "/founder/tasks", icon: CheckSquare },
     { name: "Matches", href: "/founder/matching", icon: Users },
+    { name: "Chat", href: "/founder/chat", icon: MessageSquare },
     { name: "Profile", href: "/founder/profile", icon: UserCircle },
 ];
 
