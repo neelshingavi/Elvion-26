@@ -112,6 +112,20 @@ export const getConnectionRequests = (uid: string, callback: (requests: any[]) =
     });
 };
 
+export const getConnectedUsersSnapshot = (uid: string, callback: (ids: string[]) => void) => {
+    const q = query(
+        collection(db, "connections"),
+        where("userIds", "array-contains", uid)
+    );
+    return onSnapshot(q, (snap) => {
+        const connectionList = snap.docs.map(doc => {
+            const data = doc.data() as Connection;
+            return data.userIds.find(id => id !== uid);
+        }).filter(Boolean) as string[];
+        callback(connectionList);
+    });
+};
+
 export const getConnectedUsers = async (uid: string) => {
     const q = query(
         collection(db, "connections"),
