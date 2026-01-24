@@ -261,6 +261,22 @@ export const createAgentRun = async (startupId: string, agentType: string) => {
     return docRef.id;
 };
 
+export const createTaskDirectly = async (
+    startupId: string,
+    title: string,
+    description: string,
+    priority: "low" | "medium" | "high" = "medium"
+) => {
+    return await addDoc(collection(db, "tasks"), {
+        startupId,
+        title,
+        description,
+        status: "pending",
+        priority,
+        createdAt: serverTimestamp()
+    });
+};
+
 
 export const getAgentRuns = async (startupId: string): Promise<AgentRun[]> => {
     const q = query(
