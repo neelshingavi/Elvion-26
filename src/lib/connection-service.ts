@@ -1,185 +1,242 @@
 import { db } from "./firebase";
 import {
     collection,
-    addDoc,
-    getDocs,
     query,
     where,
-    serverTimestamp,
+    getDocs,
+    addDoc,
     updateDoc,
     doc,
+    Timestamp,
+    limit,
+    orderBy,
     onSnapshot,
-    setDoc
+    serverTimestamp,
+    getDoc
 } from "firebase/firestore";
+import { Connection, ConnectionStatus } from "./types/connection";
 
+// Shape of an individual social connection request (used in dashboards & profile)
 export interface ConnectionRequest {
     id: string;
     fromId: string;
     toId: string;
     status: "pending" | "accepted" | "rejected";
-    timestamp: any;
+    createdAt?: Timestamp | null;
 }
 
-export interface Connection {
-    id: string;
-    userIds: string[];
-    createdAt: any;
-}
+// Collection for social/matching connections between users
+const SOCIAL_CONNECTIONS_COLLECTION = "connections";
+const CONNECTION_REQUESTS_COLLECTION = "connection_requests";
 
-export const sendConnectionRequest = async (fromId: string, toId: string) => {
-    // Prevent self-connection
-    if (fromId === toId) return;
+// Collection for project-scoped deals (Investor-Founder)
+const PROJECT_CONNECTIONS_COLLECTION = "project_connections";
 
-    // Check if request already exists
+// ═══════════════════════════════════════════════════════════════════════════
+// PROJECT-SCOPED CONNECTIONS (DEAL FLOW)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Ensures a project-scoped connection exists between an investor and founder.
+ */
+export async function getOrCreateConnection(
+    investorId: string,
+    founderId: string,
+    projectId: string,
+    metadata?: Connection["metadata"]
+): Promise<string> {
     const q = query(
-        collection(db, "connection_requests"),
-        where("fromId", "==", fromId),
-        where("toId", "==", toId)
+        collection(db, PROJECT_CONNECTIONS_COLLECTION),
+        where("investorId", "==", investorId),
+        where("founderId", "==", founderId),
+        where("projectId", "==", projectId),
+        limit(1)
     );
-    const snap = await getDocs(q);
-    if (!snap.empty) return;
 
-    await addDoc(collection(db, "connection_requests"), {
-        fromId,
-        toId,
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+        return snapshot.docs[0].id;
+    }
+
+    const now = Timestamp.now();
+    const newConnection: Omit<Connection, "connectionId"> = {
+        investorId,
+        founderId,
+        projectId,
+        status: "ACTIVE",
+        createdAt: now,
+        lastActivityAt: now,
+        metadata
+    };
+
+    const docRef = await addDoc(collection(db, PROJECT_CONNECTIONS_COLLECTION), newConnection);
+    return docRef.id;
+}
+
+/**
+ * Get all active project connections for a user.
+ */
+export async function getConnectionsForUser(userId: string, role: "INVESTOR" | "FOUNDER"): Promise<Connection[]> {
+    const field = role === "INVESTOR" ? "investorId" : "founderId";
+    const q = query(
+        collection(db, PROJECT_CONNECTIONS_COLLECTION),
+        where(field, "==", userId),
+        orderBy("lastActivityAt", "desc")
+    );
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(d => ({ connectionId: d.id, ...d.data() } as Connection));
+}
+
+/**
+ * Update the last activity timestamp on a project connection.
+ */
+export async function updateConnectionActivity(connectionId: string): Promise<void> {
+    const docRef = doc(db, PROJECT_CONNECTIONS_COLLECTION, connectionId);
+    await updateDoc(docRef, {
+        lastActivityAt: Timestamp.now()
+    });
+}
+
+/**
+ * Verify if a project connection is active.
+ */
+export async function isConnectionActive(connectionId: string): Promise<boolean> {
+    const docRef = doc(db, PROJECT_CONNECTIONS_COLLECTION, connectionId);
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) return false;
+    return (snap.data() as Connection).status === "ACTIVE";
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SOCIAL CONNECTIONS (MATCHING SYSTEM)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Sends a connection request from one user to another.
+ */
+export async function sendConnectionRequest(fromId: string, toId: string) {
+    return await addDoc(collection(db, CONNECTION_REQUESTS_COLLECTION), {
+        from: fromId,
+        to: toId,
         status: "pending",
-        timestamp: serverTimestamp()
-    });
-
-    // Also add to recipient's notifications
-    await addDoc(collection(db, "notifications"), {
-        userId: toId,
-        type: "connection_request",
-        fromId,
-        message: "sent you a connection request",
-        read: false,
-        timestamp: serverTimestamp()
-    });
-};
-
-export const acceptConnectionRequest = async (requestId: string, fromId: string, toId: string) => {
-    const requestRef = doc(db, "connection_requests", requestId);
-    await updateDoc(requestRef, { status: "accepted" });
-
-    // Create a bidirectional connection record
-    const connectionId = [fromId, toId].sort().join("_");
-    await setDoc(doc(db, "connections", connectionId), {
-        userIds: [fromId, toId],
         createdAt: serverTimestamp()
     });
+}
 
-    // Notify the sender
-    await addDoc(collection(db, "notifications"), {
-        userId: fromId,
-        type: "connection_accepted",
-        fromId: toId,
-        message: "accepted your connection request",
-        read: false,
-        timestamp: serverTimestamp()
-    });
-
-    // Increment connection count for both (cached in user doc for speed)
-    const updateCount = async (uid: string) => {
-        const userRef = doc(db, "users", uid);
-        // Simple increment logic (in production use increment() field value)
-        const userDoc = await getDocs(query(collection(db, "users"), where("uid", "==", uid)));
-        if (!userDoc.empty) {
-            const currentCount = userDoc.docs[0].data().connectionCount || 0;
-            await updateDoc(doc(db, "users", userDoc.docs[0].id), {
-                connectionCount: currentCount + 1
-            });
-        }
-    };
-    await updateCount(fromId);
-    await updateCount(toId);
-};
-
-export const rejectConnectionRequest = async (requestId: string) => {
-    const requestRef = doc(db, "connection_requests", requestId);
-    await updateDoc(requestRef, { status: "rejected" });
-};
-
-export const getConnectionRequests = (uid: string, callback: (requests: any[]) => void) => {
+/**
+ * Subscribe to incoming pending connection requests for a target user.
+ * Used by the founder dashboard to render notifications.
+ */
+export function getConnectionRequests(
+    userId: string,
+    callback: (reqs: ConnectionRequest[]) => void
+) {
     const q = query(
-        collection(db, "connection_requests"),
-        where("toId", "==", uid),
-        where("status", "==", "pending")
+        collection(db, CONNECTION_REQUESTS_COLLECTION),
+        where("to", "==", userId),
+        where("status", "==", "pending"),
+        orderBy("createdAt", "desc")
     );
 
-    return onSnapshot(q, (snap) => {
-        const requests = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return onSnapshot(q, (snapshot) => {
+        const requests: ConnectionRequest[] = snapshot.docs.map((d) => {
+            const data = d.data() as any;
+            return {
+                id: d.id,
+                fromId: data.from,
+                toId: data.to,
+                status: data.status ?? "pending",
+                createdAt: data.createdAt ?? null
+            };
+        });
         callback(requests);
     });
-};
+}
 
-export const getConnectedUsersSnapshot = (uid: string, callback: (ids: string[]) => void) => {
-    const q = query(
-        collection(db, "connections"),
-        where("userIds", "array-contains", uid)
-    );
-    return onSnapshot(q, (snap) => {
-        const connectionList = snap.docs.map(doc => {
-            const data = doc.data() as Connection;
-            return data.userIds.find(id => id !== uid);
-        }).filter(Boolean) as string[];
-        callback(connectionList);
+/**
+ * Accept a pending connection request and materialize a social connection.
+ */
+export async function acceptConnectionRequest(
+    requestId: string,
+    fromId: string,
+    toId: string
+): Promise<void> {
+    // 1. Mark request as accepted
+    const reqRef = doc(db, CONNECTION_REQUESTS_COLLECTION, requestId);
+    await updateDoc(reqRef, {
+        status: "accepted",
+        respondedAt: serverTimestamp()
     });
-};
 
-export const getConnectedUsers = async (uid: string) => {
-    const q = query(
-        collection(db, "connections"),
-        where("userIds", "array-contains", uid)
+    // 2. Create (or reuse) a social connection document
+    const existing = await getDocs(
+        query(
+            collection(db, SOCIAL_CONNECTIONS_COLLECTION),
+            where("users", "array-contains", fromId)
+        )
     );
-    const snap = await getDocs(q);
-    const connectionList = snap.docs.map(doc => {
-        const data = doc.data() as Connection;
-        return data.userIds.find(id => id !== uid);
-    }).filter(Boolean) as string[];
 
-    return connectionList;
-};
+    const alreadyConnected = existing.docs.some((d) => {
+        const users = (d.data() as any).users as string[] | undefined;
+        return users && users.includes(fromId) && users.includes(toId);
+    });
 
-export const getRelationshipStatus = (uid1: string, uid2: string, callback: (status: "none" | "pending" | "connected") => void) => {
-    // 1. Check connections
-    const connectionId = [uid1, uid2].sort().join("_");
-    const unsubConnection = onSnapshot(doc(db, "connections", connectionId), (connDoc) => {
-        if (connDoc.exists()) {
-            callback("connected");
-            return;
-        }
-
-        // 2. Check pending requests (sent by either)
-        const qRequest = query(
-            collection(db, "connection_requests"),
-            where("status", "==", "pending"),
-            where("fromId", "in", [uid1, uid2])
-        );
-
-        onSnapshot(qRequest, (snap) => {
-            const hasPending = snap.docs.some(d => {
-                const data = d.data();
-                return (data.fromId === uid1 && data.toId === uid2) || (data.fromId === uid2 && data.toId === uid1);
-            });
-            if (hasPending) {
-                callback("pending");
-            } else {
-                callback("none");
-            }
+    if (!alreadyConnected) {
+        await addDoc(collection(db, SOCIAL_CONNECTIONS_COLLECTION), {
+            users: [fromId, toId],
+            status: "ACTIVE" satisfies ConnectionStatus,
+            createdAt: serverTimestamp()
         });
+    }
+}
+
+/**
+ * Reject / dismiss a pending connection request.
+ */
+export async function rejectConnectionRequest(requestId: string): Promise<void> {
+    const reqRef = doc(db, CONNECTION_REQUESTS_COLLECTION, requestId);
+    await updateDoc(reqRef, {
+        status: "rejected",
+        respondedAt: serverTimestamp()
+    });
+}
+
+/**
+ * Gets the IDs of all users the specified user is connected to.
+ */
+export async function getConnectedUsers(userId: string): Promise<string[]> {
+
+    const q = query(
+        collection(db, SOCIAL_CONNECTIONS_COLLECTION),
+        where("users", "array-contains", userId)
+    );
+
+    const snapshot = await getDocs(q);
+    const connectedIds: string[] = [];
+
+    snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        const otherId = data.users.find((id: string) => id !== userId);
+        if (otherId) connectedIds.push(otherId);
     });
 
-    return unsubConnection;
-};
+    return connectedIds;
+}
 
-export const getSentRequests = (uid: string, callback: (targetIds: string[]) => void) => {
+/**
+ * Subscribes to real-time sent requests for a user.
+ */
+export function getSentRequests(userId: string, callback: (ids: string[]) => void) {
     const q = query(
-        collection(db, "connection_requests"),
-        where("fromId", "==", uid),
+        collection(db, CONNECTION_REQUESTS_COLLECTION),
+        where("from", "==", userId),
         where("status", "==", "pending")
     );
 
-    return onSnapshot(q, (snap) => {
-        callback(snap.docs.map(doc => doc.data().toId));
+    return onSnapshot(q, (snapshot) => {
+        const ids = snapshot.docs.map(doc => doc.data().to);
+        callback(ids);
     });
-};
+}
