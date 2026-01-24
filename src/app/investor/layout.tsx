@@ -5,7 +5,9 @@ import {
     Kanban,
     PieChart,
     Settings,
-    LogOut
+    LogOut,
+    MessageSquare,
+    UserCircle
 } from "lucide-react";
 
 export default function InvestorLayout({
@@ -17,7 +19,8 @@ export default function InvestorLayout({
         { name: "Dashboard", href: "/investor/dashboard", icon: LayoutDashboard },
         { name: "Discover", href: "/investor/startups", icon: Search },
         { name: "Deal Flow", href: "/investor/dealflow", icon: Kanban },
-        { name: "Profile", href: "/investor/profile", icon: Settings },
+        { name: "Chat", href: "/founder/chat", icon: MessageSquare },
+        { name: "Profile", href: "/investor/profile", icon: UserCircle },
     ];
 
     return (

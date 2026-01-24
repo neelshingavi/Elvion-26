@@ -10,7 +10,6 @@ import {
     ChevronRight,
     Activity,
     Brain,
-    Sparkles,
     LayoutDashboard,
     X,
     FileText,
@@ -22,7 +21,9 @@ import {
     Check,
     X as CloseX,
     Users,
-    MessageSquare
+    MessageSquare,
+    Sparkles,
+    Mail
 } from "lucide-react";
 import { getPrimaryAction } from "@/lib/orchestrator";
 import { formatDistanceToNow } from "date-fns";
@@ -94,10 +95,21 @@ export default function DashboardPage() {
     const primaryAction = getPrimaryAction(startup);
     const activeRuns = agentRuns.filter(r => r.status === "running");
 
-    const manualTriggerAgent = async (agentType: string) => {
+    const handleAgentAction = async (agent: any) => {
         if (!startup) return;
         try {
-            await createAgentRun(startup.startupId, agentType);
+            if (agent.id === "ppt" || agent.id === "mailer") {
+                const { createTaskDirectly } = await import("@/lib/startup-service");
+                const title = agent.id === "ppt" ? "Generate Pitch Deck" : "Dispatch Newsletter";
+                const desc = agent.id === "ppt"
+                    ? "Generate a comprehensive pitch deck based on validated roadmap nodes."
+                    : "Draft and dispatch the weekly ecosystem newsletter to venture partners.";
+
+                await createTaskDirectly(startup.startupId, title, desc, "high");
+                router.push("/founder/tasks");
+                return;
+            }
+            await createAgentRun(startup.startupId, agent.id);
         } catch (e) {
             console.error("Agent failed:", e);
         }
@@ -153,6 +165,8 @@ export default function DashboardPage() {
         { id: "planner", name: "Strategic Planner", description: "Roadmaps & Milestones", icon: Target },
         { id: "researcher", name: "Market Researcher", description: "Competitor Analysis", icon: Activity },
         { id: "drafter", name: "Content Drafter", description: "Pitch Decks & Memos", icon: FileText },
+        { id: "ppt", name: "PPT Deck Builder", description: "Visual Presentation Vector", icon: Sparkles },
+        { id: "mailer", name: "Newsletter Mailer", description: "Ecosystem Outreach", icon: Mail },
     ];
 
     return (
@@ -351,7 +365,7 @@ export default function DashboardPage() {
                                         <p className="text-[11px] text-zinc-400 font-medium uppercase tracking-widest">{agent.description}</p>
                                     </div>
                                     <button
-                                        onClick={() => manualTriggerAgent(agent.id)}
+                                        onClick={() => handleAgentAction(agent)}
                                         className="relative z-10 mt-2 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all border border-zinc-100 dark:border-zinc-800"
                                     >
                                         <Play className="w-3 h-3" />
