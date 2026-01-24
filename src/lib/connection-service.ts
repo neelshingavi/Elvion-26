@@ -228,6 +228,30 @@ export async function getConnectedUsers(userId: string): Promise<string[]> {
 }
 
 /**
+ * Real-time subscription to connected user IDs.
+ * Returns an unsubscribe function.
+ */
+export function getConnectedUsersSnapshot(
+    userId: string,
+    callback: (connectedIds: string[]) => void
+): () => void {
+    const q = query(
+        collection(db, SOCIAL_CONNECTIONS_COLLECTION),
+        where("users", "array-contains", userId)
+    );
+
+    return onSnapshot(q, (snapshot) => {
+        const connectedIds: string[] = [];
+        snapshot.docs.forEach(doc => {
+            const data = doc.data();
+            const otherId = data.users.find((id: string) => id !== userId);
+            if (otherId) connectedIds.push(otherId);
+        });
+        callback(connectedIds);
+    });
+}
+
+/**
  * Subscribes to real-time sent requests for a user.
  */
 export function getSentRequests(userId: string, callback: (ids: string[]) => void) {

@@ -158,13 +158,11 @@ export async function getDealsForUser(userId: string): Promise<Deal[]> {
     // Query for deals where user is either founder or investor
     const founderQuery = query(
         collection(db, DEALS_COLLECTION),
-        where("founderId", "==", userId),
-        orderBy("updatedAt", "desc")
+        where("founderId", "==", userId)
     );
     const investorQuery = query(
         collection(db, DEALS_COLLECTION),
-        where("investorId", "==", userId),
-        orderBy("updatedAt", "desc")
+        where("investorId", "==", userId)
     );
 
     const [founderSnap, investorSnap] = await Promise.all([

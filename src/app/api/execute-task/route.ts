@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { callGemini } from "@/lib/gemini";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 
 export async function POST(request: Request) {
     try {

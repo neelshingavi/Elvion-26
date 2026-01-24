@@ -4,6 +4,36 @@ import { useStartup } from "@/hooks/useStartup";
 import { History, Zap, Brain, MessageSquare, Clock, AlertCircle, Target, Rocket } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+
+const ExpandableText = ({ text }: { text: string }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const shouldTruncate = text.length > 200;
+
+    if (!shouldTruncate) {
+        return <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">{text}</p>;
+    }
+
+    return (
+        <div className="space-y-2">
+            <p className={cn(
+                "text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium transition-all",
+                !isExpanded && "line-clamp-4"
+            )}>
+                {text}
+            </p>
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setIsExpanded(!isExpanded);
+                }}
+                className="text-[10px] uppercase font-black tracking-widest text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400"
+            >
+                {isExpanded ? "Read Less" : "Read More"}
+            </button>
+        </div>
+    );
+};
 
 export default function TimelinePage() {
     const { memory, loading } = useStartup();
@@ -59,17 +89,15 @@ export default function TimelinePage() {
                                     </span>
                                 </div>
                                 <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-all group-hover:border-zinc-300 dark:group-hover:border-zinc-700">
-                                    <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
-                                        {(() => {
-                                            if (log.type !== "agent-output") return log.content;
-                                            try {
-                                                const parsed = JSON.parse(log.content);
-                                                return parsed.summary || log.content;
-                                            } catch (e) {
-                                                return log.content;
-                                            }
-                                        })()}
-                                    </p>
+                                    <ExpandableText text={(() => {
+                                        if (log.type !== "agent-output") return log.content;
+                                        try {
+                                            const parsed = JSON.parse(log.content);
+                                            return parsed.summary || log.content;
+                                        } catch (e) {
+                                            return log.content;
+                                        }
+                                    })()} />
                                 </div>
                             </div>
                         </div>
