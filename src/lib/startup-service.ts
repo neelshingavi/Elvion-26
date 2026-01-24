@@ -40,6 +40,8 @@ export interface StartupMemory {
 export interface UserData {
     uid: string;
     role: "founder" | "admin";
+    displayName?: string;
+    photoURL?: string;
     activeStartupId?: string;
     // Expanded profile fields
     about?: string;
@@ -51,6 +53,9 @@ export interface UserData {
     accountStatus?: "active" | "suspended"; // [NEW]
     lastLoginAt?: any; // [NEW]
     createdAt: any;
+    connectionCount?: number;
+    industries?: string[];
+    idea?: string;
 }
 
 export interface Task {
@@ -96,6 +101,22 @@ export const getUserData = async (uid: string): Promise<UserData | null> => {
 export const setActiveStartupId = async (uid: string, startupId: string) => {
     const userRef = doc(db, "users", uid);
     await setDoc(userRef, { activeStartupId: startupId }, { merge: true });
+};
+
+export const getAllUsers = async (currentUid: string): Promise<UserData[]> => {
+    const q = query(collection(db, "users"), where("uid", "!=", currentUid));
+    const snap = await getDocs(q);
+    return snap.docs.map(doc => ({ uid: doc.id, ...doc.data() })) as UserData[];
+};
+
+export const getActiveStartup = async (uid: string): Promise<Startup | null> => {
+    const user = await getUserData(uid);
+    if (!user?.activeStartupId) return null;
+    const snap = await getDoc(doc(db, "startups", user.activeStartupId));
+    if (snap.exists()) {
+        return { startupId: snap.id, ...snap.data() } as Startup;
+    }
+    return null;
 };
 
 // Startup services

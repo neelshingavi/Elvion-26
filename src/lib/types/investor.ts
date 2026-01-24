@@ -88,3 +88,38 @@ export interface InvestorActivityLog {
     timestamp: any;
     ipAddress?: string;
 }
+
+export type InvestmentStage = "PRE_SEED" | "SEED" | "SERIES_A" | "SERIES_B";
+export type PortfolioStatus = "ACTIVE" | "EXITED" | "WRITTEN_OFF";
+
+export interface InvestorPortfolio {
+    portfolioId: string;
+    investorId: string;
+    projectId: string;
+    investmentStage: InvestmentStage;
+    investmentDate: any;
+    ownershipPercentage?: number;
+    investmentAmount?: number;
+    status: PortfolioStatus;
+    createdAt: any;
+}
+
+export interface InvestorNote {
+    noteId: string;
+    investorId: string;
+    projectId: string;
+    noteContent: string;
+    createdAt: any;
+}
+
+export interface PortfolioSummary {
+    totalStartups: number;
+    activeCount: number;
+    healthScore: number;
+    riskDistribution: {
+        low: number;
+        medium: number;
+        high: number;
+    };
+    stageDistribution: Record<InvestmentStage, number>;
+}

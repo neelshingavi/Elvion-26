@@ -5,14 +5,22 @@ import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { updateProfile, sendPasswordResetEmail, getAuth } from "firebase/auth";
-import { User, Mail, Save, Phone, MapPin, GraduationCap, Briefcase, Award, Clock, ShieldCheck, Lock, Loader2, Link, Plus, Trash2, Star, Github, Linkedin, Globe } from "lucide-react";
+import {
+    User, Mail, Save, Phone, MapPin, GraduationCap, Briefcase,
+    Award, Clock, ShieldCheck, Lock, Loader2, Link, Plus,
+    Trash2, Star, Github, Linkedin, Globe, X, ExternalLink, Users
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { UserData } from "@/lib/startup-service";
 
 export default function ProfileEditor() {
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [resetSent, setResetSent] = useState(false);
+    const [connectedUsers, setConnectedUsers] = useState<UserData[]>([]);
+    const [showConnections, setShowConnections] = useState(false);
 
     // Profile Data
     const [formData, setFormData] = useState({
@@ -24,6 +32,7 @@ export default function ProfileEditor() {
         phone: "",
         education: "",
         location: "",
+        photoURL: "",
         socialLinks: { linkedin: "", twitter: "", website: "" },
         projects: [] as Array<{ name: string, description: string, role: string, link: string }>,
         score: 0
@@ -45,6 +54,7 @@ export default function ProfileEditor() {
                     phone: data.phone || "",
                     education: data.education || "",
                     location: data.location || "",
+                    photoURL: data.photoURL || "",
                     socialLinks: data.socialLinks || { linkedin: "", twitter: "", website: "" },
                     projects: data.projects || [],
                     score: data.score || 0
@@ -52,6 +62,17 @@ export default function ProfileEditor() {
             }
         };
         fetchProfile();
+
+        // Fetch connections
+        const fetchConnections = async () => {
+            if (!user) return;
+            const { getConnectedUsers } = await import("@/lib/connection-service");
+            const { getUserData } = await import("@/lib/startup-service");
+            const ids = await getConnectedUsers(user.uid);
+            const profiles = await Promise.all(ids.map(id => getUserData(id)));
+            setConnectedUsers(profiles.filter(Boolean) as UserData[]);
+        };
+        fetchConnections();
     }, [user]);
 
     const handleUpdate = async (e: React.FormEvent) => {
@@ -70,6 +91,7 @@ export default function ProfileEditor() {
                 phone: formData.phone,
                 education: formData.education,
                 location: formData.location,
+                photoURL: formData.photoURL,
                 socialLinks: formData.socialLinks,
                 projects: formData.projects,
                 score: formData.score
@@ -174,6 +196,9 @@ export default function ProfileEditor() {
 
                         <div className="flex flex-wrap gap-4">
                             <InputField label="Current Location" icon={MapPin} name="location" placeholder="Mumbai, IN" />
+                            <InputField label="Avatar Source (URL)" icon={Plus} name="photoURL" placeholder="https://..." />
+                        </div>
+                        <div className="flex flex-wrap gap-4">
                             <InputField label="Education Hub" icon={GraduationCap} name="education" placeholder="Computer Science" />
                         </div>
 
@@ -390,9 +415,64 @@ export default function ProfileEditor() {
                                 <p className="text-[11px] font-black uppercase">Founder</p>
                             </div>
                         </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowConnections(true)}
+                            className="w-full mt-2 p-3 rounded-xl bg-indigo-500/5 border border-indigo-500/10 text-indigo-500 font-black text-[10px] uppercase tracking-widest hover:bg-indigo-500/10 transition-all"
+                        >
+                            Explore Connections ({connectedUsers.length})
+                        </button>
                     </div>
                 </div>
             </form>
+
+            {/* Connections Overlay */}
+            <AnimatePresence>
+                {showConnections && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-8">
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            onClick={() => setShowConnections(false)}
+                            className="absolute inset-0 bg-zinc-950/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="relative w-full max-w-md bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl border border-zinc-100 dark:border-zinc-800 p-8"
+                        >
+                            <div className="flex items-center justify-between mb-8">
+                                <h3 className="text-xl font-black tracking-tight">Venture Partners</h3>
+                                <button onClick={() => setShowConnections(false)} className="p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-colors">
+                                    <X className="w-5 h-5 text-zinc-400" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                {connectedUsers.length > 0 ? connectedUsers.map((u) => (
+                                    <div key={u.uid} className="flex items-center gap-4 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 group hover:border-indigo-500/20 transition-all">
+                                        <div className="w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 flex items-center justify-center overflow-hidden border border-zinc-100 dark:border-zinc-800 shadow-sm">
+                                            <img src={u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.displayName || u.uid}`} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 truncate">{u.displayName}</h4>
+                                            <p className="text-[10px] font-black uppercase text-indigo-500 tracking-widest truncate">{u.role || "Founder"}</p>
+                                        </div>
+                                        <button className="p-2 text-zinc-400 hover:text-indigo-500 transition-colors">
+                                            <ExternalLink className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                )) : (
+                                    <div className="text-center py-12 space-y-4">
+                                        <Users className="w-12 h-12 text-zinc-100 dark:text-zinc-800 mx-auto" />
+                                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest leading-relaxed"> No verified connections found <br /> in the network registry. </p>
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
