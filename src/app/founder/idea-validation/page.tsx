@@ -61,7 +61,7 @@ export default function IdeaValidationPage() {
         try {
             let startupId = startup?.startupId;
             if (!startupId) {
-                startupId = await createStartup(user.uid, "My Startup", idea);
+                startupId = await createStartup(user.uid, "My Startup", "General", idea);
             }
 
             const res = await fetch("/api/validate-idea", {
