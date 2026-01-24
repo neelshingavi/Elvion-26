@@ -59,13 +59,12 @@ export default function DealFlowPage() {
 
     return (
         <div className="h-[calc(100vh-140px)] flex flex-col space-y-8">
-            <header className="flex-none space-y-2">
-                <div className="flex items-center gap-2">
-                    <Tag className="w-4 h-4 text-indigo-500" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Deal Management</span>
+            <header className="flex-none space-y-4">
+                <div className="flex items-center gap-3">
+                    <div className="px-3 py-1 bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-[0.3em] rounded-lg border border-indigo-500/10">Pipeline Intel</div>
                 </div>
-                <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                    Deal Flow
+                <h1 className="text-5xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50">
+                    Deal <span className="text-zinc-400 dark:text-zinc-600">Flow</span>
                 </h1>
             </header>
 
@@ -75,12 +74,12 @@ export default function DealFlowPage() {
                         const stageDeals = deals.filter(d => d.stage === stage);
                         return (
                             <div key={stage} className="w-[320px] flex flex-col bg-zinc-50 dark:bg-zinc-900/30 rounded-[2rem] border border-zinc-100 dark:border-zinc-800/50 p-4">
-                                <div className="flex items-center justify-between mb-6 px-3">
-                                    <h3 className="font-bold uppercase text-[10px] tracking-widest text-zinc-500">
+                                <div className="flex items-center justify-between mb-8 px-4">
+                                    <h3 className="font-black uppercase text-[11px] tracking-[0.3em] text-zinc-400">
                                         {stage.replace(/_/g, " ")}
                                     </h3>
-                                    <span className="bg-zinc-200/50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-bold px-2 py-0.5 rounded">
-                                        {stageDeals.length} Assets
+                                    <span className="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 text-[11px] font-black px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-zinc-700/50">
+                                        {stageDeals.length}
                                     </span>
                                 </div>
 
@@ -96,15 +95,19 @@ export default function DealFlowPage() {
                                                 className="bg-white dark:bg-zinc-900 p-8 rounded-[2rem] border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-xl hover:border-indigo-500/20 transition-all cursor-grab active:cursor-grabbing group relative overflow-hidden flex flex-col min-w-0"
                                             >
                                                 <div className="flex justify-between items-start mb-8 relative z-10 gap-4 shrink-0 min-w-0">
-                                                    <div className="space-y-2 flex-1 min-w-0">
+                                                    <div className="space-y-3 flex-1 min-w-0">
                                                         <Link href={`/investor/project/${deal.startupId}`} className="block group/link">
-                                                            <h4 className="font-bold text-base tracking-tight leading-tight group-hover/link:text-indigo-500 transition-colors line-clamp-2 break-words">
-                                                                {deal.startup?.name || deal.startup?.idea}
+                                                            <div className="flex items-center gap-2 mb-1.5 opacity-60 group-hover/link:opacity-100 transition-opacity">
+                                                                <span className="text-[9px] font-black uppercase tracking-[0.2em]">{deal.startup?.industry || "Stealth Node"}</span>
+                                                                <ArrowRight className="w-3 h-3 -rotate-45" />
+                                                            </div>
+                                                            <h4 className="font-black text-lg text-zinc-900 dark:text-zinc-50 tracking-tight leading-none group-hover/link:text-indigo-500 transition-colors uppercase truncate">
+                                                                {deal.startup?.name || "Anonymous Venture"}
                                                             </h4>
                                                         </Link>
-                                                        <div className="flex items-center gap-2 text-[10px] text-zinc-400 font-bold uppercase tracking-widest line-clamp-1">
-                                                            <Clock className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">Updated 2d ago</span>
-                                                        </div>
+                                                        <p className="text-[12px] font-medium text-zinc-500 line-clamp-2 leading-relaxed italic">
+                                                            {deal.startup?.idea || "Synthesizing market opportunities..."}
+                                                        </p>
                                                     </div>
                                                     <button className="text-zinc-300 hover:text-indigo-500 transition-colors shrink-0">
                                                         <MoreHorizontal className="w-5 h-5" />

@@ -32,7 +32,7 @@ export default function DiscoverStartupsPage() {
     );
 
     return (
-        <div className="space-y-12 pb-24 max-w-7xl mx-auto">
+        <div className="space-y-12 pb-24 max-w-full mx-auto animate-in fade-in duration-700">
             <header className="space-y-4">
                 <div className="flex items-center gap-2">
                     <Rocket className="w-4 h-4 text-indigo-500" />

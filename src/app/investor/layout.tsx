@@ -103,8 +103,8 @@ export default function InvestorLayout({
             </div>
 
             {/* Main Content */}
-            <main className="flex-1 md:ml-64 p-6 md:p-12 pt-24 md:pt-12 min-h-screen overflow-x-hidden">
-                <div className="max-w-6xl mx-auto space-y-12">
+            <main className="flex-1 md:ml-64 p-3 md:p-6 pt-20 md:pt-6 min-h-screen overflow-x-hidden">
+                <div className="max-w-[1600px] mx-auto space-y-12">
                     {children}
                 </div>
             </main>
