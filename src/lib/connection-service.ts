@@ -134,6 +134,7 @@ export function getConnectionRequests(
     callback: (reqs: ConnectionRequest[]) => void
 ) {
     const q = query(
+
         collection(db, CONNECTION_REQUESTS_COLLECTION),
         where("to", "==", userId),
         where("status", "==", "pending"),
@@ -145,6 +146,7 @@ export function getConnectionRequests(
             const data = d.data() as any;
             return {
                 id: d.id,
+
                 fromId: data.from,
                 toId: data.to,
                 status: data.status ?? "pending",

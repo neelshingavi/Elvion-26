@@ -107,8 +107,9 @@ export default function InvestorLayout({
             </div>
 
             {/* Main Content */}
-            <main className="flex-1 md:ml-64 flex flex-col h-screen overflow-hidden">
-                <div className="flex-1 h-full overflow-hidden">
+            {/* Main Content */}
+            <main className="flex-1 md:ml-64 flex flex-col h-screen overflow-hidden pt-16 md:pt-0">
+                <div className="flex-1 h-full overflow-y-auto p-4 md:p-8">
                     {children}
                 </div>
             </main>
