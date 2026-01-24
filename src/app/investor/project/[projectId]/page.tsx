@@ -101,7 +101,7 @@ export default function InvestorProjectDashboard() {
     }
 
     return (
-        <div className="space-y-12 pb-24 animate-in fade-in duration-700">
+        <div className="space-y-12 pb-24 max-w-full mx-auto animate-in fade-in duration-700">
             {/* Project Header Snapshot */}
             <header className="bg-white dark:bg-zinc-900/50 p-8 rounded-[2rem] border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row justify-between items-start md:items-center shadow-sm gap-8 transition-all hover:shadow-md">
                 <div className="space-y-4">
@@ -232,8 +232,8 @@ export default function InvestorProjectDashboard() {
                                         <div className="flex justify-between items-end">
                                             <span className="text-sm font-bold text-zinc-300">{risk.label}</span>
                                             <span className={`text-[10px] font-black tracking-widest uppercase ${risk.data?.severity === "HIGH" ? "text-red-500" :
-                                                    risk.data?.severity === "MEDIUM" ? "text-amber-500" :
-                                                        "text-green-500"
+                                                risk.data?.severity === "MEDIUM" ? "text-amber-500" :
+                                                    "text-green-500"
                                                 }`}>{risk.data?.severity || "VALIDATING"}</span>
                                         </div>
                                         <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -242,8 +242,8 @@ export default function InvestorProjectDashboard() {
                                                 animate={{ width: risk.data?.severity === "HIGH" ? "85%" : risk.data?.severity === "MEDIUM" ? "45%" : "15%" }}
                                                 transition={{ duration: 1, delay: i * 0.1 }}
                                                 className={`h-full rounded-full ${risk.data?.severity === "HIGH" ? "bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.4)]" :
-                                                        risk.data?.severity === "MEDIUM" ? "bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.4)]" :
-                                                            "bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.4)]"
+                                                    risk.data?.severity === "MEDIUM" ? "bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.4)]" :
+                                                        "bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.4)]"
                                                     }`}
                                             />
                                         </div>
