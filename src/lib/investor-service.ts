@@ -22,7 +22,11 @@ import {
     DecisionLog,
     InvestorUpdate,
     DealFlow,
-    DealStage
+    DealStage,
+    InvestorPortfolio,
+    InvestorNote,
+    PortfolioSummary,
+    InvestmentStage
 } from "./types/investor";
 
 // --- Access Control ---
@@ -149,34 +153,84 @@ export const getInvestorDashboardStats = async (investorId: string) => {
 };
 
 export const getInvestorPortfolio = async (investorId: string) => {
-    // 1. Get all access records
-    const q = query(
-        collection(db, "project_investor_access"),
-        where("investorId", "==", investorId),
-        where("accessStatus", "==", "ACTIVE")
-    );
-    const snapshot = await getDocs(q);
-
-    // 2. Fetch basic startup details for each
-    const portfolio = await Promise.all(snapshot.docs.map(async (accessDoc) => {
-        const access = accessDoc.data();
-        try {
-            const startupSnap = await getDoc(doc(db, "startups", access.projectId));
-            if (!startupSnap.exists()) return null;
-            const startup = startupSnap.data();
-            return {
-                projectId: access.projectId,
-                projectName: startup.idea, // Using idea as name for now
-                stage: startup.stage,
-                accessLevel: access.accessLevel,
-                lastUpdate: startup.updatedAt
-            };
-        } catch (e) {
-            return null;
-        }
+    // This is essentially an alias to getInvestorPortfolioList for compatibility
+    // but returning the simpler shape expected by older components
+    const list = await getInvestorPortfolioList(investorId);
+    return list.map(p => ({
+        projectId: p.projectId,
+        projectName: p.project.name,
+        stage: p.project.stage,
+        accessLevel: "FULL_READ", // Default for legacy support
+        lastUpdate: p.project.lastActive
     }));
+};
 
-    return portfolio.filter(p => p !== null);
+// --- Portfolio Management (Section 5 & 6) ---
+
+export const getInvestorPortfolioList = async (investorId: string): Promise<any[]> => {
+    const q = query(
+        collection(db, "investor_portfolio"),
+        where("investorId", "==", investorId),
+        where("status", "==", "ACTIVE")
+    );
+    const snap = await getDocs(q);
+
+    return await Promise.all(snap.docs.map(async (d) => {
+        const portfolioData = d.data() as InvestorPortfolio;
+        const projectSnapshot = await getProjectSnapshot(portfolioData.projectId);
+
+        // Mocking some signals for the UI as per spec
+        return {
+            ...portfolioData,
+            id: d.id,
+            project: projectSnapshot,
+            signals: {
+                executionVelocity: "High",
+                tractionTrend: "UP",
+                riskFlag: "LOW"
+            }
+        };
+    }));
+};
+
+export const getPortfolioSummary = async (investorId: string): Promise<PortfolioSummary> => {
+    const portfolio = await getInvestorPortfolioList(investorId);
+
+    // Default / Mocked summary data until real aggregation is in place
+    return {
+        totalStartups: portfolio.length,
+        activeCount: portfolio.length,
+        healthScore: 84, // Aggregate AI Score
+        riskDistribution: {
+            low: portfolio.length,
+            medium: 0,
+            high: 0
+        },
+        stageDistribution: {
+            "PRE_SEED": portfolio.length,
+            "SEED": 0,
+            "SERIES_A": 0,
+            "SERIES_B": 0
+        }
+    };
+};
+
+export const getPortfolioInsights = async (investorId: string): Promise<string[]> => {
+    // This would normally call an AI agent (Risk Correlation Agent / Portfolio Intelligence Agent)
+    return [
+        "Portfolio health improved by 12% following recent roadmap updates.",
+        "Execution velocity across the portfolio is 15% above stage benchmarks.",
+        "Exposure is currently heavily weighted towards Pre-Seed startups."
+    ];
+};
+
+export const saveInvestorNote = async (investorId: string, projectId: string, content: string) => {
+    await addDoc(collection(db, "investor_notes"), {
+        investorId,
+        projectId,
+        noteContent: content,
+        createdAt: serverTimestamp()
+    });
 };
 
 // --- Deal Flow (Legacy / Pipeline Support) ---
@@ -231,6 +285,25 @@ export const createDeal = async (investorId: string, startupId: string, notes: s
                 investorId,
                 accessLevel: "METRICS_ONLY", // Default
                 accessStatus: "ACTIVE",
+                createdAt: serverTimestamp()
+            });
+        }
+
+        // 3. Add to Investor Portfolio (New Spec)
+        const portfolioQ = query(
+            collection(db, "investor_portfolio"),
+            where("investorId", "==", investorId),
+            where("projectId", "==", startupId)
+        );
+        const portfolioSnap = await getDocs(portfolioQ);
+
+        if (portfolioSnap.empty) {
+            await addDoc(collection(db, "investor_portfolio"), {
+                investorId,
+                projectId: startupId,
+                investmentStage: "PRE_SEED", // Default
+                investmentDate: serverTimestamp(),
+                status: "ACTIVE",
                 createdAt: serverTimestamp()
             });
         }
