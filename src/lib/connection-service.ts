@@ -154,6 +154,8 @@ export function getConnectionRequests(
             };
         });
         callback(requests);
+    }, (error) => {
+        console.error("ConnectionRequests Listener Error:", error);
     });
 }
 
@@ -264,5 +266,31 @@ export function getSentRequests(userId: string, callback: (ids: string[]) => voi
     return onSnapshot(q, (snapshot) => {
         const ids = snapshot.docs.map(doc => doc.data().to);
         callback(ids);
+    }, (error) => {
+        console.error("SentRequests Listener Error:", error);
+    });
+}
+
+/**
+ * Real-time subscription to connected users.
+ * Used by MessagingHub for live updates.
+ */
+export function getConnectedUsersSnapshot(userId: string, callback: (ids: string[]) => void) {
+    const q = query(
+        collection(db, SOCIAL_CONNECTIONS_COLLECTION),
+        where("users", "array-contains", userId)
+    );
+
+    return onSnapshot(q, (snapshot) => {
+        const connectedIds: string[] = [];
+        snapshot.docs.forEach(doc => {
+            const data = doc.data();
+            const users = data.users as string[];
+            const otherId = users.find((id: string) => id !== userId);
+            if (otherId) connectedIds.push(otherId);
+        });
+        callback(connectedIds);
+    }, (error) => {
+        console.error("ConnectedUsers Listener Error:", error);
     });
 }
