@@ -9,7 +9,11 @@ import {
     Settings,
     LogOut,
     MessageSquare,
-    UserCircle
+    UserCircle,
+    Rocket,
+    ChevronRight,
+    Shield,
+    Briefcase
 } from "lucide-react";
 
 export default function InvestorLayout({
@@ -22,6 +26,7 @@ export default function InvestorLayout({
     const navItems = [
         { name: "Portfolio", href: "/investor/dashboard", icon: LayoutDashboard },
         { name: "Discovery", href: "/investor/startups", icon: Search },
+        { name: "Deals", href: "/investor/deals", icon: Briefcase },
         { name: "Deal Flow", href: "/investor/dealflow", icon: Kanban },
         { name: "Chat", href: "/founder/chat", icon: MessageSquare },
         { name: "Profile", href: "/investor/profile", icon: UserCircle },
@@ -53,8 +58,8 @@ export default function InvestorLayout({
                                 key={item.href}
                                 href={item.href}
                                 className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 group ${isActive
-                                        ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-lg shadow-black/5"
-                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                                    ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-lg shadow-black/5"
+                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900"
                                     }`}
                             >
                                 <item.icon className={`w-4 h-4 transition-colors ${isActive ? "" : "group-hover:text-indigo-500"}`} />
