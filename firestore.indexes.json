@@ -1,0 +1,79 @@
+{
+    "indexes": [
+        {
+            "collectionGroup": "dealflow",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "investorId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "updatedAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "dealflow",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "startupId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "updatedAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "project_connections",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "investorId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "lastActivityAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "project_connections",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "founderId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "lastActivityAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "deal_ai_analysis",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "dealId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "personaTarget",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "versionNumber",
+                    "order": "DESCENDING"
+                }
+            ]
+        }
+    ],
+    "fieldOverrides": []
+}

@@ -4,9 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
     Rocket,
-    Briefcase,
     TrendingUp,
-    Users,
     Check,
     ChevronRight,
     Sparkles,
@@ -30,19 +28,7 @@ const roles = [
         title: "Investor",
         description: "I am looking for high-potential startups to fund.",
         icon: TrendingUp,
-    },
-    {
-        id: "job_seeker",
-        title: "Job Seeker",
-        description: "I want to join a fast-growing startup team.",
-        icon: Briefcase,
-    },
-    {
-        id: "customer",
-        title: "Customer",
-        description: "I want to discover and test new products.",
-        icon: Users,
-    },
+    }
 ];
 
 export default function OnboardingPage() {
@@ -106,10 +92,6 @@ export default function OnboardingPage() {
                 setStep(2);
             } else if (selectedRole.startsWith("investor")) {
                 router.push("/investor/dashboard");
-            } else if (selectedRole === "job_seeker") {
-                router.push("/job-seeker/onboarding");
-            } else if (selectedRole === "customer") {
-                router.push("/customer/dashboard");
             } else {
                 router.push("/founder/dashboard");
             }

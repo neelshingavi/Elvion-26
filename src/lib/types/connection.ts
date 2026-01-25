@@ -1,6 +1,6 @@
 import { Timestamp } from "firebase/firestore";
 
-export type ConnectionStatus = "ACTIVE" | "PAUSED" | "REVOKED";
+export type ConnectionStatus = "ACTIVE" | "PAUSED" | "REVOKED" | "INTERESTED" | "CONNECTED";
 
 /**
  * A Connection is an explicit link between an investor and a founder for a specific project.

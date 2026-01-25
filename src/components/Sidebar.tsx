@@ -29,7 +29,7 @@ const navItems = [
     { name: "Tasks", href: "/founder/tasks", icon: CheckSquare },
     { name: "Deals", href: "/founder/deals", icon: DollarSign },
     { name: "Matches", href: "/founder/matching", icon: Users },
-    { name: "Chat", href: "/founder/messages", icon: MessageSquare },
+    { name: "Chat", href: "/founder/chats", icon: MessageSquare },
     { name: "Profile", href: "/founder/profile", icon: UserCircle },
 ];
 
