@@ -13,9 +13,11 @@ import {
 
     ChevronRight,
     Shield,
-    Briefcase
-
+    Briefcase,
+    Menu,
+    X
 } from "lucide-react";
+import { useState } from "react";
 
 export default function InvestorLayout({
     children,
@@ -32,6 +34,8 @@ export default function InvestorLayout({
         { name: "Chat", href: "/investor/chats", icon: MessageSquare },
         { name: "Profile", href: "/investor/profile", icon: UserCircle },
     ];
+
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
         <div className="flex min-h-screen bg-[#fafafa] dark:bg-[#09090b] text-zinc-900 dark:text-zinc-50">
@@ -95,15 +99,54 @@ export default function InvestorLayout({
             </aside>
 
             {/* Mobile Header */}
-            <div className="md:hidden fixed top-0 w-full p-4 glass z-40 flex items-center justify-between">
+            <div className="md:hidden fixed top-0 w-full p-4 glass z-40 flex items-center justify-between bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
                 <div className="flex items-center gap-2">
                     <Rocket className="w-5 h-5 text-indigo-500" />
-                    <h1 className="font-bold">FounderFlow</h1>
+                    <h1 className="font-bold text-zinc-900 dark:text-zinc-50">FounderFlow</h1>
                 </div>
-                <button className="p-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg">
-                    <Search className="w-4 h-4 text-zinc-500" />
+                <button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="p-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-zinc-100"
+                >
+                    {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </button>
             </div>
+
+            {/* Mobile Menu Overlay */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 z-50 md:hidden flex flex-col bg-white dark:bg-zinc-950 animate-in slide-in-from-right duration-200">
+                    <div className="p-6 flex items-center justify-between border-b border-zinc-100 dark:border-zinc-900">
+                        <div className="flex items-center gap-2">
+                            <Rocket className="w-5 h-5 text-indigo-500" />
+                            <h1 className="font-bold text-xl">Menu</h1>
+                        </div>
+                        <button
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="p-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-6 space-y-1">
+                        {navItems.map((item) => {
+                            const isActive = pathname === item.href || (item.href !== "/investor/dashboard" && pathname.startsWith(item.href));
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive
+                                        ? "bg-zinc-900 text-white dark:bg-white dark:text-black"
+                                        : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                                        }`}
+                                >
+                                    <item.icon className="w-5 h-5" />
+                                    {item.name}
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* Main Content */}
             {/* Main Content */}

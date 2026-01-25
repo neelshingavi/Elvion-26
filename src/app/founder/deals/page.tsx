@@ -161,7 +161,7 @@ export default function FounderDealsPage() {
             )}
 
             {/* Stats */}
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                     { label: "Action Required", value: actionRequired.length, icon: Clock, color: "text-amber-500" },
                     { label: "Awaiting Response", value: awaitingResponse.length, icon: Timer, color: "text-blue-500" },
@@ -206,8 +206,8 @@ export default function FounderDealsPage() {
                                         : "border-zinc-100 dark:border-zinc-800"
                                 )}
                             >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                    <div className="flex items-center gap-4 flex-1 min-w-0 w-full">
                                         <div className={cn(
                                             "p-3 rounded-xl",
                                             canAct ? "bg-amber-100 dark:bg-amber-900/30" : "bg-zinc-100 dark:bg-zinc-800"
@@ -257,20 +257,20 @@ export default function FounderDealsPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-8">
-                                        <div className="text-right">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 mt-4 sm:mt-0 w-full sm:w-auto">
+                                        <div className="text-left sm:text-right">
                                             <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Investment</p>
                                             <p className="text-lg font-bold">{formatCurrency(deal.currentTerms.investmentAmount)}</p>
                                         </div>
-                                        <div className="text-right">
+                                        <div className="text-left sm:text-right">
                                             <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Equity</p>
                                             <p className="text-lg font-bold">{deal.currentTerms.equityPercentage}%</p>
                                         </div>
-                                        <div className="text-right">
+                                        <div className="text-left sm:text-right">
                                             <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Valuation</p>
                                             <p className="text-lg font-bold">{formatCurrency(deal.currentTerms.impliedValuation)}</p>
                                         </div>
-                                        <ArrowRight className="w-5 h-5 text-zinc-300" />
+                                        <ArrowRight className="w-5 h-5 text-zinc-300 hidden sm:block" />
                                     </div>
                                 </div>
                             </div>

@@ -21,7 +21,7 @@ import {
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 
-const navItems = [
+export const navItems = [
     { name: "Dashboard", href: "/founder/dashboard", icon: LayoutDashboard },
     { name: "Idea Check", href: "/founder/idea-validation", icon: Lightbulb },
     { name: "Timeline", href: "/founder/timeline", icon: History },
@@ -37,7 +37,7 @@ export function Sidebar() {
     const pathname = usePathname();
 
     return (
-        <div className="flex h-full w-64 flex-col border-r border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-xl p-4">
+        <div className="hidden md:flex h-full w-64 flex-col border-r border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-xl p-4">
             <div className="p-4 pb-8">
                 <div className="flex items-center gap-2 mb-2 group cursor-pointer">
                     <div className="p-1.5 bg-black dark:bg-white rounded-lg transition-transform group-hover:scale-110">

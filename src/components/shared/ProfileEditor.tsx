@@ -434,15 +434,7 @@ export default function ProfileEditor() {
                             <button onClick={() => handleUpdate()} className="p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-colors text-zinc-400"><Save className="w-4 h-4" /></button>
                         </div>
                         <div className="space-y-4">
-                            <div className="flex items-center gap-4 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800">
-                                <Linkedin className="w-5 h-5 text-indigo-500" />
-                                <input
-                                    value={formData.socialLinks.linkedin}
-                                    onChange={(e) => handleSocialChange("linkedin", e.target.value)}
-                                    className="bg-transparent text-[11px] font-bold outline-none flex-1"
-                                    placeholder="LinkedIn ID"
-                                />
-                            </div>
+
                             <div className="flex items-center gap-4 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800">
                                 <Globe className="w-5 h-5 text-blue-500" />
                                 <input

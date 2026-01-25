@@ -246,7 +246,7 @@ export default function DashboardPage() {
                     </div>
 
                     <button
-                        onClick={() => router.push("/founder/messages")}
+                        onClick={() => router.push("/founder/chats")}
                         className="p-4 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm text-zinc-400 hover:text-indigo-500 transition-all"
                     >
                         <MessageSquare className="w-5 h-5" />
@@ -255,7 +255,7 @@ export default function DashboardPage() {
             </header>
 
             {/* Aggregated Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 {stats.map((stat, idx) => (
                     <motion.div
                         key={idx}
