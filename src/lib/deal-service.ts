@@ -28,7 +28,9 @@ import {
 import {
     getOrCreateConnection,
     updateConnectionActivity,
-    isConnectionActive
+    isConnectionActive,
+    getConnection,
+    getConnectionsForUser
 } from "./connection-service";
 import { generateDealAnalysis } from "./ai-service";
 
@@ -62,6 +64,7 @@ function isValidTransition(from: DealStatus, to: DealStatus): boolean {
 
 /**
  * Create a new deal proposal (can be initiated by either founder or investor).
+ * STRICT: Requires an existing connection (Interest) to be established first.
  */
 export async function createDeal(
     initiatorId: string,
@@ -84,16 +87,30 @@ export async function createDeal(
         throw new Error("An active deal already exists between these parties for this project.");
     }
 
-    // 1. Explicit Connection Layer
-    const connectionId = await getOrCreateConnection(investorId, founderId, projectId, {
-        projectName: "Project " + projectId.slice(0, 4), // Placeholder or fetch actual
-    });
+    // 1. Explicit Connection Validation (Source of Truth)
+    const connection = await getConnection(investorId, founderId, projectId);
 
-    if (!(await isConnectionActive(connectionId))) {
-        throw new Error("Cannot create deal: Connection is not ACTIVE.");
+    if (!connection) {
+        if (initiatorRole === "FOUNDER") {
+            throw new Error("Cannot create deal: This investor has not expressed interest yet.");
+        } else {
+            // If investor is creating deal but forgot to express interest, we could auto-create, 
+            // but to be strict as requested, we require interest first.
+            // However, for UX, maybe we should allow it if it's the INVESTOR initiating?
+            // Prompt says: "Investors should ONLY see deals where... They have explicitly shown interest."
+            // So we enforce connection existence. Use expressInterest first.
+            throw new Error("Connection not found. Please express interest in the startup first.");
+        }
     }
 
-    const terms = createDealTerms(investmentAmount, equityPercentage, instrumentType, conditions);
+    // Check if connection is in a valid state (ACTIVE, INTERESTED, CONNECTED)
+    if (connection.status === "REVOKED" || connection.status === "PAUSED") {
+        throw new Error("Cannot create deal: Connection is not active.");
+    }
+
+    const connectionId = connection.connectionId;
+
+    const terms = createDealTerms(investmentAmount, equityPercentage, instrumentType, conditions || "");
     const now = Timestamp.now();
     const validUntil = calculateValidUntil(validityDays);
 
@@ -141,10 +158,24 @@ export async function createDeal(
     const fullDeal = { dealId, ...dealData } as Deal;
     await generateDealAnalysis(fullDeal, recipientRole);
 
-    // 3. Update Connection metadata
+    // 3. Update Connection metadata/status
     await updateConnectionActivity(connectionId);
 
+    // If connection was just "INTERESTED", upgrade to "CONNECTED" or "ACTIVE"
+    if (connection.status === "INTERESTED") {
+        // We might want to update status to CONNECTED here
+    }
+
     return dealId;
+}
+
+/**
+ * Get eligible investors for a founder (those who have expressed interest).
+ */
+export async function getEligibleInvestors(founderId: string) {
+    // Only return connections that are INTERESTED or CONNECTED/ACTIVE
+    const connections = await getConnectionsForUser(founderId, "FOUNDER");
+    return connections.filter(c => ["INTERESTED", "CONNECTED", "ACTIVE"].includes(c.status));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -299,7 +330,7 @@ export async function counterDeal(
         investmentAmount,
         equityPercentage,
         instrumentType || deal.currentTerms.instrumentType,
-        conditions
+        conditions || ""
     );
 
     const newVersion: DealVersion = {
@@ -309,7 +340,7 @@ export async function counterDeal(
         proposedById: userId,
         proposedAt: now,
         validUntil,
-        rationale
+        rationale: rationale || ""
     };
 
     const counterActivity: DealActivityEntry = {

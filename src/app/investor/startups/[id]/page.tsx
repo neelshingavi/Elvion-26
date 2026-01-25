@@ -2,7 +2,8 @@
 
 import { useEffect, useState, use } from "react";
 import { getStartupDeepDive } from "@/lib/startup-service";
-import { createDeal } from "@/lib/investor-service";
+import { expressInterest } from "@/lib/investor-service";
+
 import { useAuth } from "@/context/AuthContext";
 import {
     ArrowLeft,
@@ -50,7 +51,7 @@ export default function StartupDeepDivePage({ params }: { params: Promise<{ id: 
         if (!user || !data) return;
         setTracking(true);
         try {
-            await createDeal(user.uid, data.startupId, "Started tracking from Deep Dive");
+            await expressInterest(user.uid, data.startupId, "Started tracking from Deep Dive");
             router.push("/investor/dealflow");
         } catch (error) {
             console.error("Failed to track deal:", error);

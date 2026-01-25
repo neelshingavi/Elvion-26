@@ -2,12 +2,15 @@
 
 ## Executive Summary
 
-FounderFlow is a multi-tenant startup ecosystem platform that connects founders, investors, customers, job-seekers, and administrators through AI-powered workflows. The platform enables founders to validate ideas, generate strategic roadmaps, execute tasks with AI assistance, and negotiate investment deals with investors.
+FounderFlow is a startup ecosystem platform that connects founders and investors through AI-powered workflows. The platform enables founders to validate ideas, generate strategic roadmaps, execute tasks with AI assistance, and negotiate investment deals with investors.
 
 **Platform Type:** B2B SaaS / Marketplace Hybrid  
 **Primary Technology Stack:** Next.js 16 (App Router), Firebase (Auth, Firestore, Storage), Google Gemini AI  
 **Target Market:** India-focused startup ecosystem  
-**Document Version:** 1.0 (January 2026)
+**Document Version:** 2.0 (January 2026)
+
+> [!IMPORTANT]
+> **As of January 2026:** The platform has been streamlined to support only **Founder** and **Investor** roles. Customer and Job Seeker sections have been removed.
 
 ---
 
@@ -38,8 +41,6 @@ Early-stage founders in India face three critical challenges:
 |------|-------------|---------------|
 | **Founders** | Early-stage startup founders | Validate ideas, plan execution, raise capital |
 | **Investors** | Angels, VCs, Micro-VCs | Discover startups, manage portfolios, track performance |
-| **Customers** | Beta testers, early adopters | Discover and test new products, provide feedback |
-| **Job Seekers** | Startup talent | Find startup opportunities matching skills |
 | **Administrators** | Platform operators | Manage users, startups, system health |
 
 ### Core Value Proposition
@@ -49,7 +50,7 @@ FounderFlow provides an **AI-powered operating system for early-stage startups**
 - Generates actionable roadmaps based on validated ideas
 - Automates common founder tasks with specialized AI agents
 - Facilitates structured deal negotiation between founders and investors
-- Creates a self-reinforcing ecosystem where all stakeholders benefit
+
 
 ---
 

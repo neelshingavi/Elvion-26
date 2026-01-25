@@ -245,51 +245,45 @@ export const getDealFlow = async (investorId: string): Promise<DealFlow[]> => {
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any;
 };
 
-export const createDeal = async (investorId: string, startupId: string, notes: string = "") => {
+export const expressInterest = async (investorId: string, startupId: string, notes: string = ""): Promise<string> => {
     try {
-        // 1. Create DealFlow Entry (for Pipeline Kanban)
+        // 1. Create or Get Project Connection (The Source of Truth)
+        // We use the connection service to ensure a single source of truth
         const q = query(
-            collection(db, "dealflow"),
+            collection(db, "project_connections"),
             where("investorId", "==", investorId),
-            where("startupId", "==", startupId)
+            where("projectId", "==", startupId),
+            limit(1)
         );
-        const existing = await getDocs(q);
+        const snapshot = await getDocs(q);
 
-        let dealId;
-        if (!existing.empty) {
-            dealId = existing.docs[0].id;
-        } else {
-            const dealRef = await addDoc(collection(db, "dealflow"), {
+        let connectionId;
+
+        if (snapshot.empty) {
+            // Get founder ID from startup first
+            const startupDoc = await getDoc(doc(db, "startups", startupId));
+            if (!startupDoc.exists()) throw new Error("Startup not found");
+            const founderId = startupDoc.data().ownerId;
+
+            const connectionRef = await addDoc(collection(db, "project_connections"), {
                 investorId,
-                startupId,
-                stage: "new",
-                notes,
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp()
-            });
-            dealId = dealRef.id;
-        }
-
-        // 2. Grant Access Permissions (for Project Dashboard)
-        // Check if access exists first
-        const accessQ = query(
-            collection(db, "project_investor_access"),
-            where("investorId", "==", investorId),
-            where("projectId", "==", startupId)
-        );
-        const accessSnap = await getDocs(accessQ);
-
-        if (accessSnap.empty) {
-            await addDoc(collection(db, "project_investor_access"), {
+                founderId,
                 projectId: startupId,
-                investorId,
-                accessLevel: "METRICS_ONLY", // Default
-                accessStatus: "ACTIVE",
-                createdAt: serverTimestamp()
+                status: "INTERESTED", // Initial state
+                createdAt: serverTimestamp(),
+                lastActivityAt: serverTimestamp(),
+                metadata: {
+                    projectName: startupDoc.data().idea || "Unknown Project",
+                    // investorName will be populated by cloud function or client if needed
+                }
             });
+            connectionId = connectionRef.id;
+        } else {
+            connectionId = snapshot.docs[0].id;
+            // If exists but revoked/paused, reactivation logic could go here
         }
 
-        // 3. Add to Investor Portfolio (New Spec)
+        // 2. Add to Investor Portfolio (Tracking)
         const portfolioQ = query(
             collection(db, "investor_portfolio"),
             where("investorId", "==", investorId),
@@ -301,16 +295,20 @@ export const createDeal = async (investorId: string, startupId: string, notes: s
             await addDoc(collection(db, "investor_portfolio"), {
                 investorId,
                 projectId: startupId,
-                investmentStage: "PRE_SEED", // Default
-                investmentDate: serverTimestamp(),
-                status: "ACTIVE",
+                investmentStage: "WATCHLIST", // Distinct from active investment
+                status: "TRACKING",
                 createdAt: serverTimestamp()
             });
         }
 
-        return dealId;
+        // 3. Optional: Save private notes
+        if (notes) {
+            await saveInvestorNote(investorId, startupId, notes);
+        }
+
+        return connectionId;
     } catch (error) {
-        console.error("Error creating deal:", error);
+        console.error("Error expressing interest:", error);
         throw error;
     }
 };

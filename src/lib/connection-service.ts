@@ -90,6 +90,26 @@ export async function getConnectionsForUser(userId: string, role: "INVESTOR" | "
 }
 
 /**
+ * Get active connection between two parties. Returns null if not found.
+ */
+export async function getConnection(
+    investorId: string,
+    founderId: string,
+    projectId: string
+): Promise<Connection | null> {
+    const q = query(
+        collection(db, PROJECT_CONNECTIONS_COLLECTION),
+        where("investorId", "==", investorId),
+        where("founderId", "==", founderId),
+        where("projectId", "==", projectId),
+        limit(1)
+    );
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return null;
+    return { connectionId: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Connection;
+}
+
+/**
  * Update the last activity timestamp on a project connection.
  */
 export async function updateConnectionActivity(connectionId: string): Promise<void> {
@@ -227,30 +247,6 @@ export async function getConnectedUsers(userId: string): Promise<string[]> {
     });
 
     return connectedIds;
-}
-
-/**
- * Real-time subscription to connected user IDs.
- * Returns an unsubscribe function.
- */
-export function getConnectedUsersSnapshot(
-    userId: string,
-    callback: (connectedIds: string[]) => void
-): () => void {
-    const q = query(
-        collection(db, SOCIAL_CONNECTIONS_COLLECTION),
-        where("users", "array-contains", userId)
-    );
-
-    return onSnapshot(q, (snapshot) => {
-        const connectedIds: string[] = [];
-        snapshot.docs.forEach(doc => {
-            const data = doc.data();
-            const otherId = data.users.find((id: string) => id !== userId);
-            if (otherId) connectedIds.push(otherId);
-        });
-        callback(connectedIds);
-    });
 }
 
 /**

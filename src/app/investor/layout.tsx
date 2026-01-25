@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
     LayoutDashboard,
     Search,
-    Kanban,
     Settings,
     LogOut,
     MessageSquare,
@@ -29,8 +28,8 @@ export default function InvestorLayout({
         { name: "Portfolio", href: "/investor/dashboard", icon: LayoutDashboard },
         { name: "Discovery", href: "/investor/startups", icon: Search },
         { name: "Deals", href: "/investor/deals", icon: Briefcase },
-        { name: "Deal Flow", href: "/investor/dealflow", icon: Kanban },
-        { name: "Chat", href: "/investor/messages", icon: MessageSquare },
+
+        { name: "Chat", href: "/investor/chats", icon: MessageSquare },
         { name: "Profile", href: "/investor/profile", icon: UserCircle },
     ];
 
