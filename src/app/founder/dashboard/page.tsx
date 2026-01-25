@@ -152,11 +152,9 @@ export default function DashboardPage() {
     ];
 
     const agents = [
-        { id: "planner", name: "Strategic Planner", description: "Roadmaps & Milestones", icon: Target },
-        { id: "researcher", name: "Market Researcher", description: "Competitor Analysis", icon: Activity },
-        { id: "drafter", name: "Content Drafter", description: "Pitch Decks & Memos", icon: FileText },
         { id: "ppt", name: "PPT Deck Builder", description: "Visual Presentation Vector", icon: Sparkles },
         { id: "mailer", name: "Newsletter Mailer", description: "Ecosystem Outreach", icon: Mail },
+        { id: "tasks", name: "Task Registry", description: "Master Execution List", icon: LayoutDashboard },
     ];
 
     return (
@@ -321,19 +319,29 @@ export default function DashboardPage() {
                                             <div className="p-4 bg-zinc-50 dark:bg-zinc-950 rounded-2xl group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-500 transition-colors border border-zinc-100 dark:border-zinc-800">
                                                 <agent.icon className="w-6 h-6" />
                                             </div>
-                                            <div className={cn("h-2.5 w-2.5 rounded-full", activeRuns.find(r => r.agentType === agent.id) ? "bg-green-500 animate-pulse shadow-[0_0_12px_rgba(34,197,94,0.5)]" : "bg-zinc-100 dark:bg-zinc-800")} />
+                                            {agent.id !== "tasks" && (
+                                                <div className={cn("h-2.5 w-2.5 rounded-full", activeRuns.find(r => r.agentType === agent.id) ? "bg-green-500 animate-pulse shadow-[0_0_12px_rgba(34,197,94,0.5)]" : "bg-zinc-100 dark:bg-zinc-800")} />
+                                            )}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <h4 className="font-black text-lg tracking-tight mb-2 group-hover:text-indigo-500 transition-colors line-clamp-1 uppercase">{agent.name}</h4>
                                             <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.25em] line-clamp-2">{agent.description}</p>
                                         </div>
                                         <button
-                                            onClick={() => handleAgentAction(agent)}
+                                            onClick={() => agent.id === "tasks" ? router.push("/founder/tasks") : handleAgentAction(agent)}
                                             className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-950 text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-all border border-zinc-100 dark:border-zinc-800 shrink-0"
-
                                         >
-                                            <Play className="w-3.5 h-3.5" />
-                                            Trigger Intel
+                                            {agent.id === "tasks" ? (
+                                                <>
+                                                    <LayoutDashboard className="w-3.5 h-3.5" />
+                                                    Open Board
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Play className="w-3.5 h-3.5" />
+                                                    Trigger Intel
+                                                </>
+                                            )}
                                         </button>
                                     </div>
                                 </div>
