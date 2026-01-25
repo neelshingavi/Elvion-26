@@ -188,9 +188,9 @@ export default function InvestorDealsPage() {
                 </button>
             </header>
 
-            <div className="grid grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left: Stats & Connections */}
-                <div className="col-span-3 space-y-6">
+                <div className="lg:col-span-3 space-y-6">
                     {/* Mini Stats */}
                     <div className="grid grid-cols-1 gap-4">
                         <div className="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800">
@@ -243,7 +243,7 @@ export default function InvestorDealsPage() {
                 </div>
 
                 {/* Right: Deals Listing */}
-                <div className="col-span-9 space-y-6">
+                <div className="lg:col-span-9 space-y-6">
                     {/* Filter Tabs */}
                     <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl w-fit">
                         {[
@@ -367,7 +367,7 @@ export default function InvestorDealsPage() {
                                             </div>
 
                                             {/* Terms Grid */}
-                                            <div className="grid grid-cols-3 gap-4 p-4 bg-zinc-50 dark:bg-zinc-950 rounded-2xl mb-6">
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-zinc-50 dark:bg-zinc-950 rounded-2xl mb-6">
                                                 <div>
                                                     <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-1">Investment</p>
                                                     <p className="text-xl font-bold tracking-tight">{formatCurrency(deal.currentTerms.investmentAmount)}</p>
