@@ -9,14 +9,12 @@ import {
     Lightbulb,
     Map,
     CheckSquare,
-    Users,
     MessageSquare,
     LogOut,
     UserCircle,
     Rocket,
     ChevronRight,
-    Shield,
-    DollarSign
+    Shield
 } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
@@ -27,8 +25,6 @@ export const navItems = [
     { name: "Timeline", href: "/founder/timeline", icon: History },
     { name: "Roadmap", href: "/founder/planning", icon: Map },
     { name: "Tasks", href: "/founder/tasks", icon: CheckSquare },
-    { name: "Deals", href: "/founder/deals", icon: DollarSign },
-    { name: "Matches", href: "/founder/matching", icon: Users },
     { name: "Chat", href: "/founder/chats", icon: MessageSquare },
     { name: "Profile", href: "/founder/profile", icon: UserCircle },
 ];
@@ -101,4 +97,3 @@ export function Sidebar() {
         </div>
     );
 }
-

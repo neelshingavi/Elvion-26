@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface MessagingHubProps {
-    roleContext: "founder" | "investor" | "admin";
+    roleContext: "founder" | "admin";
 }
 
 export function MessagingHub({ roleContext }: MessagingHubProps) {

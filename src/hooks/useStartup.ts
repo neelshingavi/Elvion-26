@@ -133,12 +133,11 @@ export function useStartup() {
     // Computed Permissions
     const isOwner = userRole === "owner";
     const isCofounder = userRole === "cofounder";
-    const isInvestor = userRole === "investor";
 
     // Matrix Implementation
     const canEdit = isOwner || isCofounder;
     const canManageTasks = isOwner || isCofounder || userRole === "team";
-    const canViewFinancials = isOwner || isCofounder || isInvestor;
+    const canViewFinancials = isOwner || isCofounder;
 
     return {
         userData,

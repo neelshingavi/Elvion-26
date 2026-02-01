@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Rocket, Menu, X } from "lucide-react";
+import { FullPageLoader } from "@/components/ui/Loader";
 
 export default function FounderLayout({
     children,
@@ -28,7 +29,7 @@ export default function FounderLayout({
         }
     }, [user, loading, router]);
 
-    if (loading) return null;
+    if (loading) return <FullPageLoader />;
     if (!user) return null;
 
     return (

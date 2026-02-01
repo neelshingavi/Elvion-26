@@ -1,6 +1,6 @@
 import { Startup } from "./startup-service";
 
-export type AgentType = "idea-validation" | "planning" | "execution" | "matching";
+export type AgentType = "idea-validation" | "planning" | "execution" | "networking";
 
 export interface PrimaryAction {
     label: string;
@@ -20,7 +20,7 @@ export const getNextRequiredAgent = (startup: Startup | null): AgentType => {
         case "roadmap_created":
             return "execution";
         case "execution_active":
-            return "matching";
+            return "networking";
         default:
             return "idea-validation";
     }
@@ -60,9 +60,9 @@ export const getPrimaryAction = (startup: Startup | null): PrimaryAction => {
             };
         case "execution_active":
             return {
-                label: "Find Strategic Pairs",
-                description: "Ecosystem matching is active. Find founders or investors.",
-                agentType: "matching",
+                label: "Connect with Founders",
+                description: "Ecosystem active. Network with other founders to grow together.",
+                agentType: "networking",
                 icon: "Users"
             };
         default:
@@ -83,7 +83,7 @@ export const getAgentInstructions = (agent: AgentType) => {
             return "Generate a strategic roadmap with 4 distinct phases based on the validated idea.";
         case "execution":
             return "Deconstruct the current phase into actionable tasks for the founder.";
-        case "matching":
-            return "Identify potential investors and team members from the ecosystem.";
+        case "networking":
+            return "Connect with other founders in the ecosystem for collaboration and growth.";
     }
 };
