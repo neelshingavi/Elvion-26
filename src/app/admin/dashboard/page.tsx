@@ -8,7 +8,7 @@ import { Users, Rocket, TrendingUp, Activity } from "lucide-react";
 export default function AdminDashboard() {
     const [stats, setStats] = useState({
         founders: 0,
-        investors: 0,
+        investors: 0, // Keeping key to avoid break but always 0
         others: 0,
         startups: 0
     });
@@ -21,19 +21,17 @@ export default function AdminDashboard() {
                 const startupsSnap = await getDocs(collection(db, "startups"));
 
                 let founders = 0;
-                let investors = 0;
                 let others = 0;
 
                 usersSnap.forEach(doc => {
                     const data = doc.data();
                     if (data.role === "founder") founders++;
-                    else if (data.role?.startsWith("investor")) investors++;
                     else others++;
                 });
 
                 setStats({
                     founders,
-                    investors,
+                    investors: 0,
                     others,
                     startups: startupsSnap.size
                 });
@@ -49,7 +47,6 @@ export default function AdminDashboard() {
 
     const cards = [
         { title: "Total Founders", value: stats.founders, icon: Users, color: "text-blue-500" },
-        { title: "Active Investors", value: stats.investors, icon: TrendingUp, color: "text-green-500" },
         { title: "Total Startups", value: stats.startups, icon: Rocket, color: "text-purple-500" },
         { title: "Other Users", value: stats.others, icon: Activity, color: "text-zinc-500" },
     ];

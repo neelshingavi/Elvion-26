@@ -5,7 +5,15 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export async function POST(req: Request) {
     try {
-        const { startupId, idea } = await req.json();
+        const body = await req.json();
+        const { startupId, idea } = body;
+
+        if (!startupId || !idea) {
+            return NextResponse.json(
+                { error: "Missing startupId or idea" },
+                { status: 400 }
+            );
+        }
 
         const prompt = `
       You are the "Execution Agent" for FounderFlow. 
@@ -20,6 +28,10 @@ export async function POST(req: Request) {
     `;
 
         const tasks = await callGemini(prompt);
+
+        if (!Array.isArray(tasks)) {
+            throw new Error("Invalid AI response format");
+        }
 
         // Batch add to Firestore
         const results = await Promise.all(tasks.map((task: any) =>

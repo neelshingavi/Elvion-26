@@ -8,11 +8,9 @@ import {
     updateDoc,
     doc,
     Timestamp,
-    limit,
     orderBy,
     onSnapshot,
-    serverTimestamp,
-    getDoc
+    serverTimestamp
 } from "firebase/firestore";
 import { Connection, ConnectionStatus } from "./types/connection";
 
@@ -25,116 +23,16 @@ export interface ConnectionRequest {
     createdAt?: Timestamp | null;
 }
 
-// Collection for social/matching connections between users
+// Collection for social/matching connections between founders
 const SOCIAL_CONNECTIONS_COLLECTION = "connections";
 const CONNECTION_REQUESTS_COLLECTION = "connection_requests";
 
-// Collection for project-scoped deals (Investor-Founder)
-const PROJECT_CONNECTIONS_COLLECTION = "project_connections";
-
 // ═══════════════════════════════════════════════════════════════════════════
-// PROJECT-SCOPED CONNECTIONS (DEAL FLOW)
+// FOUNDER CONNECTIONS (NETWORKING SYSTEM)
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
- * Ensures a project-scoped connection exists between an investor and founder.
- */
-export async function getOrCreateConnection(
-    investorId: string,
-    founderId: string,
-    projectId: string,
-    metadata?: Connection["metadata"]
-): Promise<string> {
-    const q = query(
-        collection(db, PROJECT_CONNECTIONS_COLLECTION),
-        where("investorId", "==", investorId),
-        where("founderId", "==", founderId),
-        where("projectId", "==", projectId),
-        limit(1)
-    );
-
-    const snapshot = await getDocs(q);
-
-    if (!snapshot.empty) {
-        return snapshot.docs[0].id;
-    }
-
-    const now = Timestamp.now();
-    const newConnection: Omit<Connection, "connectionId"> = {
-        investorId,
-        founderId,
-        projectId,
-        status: "ACTIVE",
-        createdAt: now,
-        lastActivityAt: now,
-        metadata
-    };
-
-    const docRef = await addDoc(collection(db, PROJECT_CONNECTIONS_COLLECTION), newConnection);
-    return docRef.id;
-}
-
-/**
- * Get all active project connections for a user.
- */
-export async function getConnectionsForUser(userId: string, role: "INVESTOR" | "FOUNDER"): Promise<Connection[]> {
-    const field = role === "INVESTOR" ? "investorId" : "founderId";
-    const q = query(
-        collection(db, PROJECT_CONNECTIONS_COLLECTION),
-        where(field, "==", userId),
-        orderBy("lastActivityAt", "desc")
-    );
-
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(d => ({ connectionId: d.id, ...d.data() } as Connection));
-}
-
-/**
- * Get active connection between two parties. Returns null if not found.
- */
-export async function getConnection(
-    investorId: string,
-    founderId: string,
-    projectId: string
-): Promise<Connection | null> {
-    const q = query(
-        collection(db, PROJECT_CONNECTIONS_COLLECTION),
-        where("investorId", "==", investorId),
-        where("founderId", "==", founderId),
-        where("projectId", "==", projectId),
-        limit(1)
-    );
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) return null;
-    return { connectionId: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Connection;
-}
-
-/**
- * Update the last activity timestamp on a project connection.
- */
-export async function updateConnectionActivity(connectionId: string): Promise<void> {
-    const docRef = doc(db, PROJECT_CONNECTIONS_COLLECTION, connectionId);
-    await updateDoc(docRef, {
-        lastActivityAt: Timestamp.now()
-    });
-}
-
-/**
- * Verify if a project connection is active.
- */
-export async function isConnectionActive(connectionId: string): Promise<boolean> {
-    const docRef = doc(db, PROJECT_CONNECTIONS_COLLECTION, connectionId);
-    const snap = await getDoc(docRef);
-    if (!snap.exists()) return false;
-    return (snap.data() as Connection).status === "ACTIVE";
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// SOCIAL CONNECTIONS (MATCHING SYSTEM)
-// ═══════════════════════════════════════════════════════════════════════════
-
-/**
- * Sends a connection request from one user to another.
+ * Sends a connection request from one founder to another.
  */
 export async function sendConnectionRequest(fromId: string, toId: string) {
     return await addDoc(collection(db, CONNECTION_REQUESTS_COLLECTION), {
@@ -154,7 +52,6 @@ export function getConnectionRequests(
     callback: (reqs: ConnectionRequest[]) => void
 ) {
     const q = query(
-
         collection(db, CONNECTION_REQUESTS_COLLECTION),
         where("to", "==", userId),
         where("status", "==", "pending"),
@@ -166,7 +63,6 @@ export function getConnectionRequests(
             const data = d.data() as any;
             return {
                 id: d.id,
-
                 fromId: data.from,
                 toId: data.to,
                 status: data.status ?? "pending",
@@ -228,10 +124,9 @@ export async function rejectConnectionRequest(requestId: string): Promise<void> 
 }
 
 /**
- * Gets the IDs of all users the specified user is connected to.
+ * Gets the IDs of all founders the specified user is connected to.
  */
 export async function getConnectedUsers(userId: string): Promise<string[]> {
-
     const q = query(
         collection(db, SOCIAL_CONNECTIONS_COLLECTION),
         where("users", "array-contains", userId)
@@ -268,7 +163,7 @@ export function getSentRequests(userId: string, callback: (ids: string[]) => voi
 }
 
 /**
- * Real-time subscription to connected users.
+ * Real-time subscription to connected founders.
  * Used by MessagingHub for live updates.
  */
 export function getConnectedUsersSnapshot(userId: string, callback: (ids: string[]) => void) {

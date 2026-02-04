@@ -4,7 +4,15 @@ import { addStartupMemory, updateStartupStage } from "@/lib/startup-service";
 
 export async function POST(req: Request) {
     try {
-        const { idea, startupId, userId } = await req.json();
+        const body = await req.json();
+        const { idea, startupId, userId } = body;
+
+        if (!idea || !startupId || !userId) {
+            return NextResponse.json(
+                { error: "Missing required fields: idea, startupId, or userId" },
+                { status: 400 }
+            );
+        }
 
         const prompt = `
       You are the "Idea Validation Agent" for FounderFlow. 
@@ -37,6 +45,10 @@ export async function POST(req: Request) {
     `;
 
         const validationResult = await callGemini(prompt);
+
+        if (!validationResult || typeof validationResult.scoring !== 'number') {
+            throw new Error("Invalid validation response from AI");
+        }
 
         // Persist to Startup Memory
         await addStartupMemory(startupId, "agent-output", "agent", JSON.stringify(validationResult));

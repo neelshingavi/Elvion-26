@@ -73,7 +73,7 @@ export default function AdminUsersPage() {
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${user.role === "founder" ? "bg-blue-900/30 text-blue-400" :
-                                        user.role?.includes("investor") ? "bg-green-900/30 text-green-400" :
+                                        user.role === "admin" ? "bg-purple-900/30 text-purple-400" :
                                             "bg-zinc-800 text-zinc-400"
                                         }`}>
                                         {user.role || "N/A"}
