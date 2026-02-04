@@ -12,7 +12,9 @@ import {
     getDoc,
     setDoc,
     deleteDoc,
-    writeBatch
+    writeBatch,
+    Timestamp,
+    FieldValue
 } from "firebase/firestore";
 
 export interface Startup {
@@ -25,8 +27,8 @@ export interface Startup {
     vision?: string;
     problemStatement?: string;
     idea: string;
-    createdAt: any;
-    updatedAt: any;
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
 }
 
 export interface StartupMemory {
@@ -153,6 +155,10 @@ export const createStartup = async (
     problemStatement: string = ""
 ) => {
     try {
+        if (!name || !name.trim()) throw new Error("Startup Name is required.");
+        if (!industry || !industry.trim()) throw new Error("Industry is required.");
+        if (!idea || !idea.trim()) throw new Error("Idea description is required.");
+
         const batch = writeBatch(db);
 
         // 1. Create Startup Doc Reference

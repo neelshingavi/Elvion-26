@@ -46,18 +46,27 @@ export const deleteStartupFully = async (startupId: string) => {
 
 export const deleteUserFully = async (userId: string) => {
     try {
-        // 1. Retrieve user data to see if they own any startups? 
-        // For now, we just delete their memberships and user doc.
-        // Ideally, we should also handle startups they OWN.
+        // 1. Find all startups owned by this user
+        const startupsQuery = query(
+            collection(db, "startups"),
+            where("ownerId", "==", userId)
+        );
+        const startupSnap = await getDocs(startupsQuery);
 
-        // Delete memberships
+        console.log(`Found ${startupSnap.size} startups owned by user ${userId}. Deleting them...`);
+
+        // 2. Delete each startup fully (handling its sub-collections)
+        const deletePromises = startupSnap.docs.map(doc => deleteStartupFully(doc.id));
+        await Promise.all(deletePromises);
+
+        // 3. Delete memberships (where they are just members, not owners - though duplicate check is fine)
         await batchDelete("startup_members", "userId", userId);
 
-        // Delete the User Document
+        // 4. Delete the User Document
         await deleteDoc(doc(db, "users", userId));
 
         // Note: Firebase Auth deletion must happen server-side via Admin SDK
-        console.log(`User ${userId} firestore data deleted.`);
+        console.log(`User ${userId} and all owned resources deleted.`);
     } catch (error) {
         console.error("Error deleting user fully:", error);
         throw error;

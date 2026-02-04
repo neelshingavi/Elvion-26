@@ -8,7 +8,6 @@ import { Users, Rocket, TrendingUp, Activity } from "lucide-react";
 export default function AdminDashboard() {
     const [stats, setStats] = useState({
         founders: 0,
-        investors: 0, // Keeping key to avoid break but always 0
         others: 0,
         startups: 0
     });
@@ -31,7 +30,6 @@ export default function AdminDashboard() {
 
                 setStats({
                     founders,
-                    investors: 0,
                     others,
                     startups: startupsSnap.size
                 });

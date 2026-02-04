@@ -254,8 +254,7 @@ export default function Home() {
             {[
               { q: "Is FounderFlow free to start?", a: "Yes, we offer a generous free tier for solo founders and pre-seed teams." },
               { q: "Can I invite my co-founders?", a: "Absolutely. Team collaboration is built into the core of the platform." },
-              { q: "How accurate is the AI validation?", a: "Our models utilize real-time market data to provide directional insights, but human judgment is always key." },
-              { q: "Do you offer investor connections?", a: "We focus on building the strongest possible company, and provide tools to help you network directly with other founders." }
+              { q: "How accurate is the AI validation?", a: "Our models utilize real-time market data to provide directional insights, but human judgment is always key." }
             ].map((faq, i) => (
               <div key={i} className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
                 <div className="p-6">

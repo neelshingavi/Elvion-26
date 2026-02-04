@@ -1,21 +1,21 @@
 {
     "indexes": [
         {
-            "collectionGroup": "dealflow",
+            "collectionGroup": "startups",
             "queryScope": "COLLECTION",
             "fields": [
                 {
-                    "fieldPath": "investorId",
+                    "fieldPath": "stage",
                     "order": "ASCENDING"
                 },
                 {
-                    "fieldPath": "updatedAt",
+                    "fieldPath": "createdAt",
                     "order": "DESCENDING"
                 }
             ]
         },
         {
-            "collectionGroup": "dealflow",
+            "collectionGroup": "startupMemory",
             "queryScope": "COLLECTION",
             "fields": [
                 {
@@ -23,53 +23,53 @@
                     "order": "ASCENDING"
                 },
                 {
-                    "fieldPath": "updatedAt",
+                    "fieldPath": "timestamp",
                     "order": "DESCENDING"
                 }
             ]
         },
         {
-            "collectionGroup": "project_connections",
+            "collectionGroup": "tasks",
             "queryScope": "COLLECTION",
             "fields": [
                 {
-                    "fieldPath": "investorId",
+                    "fieldPath": "startupId",
                     "order": "ASCENDING"
                 },
                 {
-                    "fieldPath": "lastActivityAt",
+                    "fieldPath": "createdAt",
                     "order": "DESCENDING"
                 }
             ]
         },
         {
-            "collectionGroup": "project_connections",
+            "collectionGroup": "agentRuns",
             "queryScope": "COLLECTION",
             "fields": [
                 {
-                    "fieldPath": "founderId",
+                    "fieldPath": "startupId",
                     "order": "ASCENDING"
                 },
                 {
-                    "fieldPath": "lastActivityAt",
+                    "fieldPath": "createdAt",
                     "order": "DESCENDING"
                 }
             ]
         },
         {
-            "collectionGroup": "deal_ai_analysis",
+            "collectionGroup": "connection_requests",
             "queryScope": "COLLECTION",
             "fields": [
                 {
-                    "fieldPath": "dealId",
+                    "fieldPath": "to",
                     "order": "ASCENDING"
                 },
                 {
-                    "fieldPath": "personaTarget",
+                    "fieldPath": "status",
                     "order": "ASCENDING"
                 },
                 {
-                    "fieldPath": "versionNumber",
+                    "fieldPath": "createdAt",
                     "order": "DESCENDING"
                 }
             ]
