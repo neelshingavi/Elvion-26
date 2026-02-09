@@ -17,82 +17,18 @@ import {
     FieldValue
 } from "firebase/firestore";
 
-export interface Startup {
-    startupId: string;
-    ownerId: string;
-    name: string;
-    industry: string;
-    stage: "idea_submitted" | "idea_validated" | "roadmap_created" | "execution_active" | "mvp" | "launch" | "growth";
-    projectStatus: "active" | "archived";
-    vision?: string;
-    problemStatement?: string;
-    idea: string;
-    createdAt: Timestamp;
-    updatedAt: Timestamp;
-}
+import {
+    Startup,
+    StartupMemory,
+    Task,
+    AgentRun,
+    AgentType,
+    StartupMember,
+    FounderProfile as UserData
+} from "./types/founder";
 
-export interface StartupMemory {
-    id: string;
-    startupId: string;
-    type: "idea" | "agent-output" | "decision" | "pivot";
-    source: "user" | "agent";
-    content: string;
-    timestamp: any;
-}
+export type { Startup, StartupMemory, Task, AgentRun, StartupMember, UserData };
 
-export interface UserData {
-    uid: string;
-    role: "founder" | "admin";
-    displayName?: string;
-    photoURL?: string;
-    bannerURL?: string;
-    activeStartupId?: string;
-    about?: string;
-    skills?: string[];
-    age?: number;
-    phone?: string;
-    education?: string;
-    location?: string;
-    accountStatus?: "active" | "suspended";
-    lastLoginAt?: any;
-    createdAt: any;
-    connectionCount?: number;
-    industries?: string[];
-    idea?: string;
-}
-
-export interface Task {
-    id: string;
-    startupId: string;
-    title: string;
-    priority: "high" | "medium" | "low";
-    reason: string;
-    instruction?: string;
-    aiResponse?: string;
-    status: "pending" | "done";
-    createdByAgent?: string;
-    createdAt: any;
-    rating?: 1 | 2 | 3 | 4 | 5;
-    description?: string; // Unified with createTaskDirectly
-}
-
-export interface AgentRun {
-    id: string;
-    startupId: string;
-    agentType: string;
-    status: "running" | "success" | "failure";
-    result?: string;
-    createdAt: any;
-    completedAt?: any;
-}
-
-export interface StartupMember {
-    id: string;
-    startupId: string;
-    userId: string;
-    role: "owner" | "cofounder" | "team" | "mentor";
-    joinedAt: any;
-}
 
 // User data services
 export const getUserData = async (uid: string): Promise<UserData | null> => {
@@ -301,6 +237,8 @@ export const getStartupMemory = async (startupId: string): Promise<StartupMemory
         return [];
     }
 };
+
+export const getMemories = getStartupMemory;
 
 export const updateStartupStage = async (startupId: string, stage: Startup["stage"]) => {
     try {

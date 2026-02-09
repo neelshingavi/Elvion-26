@@ -5,27 +5,34 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
     LayoutDashboard,
-    History,
     Lightbulb,
-    Map,
+    Target,
     CheckSquare,
+    FileText,
+    Globe,
     MessageSquare,
     LogOut,
     UserCircle,
     Rocket,
     ChevronRight,
-    Shield
+    Shield,
+    Sparkles,
+    Calendar,
+    Presentation
 } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 
 export const navItems = [
     { name: "Dashboard", href: "/founder/dashboard", icon: LayoutDashboard },
-    { name: "Idea Check", href: "/founder/idea-validation", icon: Lightbulb },
-    { name: "Timeline", href: "/founder/timeline", icon: History },
-    { name: "Roadmap", href: "/founder/planning", icon: Map },
+    { name: "Canvas", href: "/founder/canvas", icon: FileText },
+    { name: "Validate Idea", href: "/founder/idea-validation", icon: Lightbulb },
+    { name: "Roadmap", href: "/founder/roadmap", icon: Target },
     { name: "Tasks", href: "/founder/tasks", icon: CheckSquare },
-    { name: "Chat", href: "/founder/chats", icon: MessageSquare },
+    { name: "Weekly Review", href: "/founder/weekly-review", icon: Calendar },
+    { name: "Pitch Deck", href: "/founder/pitch-deck", icon: Presentation },
+    { name: "Market Intel", href: "/founder/market-intel", icon: Globe },
+    { name: "AI Chat", href: "/founder/ai-chat", icon: Sparkles },
     { name: "Profile", href: "/founder/profile", icon: UserCircle },
 ];
 

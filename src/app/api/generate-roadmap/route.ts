@@ -1,30 +1,35 @@
 import { NextResponse } from "next/server";
-import { updateStartupStage, addStartupMemory } from "@/lib/startup-service";
-import { callGemini } from "@/lib/gemini";
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { updateStartupStage, addStartupMemory, getStartupMemory } from "@/lib/startup-service";
+import { generateRoadmap } from "@/lib/agents/agent-system";
+import { Startup } from "@/lib/types/founder";
 
 export async function POST(req: Request) {
     try {
         const { startupId, idea, context } = await req.json();
 
-        const prompt = `
-      You are the "Strategic Planning Agent" for FounderFlow.
-      The user has a validated startup idea: "${idea}"
-      Context from validation: ${context}
+        if (!startupId || !idea) {
+            return NextResponse.json({ error: "Missing startupId or idea" }, { status: 400 });
+        }
 
-      Generate a detailed 3-phase strategic roadmap. 
-      Return a JSON object with:
-      1. phases: An array of 3 objects. Each object should have:
-         - title: string (e.g., "Phase 1: MVP Development")
-         - duration: string (e.g., "2-3 months")
-         - description: string
-         - milestones: array of 3 strings
-      2. pros: array of 3 strategic advantages of this path.
-      3. cons: array of 3 potential challenges or trade-offs.
+        const startupRef = doc(db, "startups", startupId);
+        const startupSnap = await getDoc(startupRef);
 
-      Format: JSON only.
-    `;
+        if (!startupSnap.exists()) {
+            return NextResponse.json({ error: "Startup not found" }, { status: 404 });
+        }
 
-        const roadmap = await callGemini(prompt);
+        const startup = { startupId, ...startupSnap.data() } as Startup;
+        const memories = await getStartupMemory(startupId);
+
+        const result = await generateRoadmap({ startup, memories, additionalContext: context }, idea);
+
+        if (!result.success || !result.structuredData) {
+            throw new Error(result.error || "Failed to generate roadmap");
+        }
+
+        const roadmap = result.structuredData;
 
         await updateStartupStage(startupId, "roadmap_created");
         await addStartupMemory(startupId, "agent-output", "agent", JSON.stringify(roadmap));

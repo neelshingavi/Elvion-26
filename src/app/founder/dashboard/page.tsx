@@ -1,473 +1,700 @@
 "use client";
 
-import { useStartup } from "@/hooks/useStartup";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     Rocket,
-    Target,
-    Zap,
-    CheckCircle2,
-    Clock,
-    ChevronRight,
-    Activity,
-    LayoutDashboard,
-    X,
-    FileText,
-    Bot,
-    Play,
-    AlertTriangle,
-    ArrowLeftRight,
-    Bell,
-    Check,
-    Users,
     MessageSquare,
+    Target,
+    CheckCircle2,
+    AlertTriangle,
+    TrendingUp,
+    Clock,
+    MapPin,
+    BarChart3,
+    ChevronRight,
     Sparkles,
-    ArrowUpRight,
-    Mail,
+    Brain,
+    Search,
+    Shield,
+    Zap,
+    FileText,
+    Users,
+    Activity,
+    RefreshCw,
+    ExternalLink,
+    Play,
+    Pause,
+    MoreHorizontal
 } from "lucide-react";
-import { getPrimaryAction } from "@/lib/orchestrator";
-import { formatDistanceToNow } from "date-fns";
-import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
-import ReactMarkdown from "react-markdown";
-import { useRouter } from "next/navigation";
-import { createAgentRun } from "@/lib/startup-service";
-import {
-    getConnectionRequests,
-    acceptConnectionRequest,
-    rejectConnectionRequest,
-    ConnectionRequest
-} from "@/lib/connection-service";
 import { useAuth } from "@/context/AuthContext";
+import { Startup, getStartup, getTasks, getMemories, Task } from "@/lib/startup-service";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { getPrimaryAction } from "@/lib/orchestrator";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+
+// Agent Configuration for UI
+const AGENTS = [
+    {
+        id: "strategist",
+        name: "Strategist",
+        icon: Brain,
+        color: "from-purple-500 to-indigo-500",
+        description: "Strategic planning & pivots",
+        capabilities: ["Pivot analysis", "Trade-offs", "Planning"]
+    },
+    {
+        id: "researcher",
+        name: "Researcher",
+        icon: Search,
+        color: "from-blue-500 to-cyan-500",
+        description: "Market & competitor research",
+        capabilities: ["Market data", "Competitors", "Trends"]
+    },
+    {
+        id: "critic",
+        name: "Critic",
+        icon: Shield,
+        color: "from-orange-500 to-red-500",
+        description: "Assumption stress-testing",
+        capabilities: ["Risk finding", "Edge cases", "Challenges"]
+    },
+    {
+        id: "executor",
+        name: "Executor",
+        icon: Zap,
+        color: "from-green-500 to-emerald-500",
+        description: "Tasks & content generation",
+        capabilities: ["Task creation", "Drafting", "Workflows"]
+    }
+];
+
+interface DashboardMetrics {
+    openTasks: number;
+    completedThisWeek: number;
+    memoryItems: number;
+    validationScore: number | null;
+    weeklyGoalProgress: number;
+}
+
+interface AgentActivity {
+    agentId: string;
+    action: string;
+    timestamp: Date;
+    status: "success" | "running" | "pending";
+}
 
 export default function DashboardPage() {
-    const { user: currentUser } = useAuth();
-    const { startup, memory, tasks, agentRuns, loading } = useStartup();
-    const [selectedTask, setSelectedTask] = useState<any>(null);
-    const [notifications, setNotifications] = useState<ConnectionRequest[]>([]);
-    const [showNotifications, setShowNotifications] = useState(false);
+    const { user } = useAuth();
     const router = useRouter();
 
+    // State
+    const [startup, setStartup] = useState<Startup | null>(null);
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [metrics, setMetrics] = useState<DashboardMetrics>({
+        openTasks: 0,
+        completedThisWeek: 0,
+        memoryItems: 0,
+        validationScore: null,
+        weeklyGoalProgress: 0
+    });
+    const [agentActivities, setAgentActivities] = useState<AgentActivity[]>([]);
+    const [activeAgents, setActiveAgents] = useState<Set<string>>(new Set());
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+
+    // Load dashboard data
     useEffect(() => {
-        if (!currentUser) return;
-        const unsub = getConnectionRequests(currentUser.uid, (reqs: ConnectionRequest[]) => {
-            setNotifications(reqs);
-        });
-        return () => unsub();
-    }, [currentUser]);
+        const loadDashboardData = async () => {
+            if (!user) return;
 
-    const handleAccept = async (req: ConnectionRequest) => {
-        await acceptConnectionRequest(req.id, req.fromId, req.toId);
-    };
+            try {
+                // Get user's active startup
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                const userData = userDoc.data();
+                const activeStartupId = userData?.activeStartupId;
 
-    const handleReject = async (req: ConnectionRequest) => {
-        await rejectConnectionRequest(req.id);
+                if (activeStartupId) {
+                    const startupData = await getStartup(activeStartupId);
+                    setStartup(startupData);
+
+                    // Get tasks
+                    const allTasks = await getTasks(activeStartupId);
+                    setTasks(allTasks);
+
+                    // Get memories
+                    const memories = await getMemories(activeStartupId);
+
+                    // Calculate metrics
+                    const now = new Date();
+                    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+                    setMetrics({
+                        openTasks: allTasks.filter(t => t.status === "pending").length,
+                        completedThisWeek: allTasks.filter(t =>
+                            t.status === "done" &&
+                            t.completedAt &&
+                            t.completedAt.toDate() > weekAgo
+                        ).length,
+                        memoryItems: memories.length,
+                        validationScore: null, // Would come from validation results
+                        weeklyGoalProgress: Math.min(100, Math.round((allTasks.filter(t => t.status === "done").length / Math.max(1, allTasks.length)) * 100))
+                    });
+
+                    // Mock agent activities for demo
+                    setAgentActivities([
+                        {
+                            agentId: "researcher",
+                            action: "Analyzed competitor pricing data",
+                            timestamp: new Date(Date.now() - 30 * 60 * 1000),
+                            status: "success"
+                        },
+                        {
+                            agentId: "critic",
+                            action: "Flagged market size assumption",
+                            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
+                            status: "success"
+                        },
+                        {
+                            agentId: "executor",
+                            action: "Generated 5 new tasks from roadmap",
+                            timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
+                            status: "success"
+                        }
+                    ]);
+                }
+            } catch (error) {
+                console.error("Error loading dashboard:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadDashboardData();
+    }, [user]);
+
+    // Get primary action based on startup stage
+    const primaryAction = getPrimaryAction(startup);
+
+    // Format relative time
+    const formatRelativeTime = (date: Date) => {
+        const diff = Date.now() - date.getTime();
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+
+        if (minutes < 60) return `${minutes}m ago`;
+        if (hours < 24) return `${hours}h ago`;
+        return `${days}d ago`;
     };
 
     if (loading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-                <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Loading Intelligence...</span>
+            <div className="flex min-h-screen items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-10 h-10 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-zinc-500">Loading your workspace...</span>
+                </div>
             </div>
         );
     }
-
-    if (!startup) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8 animate-in fade-in duration-1000">
-                <div className="p-8 bg-zinc-50 dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                    <Rocket className="w-16 h-16 text-zinc-300 dark:text-zinc-700" />
-                </div>
-                <div className="space-y-4">
-                    <h2 className="text-4xl font-black tracking-tighter">Initiate <span className="text-zinc-400">Venture</span></h2>
-                    <p className="text-zinc-500 font-medium text-lg max-w-sm mx-auto leading-relaxed">
-                        Your strategic command center is ready. Initialize your first project to begin execution.
-                    </p>
-                </div>
-                <button
-                    onClick={() => router.push("/projects")}
-                    className="px-10 py-4 bg-zinc-950 dark:bg-zinc-50 text-white dark:text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl"
-                >
-                    Project Registry
-                </button>
-            </div>
-        );
-    }
-
-    const pendingTasks = tasks.filter(t => t.status === "pending");
-    const completedTasks = tasks.filter(t => t.status === "done");
-    const primaryAction = getPrimaryAction(startup);
-    const activeRuns = agentRuns.filter(r => r.status === "running");
-
-    const handleAgentAction = async (agent: any) => {
-        if (!startup) return;
-        try {
-            if (agent.id === "ppt" || agent.id === "mailer") {
-                const { createTaskDirectly } = await import("@/lib/startup-service");
-                const title = agent.id === "ppt" ? "Generate Pitch Deck" : "Dispatch Newsletter";
-                const desc = agent.id === "ppt"
-                    ? "Generate a comprehensive pitch deck based on validated roadmap nodes."
-                    : "Draft and dispatch the weekly ecosystem newsletter to venture partners.";
-
-                await createTaskDirectly(startup.startupId, title, desc, "high");
-                router.push("/founder/tasks");
-                return;
-            }
-            await createAgentRun(startup.startupId, agent.id);
-        } catch (e) {
-            console.error("Agent failed:", e);
-        }
-    };
-
-    const stats = [
-        {
-            name: "Venture Stage",
-            value: startup.stage.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
-            icon: Target,
-            color: "text-indigo-600 dark:text-indigo-400",
-            bg: "bg-indigo-500/10"
-        },
-        {
-            name: "Execution Velocity",
-            value: `${Math.round((completedTasks.length / (tasks.length || 1)) * 100)}%`,
-            icon: Rocket,
-            color: "text-green-600 dark:text-green-500",
-            bg: "bg-green-500/10"
-        },
-        {
-            name: "Active Streams",
-            value: `${activeRuns.length}`,
-            icon: Zap,
-            color: "text-blue-600 dark:text-blue-400",
-            bg: "bg-blue-500/10"
-        },
-        {
-            name: "Strategic IQ",
-            value: "85/100",
-            icon: Target,
-            color: "text-purple-600 dark:text-purple-400",
-            bg: "bg-purple-500/10"
-        },
-    ];
-
-    const agents = [
-        { id: "ppt", name: "PPT Deck Builder", description: "Visual Presentation Vector", icon: Sparkles },
-        { id: "mailer", name: "Newsletter Mailer", description: "Ecosystem Outreach", icon: Mail },
-        { id: "tasks", name: "Task Registry", description: "Master Execution List", icon: LayoutDashboard },
-    ];
 
     return (
-        <div className="space-y-12 pb-24 max-w-full mx-auto animate-in fade-in duration-700">
-            {/* Header Section */}
-            <header className="flex flex-col md:flex-row md:items-end justify-between items-start gap-8 border-b border-zinc-100 dark:border-zinc-800 pb-12">
-                <div className="space-y-4">
+        <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505]">
+            {/* Main Content */}
+            <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
+
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                        <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
+                            {startup?.name || "Your Startup"}
+                            <span className={cn(
+                                "px-3 py-1 text-xs font-bold uppercase tracking-widest rounded-full",
+                                startup?.stage === "idea_submitted" ? "bg-yellow-100 text-yellow-700" :
+                                    startup?.stage === "idea_validated" ? "bg-green-100 text-green-700" :
+                                        startup?.stage === "roadmap_created" ? "bg-blue-100 text-blue-700" :
+                                            "bg-zinc-100 text-zinc-700"
+                            )}>
+                                {startup?.stage?.replace(/_/g, " ") || "New Project"}
+                            </span>
+                        </h1>
+                        <p className="text-zinc-500 text-sm max-w-xl">
+                            {startup?.oneSentencePitch || startup?.idea || "Define your one-sentence pitch to get started"}
+                        </p>
+                    </div>
+
                     <div className="flex items-center gap-3">
-                        <div className="px-3 py-1 bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-[0.3em] rounded-lg border border-indigo-500/10">Venture Command</div>
                         <button
-                            onClick={() => router.push("/projects")}
-                            className="p-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-400 hover:text-indigo-500 transition-colors"
+                            onClick={() => setSidebarOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all"
                         >
-                            <ArrowLeftRight className="w-3.5 h-3.5" />
+                            <MessageSquare className="w-4 h-4" />
+                            AI Sidekick
                         </button>
-                    </div>
-                    <h1 className="text-5xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50">
-                        {startup.name} <span className="text-zinc-400 dark:text-zinc-600">Workspace</span>
-                    </h1>
-                    <p className="text-zinc-500 dark:text-zinc-400 text-xl font-medium leading-relaxed max-w-2xl">
-                        {startup.idea}
-                    </p>
-                    <div className="flex items-center gap-3 px-6 py-2.5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm w-fit mt-4">
-                        <div className="relative">
-                            <div className="w-2 h-2 bg-green-500 rounded-full" />
-                            <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping" />
-                        </div>
-                        <span className="text-[10px] font-black tracking-[0.2em] text-zinc-500 uppercase">
-                            {activeRuns.length > 0 ? `${activeRuns.length} Intel Streams Running` : "Decision Cycle IDLE"}
-                        </span>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="relative">
-                        <button
-                            onClick={() => setShowNotifications(!showNotifications)}
-                            className="p-4 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm text-zinc-400 hover:text-indigo-500 transition-all relative"
+                {/* Metrics Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <MetricCard
+                        icon={Target}
+                        label="Open Tasks"
+                        value={metrics.openTasks}
+                        color="indigo"
+                        trend={metrics.openTasks > 5 ? "up" : null}
+                    />
+                    <MetricCard
+                        icon={CheckCircle2}
+                        label="Done This Week"
+                        value={metrics.completedThisWeek}
+                        color="green"
+                    />
+                    <MetricCard
+                        icon={Brain}
+                        label="Memory Items"
+                        value={metrics.memoryItems}
+                        color="purple"
+                    />
+                    <MetricCard
+                        icon={BarChart3}
+                        label="Weekly Progress"
+                        value={`${metrics.weeklyGoalProgress}%`}
+                        color="blue"
+                        progress={metrics.weeklyGoalProgress}
+                    />
+                </div>
+
+                {/* Primary Action Card */}
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-6 md:p-8 bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-600 rounded-3xl text-white relative overflow-hidden"
+                >
+                    {/* Background decoration */}
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
+
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                                <Sparkles className="w-5 h-5" />
+                                <span className="text-xs font-black uppercase tracking-widest opacity-80">
+                                    Recommended Action
+                                </span>
+                            </div>
+                            <h2 className="text-2xl md:text-3xl font-black">
+                                {primaryAction.label}
+                            </h2>
+                            <p className="text-white/80 max-w-lg">
+                                {primaryAction.description}
+                            </p>
+                        </div>
+
+                        <Link
+                            href={`/founder/${primaryAction.agentType}`}
+                            className="flex items-center justify-center gap-3 px-8 py-4 bg-white text-indigo-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-lg shrink-0"
                         >
-                            <Bell className="w-5 h-5 shadow-inner" />
-                            {notifications.length > 0 && (
-                                <div className="absolute top-2.5 right-2.5 w-4 h-4 bg-indigo-500 text-[8px] font-bold text-white flex items-center justify-center rounded-full border-2 border-white dark:border-zinc-950">
-                                    {notifications.length}
+                            {primaryAction.label.includes("Validate") && <Rocket className="w-5 h-5" />}
+                            {primaryAction.label.includes("Roadmap") && <Target className="w-5 h-5" />}
+                            {primaryAction.label.includes("Task") && <Zap className="w-5 h-5" />}
+                            Start Now
+                            <ChevronRight className="w-5 h-5" />
+                        </Link>
+                    </div>
+                </motion.div>
+
+                {/* Two Column Layout */}
+                <div className="grid md:grid-cols-5 gap-6">
+                    {/* Left Column - Agent Ecosystem */}
+                    <div className="md:col-span-3 space-y-6">
+                        {/* AI Agent Grid */}
+                        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 className="font-black text-lg">AI Co-Founders</h3>
+                                    <p className="text-sm text-zinc-500">Your specialized agent team</p>
                                 </div>
-                            )}
-                        </button>
+                                <div className="flex items-center gap-2 text-xs text-zinc-400">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                                    All systems operational
+                                </div>
+                            </div>
 
-                        <AnimatePresence>
-                            {showNotifications && (
-                                <>
-                                    <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                        className="absolute right-0 mt-3 w-80 bg-white dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 rounded-[2rem] shadow-2xl z-50 overflow-hidden"
-                                    >
-                                        <div className="p-6 border-b border-zinc-50 dark:border-zinc-900 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/50">
-                                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Signal Intelligence</h3>
-                                            <button onClick={() => setShowNotifications(false)} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg"><X className="w-3 h-3 text-zinc-400" /></button>
-                                        </div>
-                                        <div className="max-h-[400px] overflow-y-auto p-4 space-y-4">
-                                            {notifications.length > 0 ? notifications.map((req) => (
-                                                <div key={req.id} className="p-6 rounded-[2rem] bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 transition-all hover:shadow-lg space-y-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-                                                            <Users className="w-5 h-5 text-indigo-500" />
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">Connection Link</p>
-                                                            <p className="text-xs font-bold text-zinc-900 dark:text-zinc-50 truncate">Protocol: {req.fromId.slice(0, 8)}</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-2">
-                                                        <button onClick={() => handleAccept(req)} className="py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:scale-105 transition-transform">Connect</button>
-                                                        <button onClick={() => handleReject(req)} className="py-2.5 bg-zinc-50 dark:bg-zinc-800 text-zinc-400 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:text-red-500 transition-colors">Dismiss</button>
-                                                    </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                {AGENTS.map((agent) => {
+                                    const isActive = activeAgents.has(agent.id);
+                                    const recentActivity = agentActivities.find(a => a.agentId === agent.id);
+
+                                    return (
+                                        <motion.button
+                                            key={agent.id}
+                                            onClick={() => setSelectedAgent(agent.id)}
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            className={cn(
+                                                "p-4 rounded-2xl border text-left transition-all group",
+                                                selectedAgent === agent.id
+                                                    ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20"
+                                                    : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                                            )}
+                                        >
+                                            <div className="flex items-start justify-between mb-3">
+                                                <div className={cn(
+                                                    "w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center text-white",
+                                                    agent.color
+                                                )}>
+                                                    <agent.icon className="w-5 h-5" />
                                                 </div>
-                                            )) : (
-                                                <div className="py-12 text-center text-zinc-300 italic font-medium">No signals detected.</div>
-                                            )}
-                                        </div>
-                                    </motion.div>
-                                </>
-                            )}
-                        </AnimatePresence>
-                    </div>
-
-                    <button
-                        onClick={() => router.push("/founder/chats")}
-                        className="p-4 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm text-zinc-400 hover:text-indigo-500 transition-all"
-                    >
-                        <MessageSquare className="w-5 h-5" />
-                    </button>
-                </div>
-            </header>
-
-            {/* Aggregated Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {stats.map((stat, idx) => (
-                    <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        className="group p-8 rounded-[2.5rem] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-lg transition-all min-w-0"
-                    >
-                        <div className="flex flex-col gap-6 min-w-0">
-                            <div className={cn("w-14 h-14 rounded-2xl transition-transform group-hover:scale-110 flex items-center justify-center shadow-inner shrink-0", stat.bg, stat.color)}>
-                                <stat.icon className="w-7 h-7" />
-                            </div>
-                            <div className="min-w-0">
-                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.25em] mb-2 line-clamp-1">{stat.name}</p>
-                                <p className="text-3xl font-bold tracking-tight line-clamp-1 truncate">{stat.value}</p>
-                            </div>
-                        </div>
-                    </motion.div>
-                ))}
-            </div>
-
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-12 items-start">
-                <div className="xl:col-span-8 space-y-12">
-                    {/* Primary Strategic Focus */}
-                    <div className="p-12 rounded-[3.5rem] bg-zinc-900 text-white shadow-2xl relative overflow-hidden group min-w-0">
-                        <div className="relative z-10 space-y-8 min-w-0">
-                            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-xl rounded-full text-[9px] font-black tracking-[0.4em] uppercase text-indigo-400 shrink-0 border border-white/5">
-                                <Sparkles className="w-3.5 h-3.5" />
-                                Optimal Next Phase
-                            </div>
-                            <div className="space-y-4 min-w-0">
-                                <h3 className="text-4xl font-black tracking-tighter line-clamp-2 break-words">
-                                    {primaryAction.label}
-                                </h3>
-                                <p className="opacity-60 text-lg font-medium leading-relaxed max-w-xl line-clamp-3">
-                                    {primaryAction.description}
-                                </p>
-                            </div>
-                            <button
-                                onClick={() => router.push(`/founder/${primaryAction.agentType}`)}
-                                className="flex items-center gap-3 px-8 py-4 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shrink-0 w-fit"
-                            >
-                                Execute Protocol
-                                <ArrowUpRight className="w-4 h-4" />
-                            </button>
-                        </div>
-                        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/20 blur-[100px] rounded-full translate-x-1/4 -translate-y-1/4 pointer-events-none" />
-                    </div>
-
-                    {/* Agent Grid */}
-                    <section className="space-y-8">
-                        <div className="flex items-center gap-3 px-2">
-                            <div className="p-2.5 bg-indigo-500/10 rounded-xl">
-                                <Bot className="w-5 h-5 text-indigo-500" />
-                            </div>
-                            <h3 className="text-2xl font-black tracking-tighter uppercase text-zinc-400">Intelligence Ecosystem</h3>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {agents.map((agent) => (
-                                <div key={agent.id} className="p-10 rounded-[3rem] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-all hover:shadow-xl hover:border-indigo-500/20 group relative overflow-hidden min-w-0">
-                                    <div className="flex flex-col gap-8 relative z-10 h-full min-w-0">
-                                        <div className="flex items-center justify-between shrink-0">
-                                            <div className="p-4 bg-zinc-50 dark:bg-zinc-950 rounded-2xl group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-500 transition-colors border border-zinc-100 dark:border-zinc-800">
-                                                <agent.icon className="w-6 h-6" />
+                                                {isActive ? (
+                                                    <div className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full text-xs font-bold">
+                                                        <Activity className="w-3 h-3" />
+                                                        Active
+                                                    </div>
+                                                ) : (
+                                                    <div className="px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-full text-xs font-bold">
+                                                        Ready
+                                                    </div>
+                                                )}
                                             </div>
-                                            {agent.id !== "tasks" && (
-                                                <div className={cn("h-2.5 w-2.5 rounded-full", activeRuns.find(r => r.agentType === agent.id) ? "bg-green-500 animate-pulse shadow-[0_0_12px_rgba(34,197,94,0.5)]" : "bg-zinc-100 dark:bg-zinc-800")} />
+
+                                            <h4 className="font-bold text-sm">{agent.name}</h4>
+                                            <p className="text-xs text-zinc-500 mb-3">{agent.description}</p>
+
+                                            {recentActivity && (
+                                                <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                                                    <p className="text-xs text-zinc-400 truncate">
+                                                        {recentActivity.action}
+                                                    </p>
+                                                    <p className="text-xs text-zinc-300">
+                                                        {formatRelativeTime(recentActivity.timestamp)}
+                                                    </p>
+                                                </div>
                                             )}
+                                        </motion.button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Recent Tasks */}
+                        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 className="font-black text-lg">Task Queue</h3>
+                                    <p className="text-sm text-zinc-500">Your pending work items</p>
+                                </div>
+                                <Link
+                                    href="/founder/tasks"
+                                    className="text-xs font-bold text-indigo-500 hover:text-indigo-600 flex items-center gap-1"
+                                >
+                                    View All <ChevronRight className="w-4 h-4" />
+                                </Link>
+                            </div>
+
+                            <div className="space-y-3">
+                                {tasks.filter(t => t.status === "pending").slice(0, 5).map((task, i) => (
+                                    <div
+                                        key={task.id}
+                                        className="flex items-center gap-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                                    >
+                                        <div className={cn(
+                                            "w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold",
+                                            task.priority === "high" || task.priority === "critical" ? "bg-red-500" :
+                                                task.priority === "medium" ? "bg-yellow-500" :
+                                                    "bg-green-500"
+                                        )}>
+                                            {i + 1}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <h4 className="font-black text-lg tracking-tight mb-2 group-hover:text-indigo-500 transition-colors line-clamp-1 uppercase">{agent.name}</h4>
-                                            <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.25em] line-clamp-2">{agent.description}</p>
+                                            <h4 className="font-bold text-sm truncate">{task.title}</h4>
+                                            <p className="text-xs text-zinc-500 truncate">
+                                                {task.description || task.instruction || "No description"}
+                                            </p>
                                         </div>
-                                        <button
-                                            onClick={() => agent.id === "tasks" ? router.push("/founder/tasks") : handleAgentAction(agent)}
-                                            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-950 text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-black transition-all border border-zinc-100 dark:border-zinc-800 shrink-0"
-                                        >
-                                            {agent.id === "tasks" ? (
-                                                <>
-                                                    <LayoutDashboard className="w-3.5 h-3.5" />
-                                                    Open Board
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Play className="w-3.5 h-3.5" />
-                                                    Trigger Intel
-                                                </>
+                                        <div className="flex items-center gap-2">
+                                            {task.createdByAgent && (
+                                                <span className="px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 text-xs font-bold rounded-full">
+                                                    AI
+                                                </span>
                                             )}
-                                        </button>
+                                            <MoreHorizontal className="w-4 h-4 text-zinc-400" />
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
+                                ))}
 
-                    {/* Execution Nodes */}
-                    <section className="space-y-8">
-                        <div className="flex items-center justify-between px-2">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-indigo-500/10 rounded-xl">
-                                    <Activity className="w-5 h-5 text-indigo-500" />
-                                </div>
-                                <h3 className="text-2xl font-black tracking-tighter uppercase text-zinc-400">Node Registry</h3>
+                                {tasks.filter(t => t.status === "pending").length === 0 && (
+                                    <div className="py-12 text-center text-zinc-400">
+                                        <Target className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                        <p className="text-sm">No pending tasks</p>
+                                        <p className="text-xs">Create tasks from your roadmap</p>
+                                    </div>
+                                )}
                             </div>
-                            <button className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 hover:text-indigo-500 transition-colors">Historical Logs</button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {[...pendingTasks.slice(0, 4), ...completedTasks.slice(0, 2)].map((task) => (
-                                <div
-                                    key={task.id}
-                                    onClick={() => task.status === "done" && setSelectedTask(task)}
-                                    className={cn(
-                                        "group p-10 rounded-[3rem] bg-white dark:bg-zinc-900 border transition-all cursor-pointer shadow-sm hover:shadow-xl min-w-0 overflow-hidden flex flex-col h-full",
-                                        task.status === "done" ? "border-green-500/20 bg-green-50/5" : "border-zinc-200 dark:border-zinc-800"
-                                    )}
-                                >
-                                    <div className="flex items-center justify-between mb-8 shrink-0">
-                                        <div className="flex items-center gap-4">
-                                            {task.status === "done" ? (
-                                                <div className="w-7 h-7 bg-green-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-green-500/20">
-                                                    <CheckCircle2 className="w-4 h-4 text-white" />
-                                                </div>
-                                            ) : (
-                                                <div className="w-7 h-7 rounded-xl border-2 border-zinc-100 dark:border-zinc-800 shrink-0" />
-                                            )}
-                                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 line-clamp-1">
-                                                {task.status === "done" ? "VERIFIED" : `${task.priority} INTEL`}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="font-bold text-base tracking-tight mb-4 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors uppercase leading-snug line-clamp-2 break-words">{task.title}</h4>
-                                        <p className="text-[11px] text-zinc-500 font-medium leading-relaxed italic line-clamp-3 break-words">"{task.instruction || task.reason}"</p>
-                                    </div>
-                                    {task.status === "done" && (
-                                        <div className="mt-8 pt-8 border-t border-zinc-50 dark:border-zinc-800/50 flex items-center justify-between shrink-0">
-                                            <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em]">Access Evidence →</span>
-                                            <ArrowUpRight className="w-4 h-4 text-zinc-300" />
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                </div>
-
-                {/* Vertical Stream Sidecar */}
-                <aside className="xl:col-span-4 space-y-12 h-fit xl:sticky xl:top-24">
-                    <div className="bg-zinc-50 dark:bg-zinc-900/50 p-10 rounded-[3.5rem] border border-zinc-100 dark:border-zinc-800/50 shadow-sm space-y-12">
-                        <div className="flex items-center gap-4 text-zinc-400">
-                            <Clock className="w-5 h-5" />
-                            <h3 className="text-[11px] font-black tracking-[0.4em] uppercase">Decision Stream</h3>
-                        </div>
-
-                        <div className="relative space-y-12 before:absolute before:inset-0 before:ml-[15px] before:h-full before:w-[1.5px] before:bg-zinc-200 dark:before:bg-zinc-800/50">
-                            {memory.slice(0, 8).map((entry) => (
-                                <div key={entry.id} className="relative flex items-start pl-12 group min-w-0">
-                                    <div className={cn(
-                                        "absolute left-0 mt-0 w-8 h-8 rounded-xl border-4 border-white dark:border-black flex items-center justify-center shadow-lg transition-transform group-hover:scale-110 shrink-0",
-                                        entry.source === "agent" ? "bg-zinc-900 text-white dark:bg-white dark:text-black" : "bg-white text-zinc-400 dark:bg-zinc-800 border-zinc-50 dark:border-zinc-900"
-                                    )}>
-                                        {entry.type === "idea" && <Rocket className="w-3.5 h-3.5" />}
-                                        {entry.type === "agent-output" && <Zap className="w-3.5 h-3.5" />}
-                                        {entry.type === "decision" && <Target className="w-3.5 h-3.5" />}
-                                        {entry.type === "pivot" && <AlertTriangle className="w-3.5 h-3.5" />}
-                                    </div>
-                                    <div className="space-y-1.5 min-w-0">
-                                        <div className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] line-clamp-1">
-                                            {formatDistanceToNow(entry.timestamp.toDate())} ago
-                                        </div>
-                                        <p className="text-[13px] font-medium leading-relaxed text-zinc-600 dark:text-zinc-300 group-hover:text-black dark:group-hover:text-white transition-colors line-clamp-4 break-words">
-                                            {entry.content}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
                         </div>
                     </div>
-                </aside>
-            </div>
 
-            {/* Evidence Viewer */}
-            <AnimatePresence>
-                {selectedTask && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-8">
-                        <motion.div
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            onClick={() => setSelectedTask(null)}
-                            className="absolute inset-0 bg-zinc-950/90 backdrop-blur-xl"
-                        />
-                        <motion.div
-                            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                            className="relative w-full max-w-4xl max-h-[85vh] bg-white dark:bg-zinc-950 rounded-[3.5rem] overflow-hidden shadow-2xl border border-white/5 flex flex-col"
-                        >
-                            <div className="flex items-center justify-between p-12 bg-zinc-100/50 dark:bg-zinc-900/50 border-b border-zinc-100 dark:border-zinc-800">
-                                <div>
-                                    <h2 className="text-2xl font-black tracking-tighter uppercase mb-2">{selectedTask.title}</h2>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-500">Extracted Evidence Packet</p>
-                                </div>
-                                <button onClick={() => setSelectedTask(null)} className="p-4 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-2xl transition-all">
-                                    <X className="w-6 h-6" />
+                    {/* Right Column - Activity & Intelligence */}
+                    <div className="md:col-span-2 space-y-6">
+                        {/* Quick Actions */}
+                        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-6">
+                            <h3 className="font-black text-lg mb-4">Quick Actions</h3>
+                            <div className="grid grid-cols-2 gap-3">
+                                <QuickActionButton
+                                    icon={FileText}
+                                    label="Canvas"
+                                    href="/founder/canvas"
+                                />
+                                <QuickActionButton
+                                    icon={Target}
+                                    label="Roadmap"
+                                    href="/founder/roadmap"
+                                />
+                                <QuickActionButton
+                                    icon={BarChart3}
+                                    label="Validate"
+                                    href="/founder/idea-validation"
+                                />
+                                <QuickActionButton
+                                    icon={Search}
+                                    label="Research"
+                                    href="/founder/market-intel"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Agent Activity Feed */}
+                        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-black text-lg">Agent Activity</h3>
+                                <button className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-all">
+                                    <RefreshCw className="w-4 h-4 text-zinc-400" />
                                 </button>
                             </div>
-                            <div className="p-16 overflow-y-auto flex-1 prose prose-zinc dark:prose-invert prose-p:text-base prose-p:leading-relaxed prose-headings:text-xl prose-headings:font-black prose-headings:tracking-tighter prose-headings:uppercase max-w-none">
-                                <ReactMarkdown>{selectedTask.aiResponse || "_SECURE DATA LAYER UPLOADING_"}</ReactMarkdown>
+
+                            <div className="space-y-4">
+                                {agentActivities.map((activity, i) => {
+                                    const agent = AGENTS.find(a => a.id === activity.agentId);
+                                    if (!agent) return null;
+
+                                    return (
+                                        <div key={i} className="flex gap-3">
+                                            <div className={cn(
+                                                "w-8 h-8 rounded-lg bg-gradient-to-br flex items-center justify-center text-white shrink-0",
+                                                agent.color
+                                            )}>
+                                                <agent.icon className="w-4 h-4" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-medium">{activity.action}</p>
+                                                <p className="text-xs text-zinc-400">
+                                                    {agent.name} • {formatRelativeTime(activity.timestamp)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                                {agentActivities.length === 0 && (
+                                    <div className="py-8 text-center text-zinc-400">
+                                        <Activity className="w-6 h-6 mx-auto mb-2 opacity-50" />
+                                        <p className="text-sm">No recent activity</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* First 48 Hours Progress */}
+                        {startup?.first48HoursPlan && (
+                            <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-3xl border border-amber-200 dark:border-amber-800/50 p-6">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <Clock className="w-5 h-5 text-amber-600" />
+                                    <h3 className="font-black text-lg text-amber-900 dark:text-amber-100">
+                                        First 48 Hours
+                                    </h3>
+                                </div>
+
+                                <div className="relative pt-2">
+                                    <div className="flex items-center justify-between text-sm mb-2">
+                                        <span className="text-amber-700 dark:text-amber-300 font-medium">
+                                            Progress
+                                        </span>
+                                        <span className="text-amber-900 dark:text-amber-100 font-black">
+                                            {startup.first48HoursPlan.completionPercentage || 0}%
+                                        </span>
+                                    </div>
+                                    <div className="w-full h-3 bg-amber-200 dark:bg-amber-800 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-500"
+                                            style={{ width: `${startup.first48HoursPlan.completionPercentage || 0}%` }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <Link
+                                    href="/founder/tasks?filter=first48"
+                                    className="mt-4 flex items-center justify-center gap-2 py-3 bg-amber-100 dark:bg-amber-800/50 text-amber-700 dark:text-amber-200 rounded-xl text-sm font-bold hover:bg-amber-200 dark:hover:bg-amber-800 transition-all"
+                                >
+                                    View Tasks
+                                    <ChevronRight className="w-4 h-4" />
+                                </Link>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* AI Sidekick Panel */}
+            <AnimatePresence>
+                {sidebarOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setSidebarOpen(false)}
+                            className="fixed inset-0 bg-black/50 z-40"
+                        />
+                        <motion.div
+                            initial={{ x: "100%" }}
+                            animate={{ x: 0 }}
+                            exit={{ x: "100%" }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 z-50 flex flex-col"
+                        >
+                            {/* Panel Header */}
+                            <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                                        <Sparkles className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold">AI Sidekick</h3>
+                                        <p className="text-xs text-zinc-500">Ask anything about your startup</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setSidebarOpen(false)}
+                                    className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            {/* Chat Area */}
+                            <div className="flex-1 p-6 overflow-y-auto">
+                                <div className="space-y-4">
+                                    <div className="flex gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
+                                            <Sparkles className="w-4 h-4 text-indigo-500" />
+                                        </div>
+                                        <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl rounded-tl-sm p-4">
+                                            <p className="text-sm">
+                                                Hi! I'm your AI sidekick. I can help you with:
+                                            </p>
+                                            <ul className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 space-y-1">
+                                                <li>• Strategic questions about your startup</li>
+                                                <li>• Market research and competitor analysis</li>
+                                                <li>• Task prioritization and planning</li>
+                                                <li>• Drafting content and communications</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Input */}
+                            <div className="p-4 border-t border-zinc-100 dark:border-zinc-800">
+                                <div className="flex gap-3">
+                                    <input
+                                        type="text"
+                                        placeholder="Ask me anything..."
+                                        className="flex-1 p-4 bg-zinc-100 dark:bg-zinc-800 rounded-xl border-0 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    />
+                                    <button className="px-4 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 transition-all">
+                                        <ChevronRight className="w-5 h-5" />
+                                    </button>
+                                </div>
                             </div>
                         </motion.div>
-                    </div>
+                    </>
                 )}
             </AnimatePresence>
         </div>
     );
 }
 
+// Metric Card Component
+function MetricCard({
+    icon: Icon,
+    label,
+    value,
+    color,
+    trend,
+    progress
+}: {
+    icon: any;
+    label: string;
+    value: string | number;
+    color: string;
+    trend?: "up" | "down" | null;
+    progress?: number;
+}) {
+    const colorClasses: Record<string, string> = {
+        indigo: "text-indigo-500 bg-indigo-100 dark:bg-indigo-900/30",
+        green: "text-green-500 bg-green-100 dark:bg-green-900/30",
+        purple: "text-purple-500 bg-purple-100 dark:bg-purple-900/30",
+        blue: "text-blue-500 bg-blue-100 dark:bg-blue-900/30",
+        amber: "text-amber-500 bg-amber-100 dark:bg-amber-900/30"
+    };
+
+    return (
+        <div className="p-5 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center gap-3 mb-3">
+                <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", colorClasses[color])}>
+                    <Icon className="w-5 h-5" />
+                </div>
+                {trend && (
+                    <TrendingUp className={cn(
+                        "w-4 h-4",
+                        trend === "up" ? "text-green-500" : "text-red-500"
+                    )} />
+                )}
+            </div>
+            <div className="text-2xl font-black">{value}</div>
+            <div className="text-xs text-zinc-500 font-medium">{label}</div>
+            {progress !== undefined && (
+                <div className="mt-3 w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                    <div
+                        className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
+                        style={{ width: `${progress}%` }}
+                    />
+                </div>
+            )}
+        </div>
+    );
+}
+
+// Quick Action Button
+function QuickActionButton({
+    icon: Icon,
+    label,
+    href
+}: {
+    icon: any;
+    label: string;
+    href: string;
+}) {
+    return (
+        <Link
+            href={href}
+            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all text-center"
+        >
+            <Icon className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+            <span className="text-xs font-bold">{label}</span>
+        </Link>
+    );
+}

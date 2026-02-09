@@ -1,47 +1,49 @@
 import { NextResponse } from "next/server";
-import { callGemini } from "@/lib/gemini";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { generateTasks } from "@/lib/agents/agent-system";
+import { getStartupMemory } from "@/lib/startup-service";
+import { Startup } from "@/lib/types/founder";
 
 export async function POST(req: Request) {
     try {
-        const body = await req.json();
-        const { startupId, idea } = body;
+        const { startupId, idea, strategy } = await req.json();
 
-        if (!startupId || !idea) {
+        if (!startupId || (!idea && !strategy)) {
             return NextResponse.json(
-                { error: "Missing startupId or idea" },
+                { error: "Missing startupId, idea, or strategy" },
                 { status: 400 }
             );
         }
 
-        const prompt = `
-      You are the "Execution Agent" for FounderFlow. 
-      Generate 4 immediate atomic tasks to start building this idea: "${idea}"
-      
-      Return a structured JSON array of objects with:
-      1. title: Short task title.
-      2. priority: "high", "medium", or "low".
-      3. reason: Why this task is important.
-      
-      Format: JSON array only.
-    `;
+        const startupRef = doc(db, "startups", startupId);
+        const startupSnap = await getDoc(startupRef);
 
-        const tasks = await callGemini(prompt);
-
-        if (!Array.isArray(tasks)) {
-            throw new Error("Invalid AI response format");
+        if (!startupSnap.exists()) {
+            return NextResponse.json({ error: "Startup not found" }, { status: 404 });
         }
+
+        const startup = { startupId, ...startupSnap.data() } as Startup;
+        const memories = await getStartupMemory(startupId);
+
+        const result = await generateTasks({ startup, memories }, strategy || idea);
+
+        if (!result.success || !result.structuredData || !Array.isArray(result.structuredData.tasks)) {
+            throw new Error(result.error || "Failed to generate tasks");
+        }
+
+        const tasks = result.structuredData.tasks;
 
         // Batch add to Firestore
         const results = await Promise.all(tasks.map((task: any) =>
             addDoc(collection(db, "tasks"), {
                 startupId,
                 title: task.title,
-                priority: task.priority,
-                reason: task.reason,
+                description: task.description || "",
+                priority: task.priority || "medium",
+                reason: task.reason || "",
                 status: "pending",
-                createdByAgent: "Execution Agent",
+                createdByAgent: "Executor Agent",
                 createdAt: serverTimestamp(),
             })
         ));
