@@ -72,7 +72,11 @@ export default function LoginPage() {
             }
         } catch (err: any) {
             console.error("Login error:", err);
-            setError(err.message || "Failed to sign in.");
+            if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+                setError("Sign-in process was cancelled.");
+            } else {
+                setError(err.message || "Failed to sign in.");
+            }
         } finally {
             setLoading(false);
         }
