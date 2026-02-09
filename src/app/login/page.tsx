@@ -71,10 +71,11 @@ export default function LoginPage() {
                 }
             }
         } catch (err: any) {
-            console.error("Login error:", err);
             if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+                console.warn("Login cancelled by user.");
                 setError("Sign-in process was cancelled.");
             } else {
+                console.error("Login error:", err);
                 setError(err.message || "Failed to sign in.");
             }
         } finally {
