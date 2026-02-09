@@ -32,7 +32,7 @@ export const navItems = [
     { name: "Weekly Review", href: "/founder/weekly-review", icon: Calendar },
     { name: "Pitch Deck", href: "/founder/pitch-deck", icon: Presentation },
     { name: "Market Intel", href: "/founder/market-intel", icon: Globe },
-    { name: "AI Chat", href: "/founder/ai-chat", icon: Sparkles },
+    { name: "Messages", href: "/founder/chats", icon: MessageSquare },
     { name: "Profile", href: "/founder/profile", icon: UserCircle },
 ];
 
@@ -60,7 +60,7 @@ export function Sidebar() {
                     const isActive = pathname === item.href;
                     return (
                         <Link
-                            key={item.name}
+                            key={item.href}
                             href={item.href}
                             className={cn(
                                 "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group",

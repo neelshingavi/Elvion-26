@@ -9,7 +9,7 @@ import {
     signInWithEmailAndPassword,
     updateProfile
 } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db, isConfigValid } from "@/lib/firebase";
 import { Loader2, AlertCircle, Eye, EyeOff, X } from "lucide-react";
 import Link from "next/link";
@@ -41,16 +41,35 @@ export default function LoginPage() {
         try {
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
-            // Ensure user document exists (handled in onboarding, but good to ensure)
-            await setDoc(doc(db, "users", result.user.uid), {
-                uid: result.user.uid,
-                email: result.user.email,
-                displayName: result.user.displayName,
-                role: "founder",
-                lastLogin: serverTimestamp(),
-            }, { merge: true });
 
-            router.push("/onboarding");
+            const userRef = doc(db, "users", result.user.uid);
+            const userSnap = await getDoc(userRef);
+
+            if (!userSnap.exists()) {
+                // First time OAuth login -> Treat as SIGNUP
+                await setDoc(userRef, {
+                    uid: result.user.uid,
+                    email: result.user.email,
+                    displayName: result.user.displayName,
+                    role: "founder",
+                    createdAt: serverTimestamp(),
+                    lastLogin: serverTimestamp(),
+                    isOnboardingCompleted: false
+                });
+                router.push("/onboarding");
+            } else {
+                // Existing user -> LOGIN
+                await updateDoc(userRef, {
+                    lastLogin: serverTimestamp()
+                });
+
+                const userData = userSnap.data();
+                if (userData?.isOnboardingCompleted || userData?.activeStartupId) {
+                    router.push("/founder/dashboard");
+                } else {
+                    router.push("/onboarding");
+                }
+            }
         } catch (err: any) {
             console.error("Login error:", err);
             setError(err.message || "Failed to sign in.");
@@ -83,12 +102,22 @@ export default function LoginPage() {
                     displayName: formData.name,
                     role: "founder",
                     createdAt: serverTimestamp(),
+                    isOnboardingCompleted: false
                 });
 
                 router.push("/onboarding");
             } else {
-                await signInWithEmailAndPassword(auth, formData.email, formData.password);
-                router.push("/onboarding");
+                const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+
+                // Check onboarding status
+                const userRef = doc(db, "users", userCredential.user.uid);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists() && (userSnap.data()?.isOnboardingCompleted || userSnap.data()?.activeStartupId)) {
+                    router.push("/founder/dashboard");
+                } else {
+                    router.push("/onboarding");
+                }
             }
         } catch (err: any) {
             console.error("Auth error:", err);

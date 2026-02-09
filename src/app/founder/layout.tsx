@@ -13,7 +13,7 @@ export default function FounderLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const { user, loading } = useAuth();
+    const { user, userData, loading } = useAuth();
     const router = useRouter();
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -24,10 +24,15 @@ export default function FounderLayout({
     }, [pathname]);
 
     useEffect(() => {
-        if (!loading && !user) {
-            router.push("/login");
+        if (!loading) {
+            if (!user) {
+                router.push("/login");
+            } else if (userData && !userData.isOnboardingCompleted && !userData.activeStartupId) {
+                // Redirect to onboarding if not completed (and not a legacy user with active startup)
+                router.push("/onboarding");
+            }
         }
-    }, [user, loading, router]);
+    }, [user, userData, loading, router]);
 
     if (loading) return <FullPageLoader />;
     if (!user) return null;

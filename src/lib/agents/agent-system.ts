@@ -27,59 +27,7 @@ interface AgentConfig {
     temperature: number;
 }
 
-export const AGENT_CONFIGS: Record<AgentType, AgentConfig> = {
-    strategist: {
-        name: "Strategist Agent",
-        description: "Uses reasoning model for pivots, planning, and strategic trade-offs",
-        systemPrompt: `You are a strategic advisor to an Indian startup founder. Your role is to:
-- Analyze complex strategic decisions with nuanced trade-offs
-- Evaluate pivot opportunities and their implications
-- Provide structured decision frameworks
-- Consider India-specific market dynamics, regulations, and opportunities
-- Always provide actionable recommendations with clear reasoning
-
-Format your responses with clear sections: Analysis, Options, Recommendation, Next Steps.
-Be direct but thorough. Challenge assumptions when needed.`,
-        capabilities: ["pivot_analysis", "trade_off_evaluation", "strategic_planning", "decision_frameworks"],
-        maxTokens: 4000,
-        temperature: 0.7
-    },
-
-    researcher: {
-        name: "Researcher Agent",
-        description: "Uses search and RAG for comprehensive data gathering and summarization",
-        systemPrompt: `You are a research analyst for an Indian startup. Your role is to:
-- Gather and synthesize market data with focus on Indian markets
-- Research competitors, especially those operating in India
-- Find relevant regulations and compliance requirements
-- Identify trends in the Indian startup ecosystem
-- Provide well-sourced, factual information
-
-Always cite your reasoning and acknowledge limitations in available data.
-Focus on actionable insights over raw data dumps.`,
-        capabilities: ["market_research", "competitor_analysis", "regulatory_research", "trend_analysis"],
-        maxTokens: 4000,
-        temperature: 0.3
-    },
-
-    critic: {
-        name: "Critic Agent",
-        description: "Identifies flaws, challenges assumptions, and flags edge cases",
-        systemPrompt: `You are a critical analyst for a startup founder. Your role is to:
-- Stress-test ideas and assumptions ruthlessly but constructively
-- Identify logical flaws and blind spots
-- Surface edge cases and failure modes
-- Challenge confirmation bias
-- Point out what could go wrong
-
-Be direct and specific. Don't soften criticism, but always be constructive.
-For each flaw identified, suggest how it might be addressed.
-Format: Issue -> Why it matters -> Mitigation`,
-        capabilities: ["assumption_testing", "risk_identification", "edge_case_analysis", "bias_detection"],
-        maxTokens: 2500,
-        temperature: 0.5
-    },
-
+export const AGENT_CONFIGS: Partial<Record<AgentType, AgentConfig>> = {
     executor: {
         name: "Executor Agent",
         description: "Converts strategy into actionable tasks and operational content",
@@ -142,22 +90,6 @@ Each phase should have: Goals, Milestones, Key Tasks, Success Metrics`,
         capabilities: ["roadmap_generation", "milestone_definition", "dependency_mapping", "timeline_estimation"],
         maxTokens: 4000,
         temperature: 0.5
-    },
-
-    networking: {
-        name: "Networking Agent",
-        description: "Helps founders connect and collaborate with relevant peers",
-        systemPrompt: `You are a networking advisor for startup founders. Your role is to:
-- Identify potential collaboration opportunities
-- Suggest relevant connections based on synergies
-- Draft introduction messages
-- Recommend networking strategies for the Indian ecosystem
-- Facilitate founder-to-founder learning
-
-Focus on mutual value creation, not just transactional connections.`,
-        capabilities: ["connection_matching", "introduction_drafting", "collaboration_identification"],
-        maxTokens: 2000,
-        temperature: 0.6
     }
 };
 
@@ -282,90 +214,6 @@ function buildContextString(context: AgentExecutionContext): string {
 // ============================================
 // SPECIALIZED AGENT FUNCTIONS
 // ============================================
-
-/**
- * Strategist: Analyze a pivot opportunity
- */
-export async function analyzePivot(
-    context: AgentExecutionContext,
-    proposedChange: string
-): Promise<AgentExecutionResult> {
-    const prompt = `
-Analyze this proposed strategic pivot:
-
-"${proposedChange}"
-
-Provide a comprehensive Pivot Impact Report with:
-1. Executive Summary
-2. Roadmap Changes Required
-   - Which existing phases/goals would be affected
-   - New phases/goals that would be needed
-3. Team Implications
-   - New roles needed
-   - Roles that might become redundant
-   - Training/upskilling required
-4. Financial Deltas
-   - Impact on runway
-   - Cost changes (increase/decrease)
-   - Revenue projection changes
-5. Key Risks (ordered by severity)
-6. Opportunities this unlocks
-7. Recommendation: PROCEED / RECONSIDER / ABORT
-8. Confidence Level (0-100%)
-`;
-
-    return executeAgent("strategist", prompt, context);
-}
-
-/**
- * Researcher: Conduct market research
- */
-export async function conductMarketResearch(
-    context: AgentExecutionContext,
-    topic: string
-): Promise<AgentExecutionResult> {
-    const prompt = `
-Conduct comprehensive market research on: "${topic}"
-
-Focus areas:
-1. Market Size (TAM, SAM, SOM) for India
-2. Growth trends in this sector
-3. Key players and their market share
-4. Recent funding activity
-5. Regulatory landscape
-6. Consumer behavior patterns in India
-7. Emerging opportunities
-
-Provide data-driven insights with estimated figures where available.
-`;
-
-    return executeAgent("researcher", prompt, context);
-}
-
-/**
- * Critic: Stress-test an assumption
- */
-export async function stressTestAssumption(
-    context: AgentExecutionContext,
-    assumption: string
-): Promise<AgentExecutionResult> {
-    const prompt = `
-Critically analyze this startup assumption:
-
-"${assumption}"
-
-Provide:
-1. Validity Assessment (how sound is this assumption?)
-2. Counter-evidence (what suggests this might be wrong?)
-3. Dependencies (what else must be true for this to hold?)
-4. Failure Modes (how could this assumption fail?)
-5. Testing Methods (how could we validate/invalidate this?)
-6. Risk Level: CRITICAL / HIGH / MEDIUM / LOW
-7. Mitigation Strategies
-`;
-
-    return executeAgent("critic", prompt, context);
-}
 
 /**
  * Executor: Generate actionable tasks from a strategy
@@ -529,97 +377,5 @@ export function updateAgentState(
     const index = states.findIndex(s => s.agentType === agentType);
     if (index >= 0) {
         states[index] = { ...states[index], ...updates };
-    }
-}
-
-// ============================================
-// PROACTIVE ASSISTANCE
-// ============================================
-
-interface RiskyAssumption {
-    text: string;
-    type: "pricing" | "market_size" | "competition" | "technical" | "regulatory" | "team";
-    severity: "high" | "medium" | "low";
-    suggestion: string;
-}
-
-/**
- * Detect risky assumptions in text content
- */
-export async function detectRiskyAssumptions(
-    content: string,
-    context: AgentExecutionContext
-): Promise<RiskyAssumption[]> {
-    const prompt = `
-Analyze this startup content for risky assumptions:
-
-"${content}"
-
-Identify assumptions about:
-1. Pricing (unrealistic price points)
-2. Market Size (overestimated TAM)
-3. Competition (underestimated competitors)
-4. Technical (overly optimistic timelines)
-5. Regulatory (compliance oversights)
-6. Team (skill gaps)
-
-For each risky assumption found, provide:
-- The specific assumption text
-- Category (pricing/market_size/competition/technical/regulatory/team)
-- Severity (high/medium/low)
-- A specific suggestion to address it
-
-Return as JSON array with format:
-[{"text": "...", "type": "...", "severity": "...", "suggestion": "..."}]
-`;
-
-    try {
-        const result = await executeAgent("critic", prompt, context);
-        if (result.success) {
-            // Parse JSON from response
-            const jsonMatch = result.output.match(/\[[\s\S]*\]/);
-            if (jsonMatch) {
-                return JSON.parse(jsonMatch[0]);
-            }
-        }
-        return [];
-    } catch {
-        return [];
-    }
-}
-
-/**
- * Generate proactive suggestions for canvas content
- */
-export async function generateProactiveSuggestions(
-    content: string,
-    context: AgentExecutionContext
-): Promise<string[]> {
-    const prompt = `
-Based on this startup document content, generate 3-5 proactive suggestions that would strengthen the strategy:
-
-"${content}"
-
-Focus on:
-- Gaps in the analysis
-- Missing considerations
-- Opportunities not explored
-- Potential improvements
-
-Return as a simple numbered list of actionable suggestions.
-`;
-
-    try {
-        const result = await executeAgent("strategist", prompt, context);
-        if (result.success) {
-            // Parse numbered list
-            const lines = result.output.split("\n").filter(l => l.trim());
-            return lines
-                .filter(l => /^\d+\./.test(l.trim()))
-                .map(l => l.replace(/^\d+\.\s*/, "").trim());
-        }
-        return [];
-    } catch {
-        return [];
     }
 }

@@ -1,6 +1,6 @@
 import { Startup } from "./startup-service";
 
-export type AgentType = "idea-validation" | "planning" | "execution" | "networking";
+export type AgentType = "idea-validation" | "planning" | "tasks" | "chats";
 
 export interface PrimaryAction {
     label: string;
@@ -18,9 +18,9 @@ export const getNextRequiredAgent = (startup: Startup | null): AgentType => {
         case "idea_validated":
             return "planning";
         case "roadmap_created":
-            return "execution";
+            return "tasks";
         case "execution_active":
-            return "networking";
+            return "chats";
         default:
             return "idea-validation";
     }
@@ -55,14 +55,14 @@ export const getPrimaryAction = (startup: Startup | null): PrimaryAction => {
             return {
                 label: "Activate Execution",
                 description: "Roadmap is ready. Deploy tasks to your board.",
-                agentType: "execution",
+                agentType: "tasks",
                 icon: "Rocket"
             };
         case "execution_active":
             return {
                 label: "Connect with Founders",
                 description: "Ecosystem active. Network with other founders to grow together.",
-                agentType: "networking",
+                agentType: "chats",
                 icon: "Users"
             };
         default:
@@ -81,9 +81,9 @@ export const getAgentInstructions = (agent: AgentType) => {
             return "Review the startup's core premise and provide a validation score.";
         case "planning":
             return "Generate a strategic roadmap with 4 distinct phases based on the validated idea.";
-        case "execution":
+        case "tasks":
             return "Deconstruct the current phase into actionable tasks for the founder.";
-        case "networking":
+        case "chats":
             return "Connect with other founders in the ecosystem for collaboration and growth.";
     }
 };

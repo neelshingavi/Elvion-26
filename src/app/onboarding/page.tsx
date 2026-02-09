@@ -113,7 +113,7 @@ interface First48Task {
 }
 
 export default function OnboardingPage() {
-    const { user } = useAuth();
+    const { user, userData, loading: authLoading } = useAuth();
     const router = useRouter();
 
     // States
@@ -162,23 +162,45 @@ export default function OnboardingPage() {
         return Promise.race([promise, timeout]);
     };
 
+    // Redirect if onboarding already completed (but allow 'complete' step to show celebration)
+    useEffect(() => {
+        if (!authLoading && userData?.isOnboardingCompleted && step !== 'complete') {
+            router.push("/founder/dashboard");
+        }
+    }, [userData, authLoading, router, step]);
+
     // Initialize founder role on mount
     useEffect(() => {
         const initializeFounderRole = async () => {
-            if (!user) return;
+            if (authLoading || !user) return;
+
+            // If completed, let the other effect handle redirect
+            if (userData?.isOnboardingCompleted) return;
 
             try {
+                // Determine step based on existing data if partial
+                // "Partial onboarding data exists -> Resume from last step"
+
                 await withTimeout(
                     setDoc(doc(db, "users", user.uid), {
                         uid: user.uid,
                         role: "founder",
-                        createdAt: serverTimestamp(),
+                        // Don't overwrite createdAt
                     }, { merge: true }),
                     10000,
-                    "Network request timed out. Please check your internet connection."
+                    "Network request timed out."
                 );
+
                 setInitializing(false);
-                setStep("project");
+
+                // Smart Resume Logic
+                if (userData?.founderIntake?.interviewCompletedAt) {
+                    // If interview done but not full onboarding
+                    setStep("first48");
+                } else {
+                    setStep("project");
+                }
+
             } catch (err: any) {
                 console.error("Error setting founder role:", err);
                 setError(err.message || "Failed to initialize. Please try again.");
@@ -187,7 +209,7 @@ export default function OnboardingPage() {
         };
 
         initializeFounderRole();
-    }, [user]);
+    }, [user, authLoading, userData]);
 
     // Auto-scroll chat
     useEffect(() => {
@@ -368,8 +390,10 @@ export default function OnboardingPage() {
                 "Startup creation timed out. Please try again."
             );
 
-            // Update user with intake data
+            // Update user with intake data AND completion status
             await setDoc(doc(db, "users", user.uid), {
+                isOnboardingCompleted: true,
+                onboardingCompletedAt: serverTimestamp(),
                 founderIntake: {
                     background: interviewAnswers.background,
                     priorExperience: interviewAnswers.experience,

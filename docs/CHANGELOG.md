@@ -159,3 +159,42 @@ All new features follow the established design system:
 ```
 
 Exit code: 0 (Success)
+
+### Synthetic Long-Term Memory RAG System (Completed)
+**Location:** `src/lib/rag/`
+
+A production-grade, multi-tenant RAG system designed for causal memory integrity and India-specific context.
+
+#### 1. Core Infrastructure
+- **Strict Multi-Tenancy**: Implemented `ProjectScopedClient` in `database.ts` which enforces `project_id` filters on every single database operation (RLS pattern).
+- **PostgreSQL + pgvector**: Schema designed for high-performance vector similarity search with HNSW indexing.
+- **Audit Logging**: Comprehensive `audit_log` table tracks every retrieval, ingestion, and update operation.
+
+#### 2. Advanced Ingestion Pipeline (`ingestion.ts`)
+- **Semantic Chunking**: content is split by semantic boundaries (headings, paragraphs) rather than arbitrary token limits.
+- **Context Enrichment**: 
+  - **India Detection**: Automatically flags regulatory terms (RBI, SEBI) and Indian market context.
+  - **US/EU Assumption Correction**: Identifies and flags non-localized terms (e.g., "401k", "Delaware LLC") for localization.
+- **Confidence Scoring**: Heuristic scoring based on source type (e.g., Founder Override = 1.0, Web Search = 0.4).
+
+#### 3. Agentic Retrieval System (`agents.ts`)
+- **Supervisor Agent**: Orchestrates the retrieval process, managing sub-agents and enforcing security boundaries.
+- **Researcher Agent**: Performs hybrid search (Vector + Metadata) and re-ranks results based on recency, stage match, and founder weight.
+- **Strategist Agent**: Analyzes retrieved context for gaps and contradictions. Triggers **recursive retrieval** queries if confidence is below threshold (0.6).
+- **Localizer Agent**: Post-processing step to validate applicability of advice to the Indian startup ecosystem.
+
+#### 4. Memory Lifecycle Management (`memory-update.ts`)
+- **Causal Integrity**: Implemented `supersedes` and `refines` relationships. Old memories are invalidated, not deleted, preserving history.
+- **Conflict Resolution**: Logic to detect contradicting facts. **Founder Overrides** are hard-coded to win every conflict.
+- **Stale Data Detection**: Automated checks for expired market data or regulatory info based on category-specific TTLs.
+
+#### 5. Security & Governance (`security.ts`)
+- **Prompt Injection Shield**: Sanitizes inputs against common jailbreak patterns ("ignore previous instructions", "DAN", etc.).
+- **Rate Limiting**: Token bucket implementation for embeddings and retrievals to prevent abuse.
+- **Granular Auditing**: Tracks who accessed what memory chunk and when.
+
+
+## 2026-02-09: Post-Cleanup Update
+- Updated `src/lib/orchestrator.ts` to align AgentType with actual routes (fixed broken dashboard links).
+- Removed unused agent functions from `src/lib/agents/agent-system.ts`.
+- Removed obsolete documentation files.

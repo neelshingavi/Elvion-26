@@ -19,6 +19,9 @@ export interface FounderProfile {
     photoURL?: string;
     bannerURL?: string;
     activeStartupId?: string;
+    // Onboarding Status
+    isOnboardingCompleted: boolean;
+    onboardingCompletedAt?: Timestamp;
     // Onboarding intake data
     founderIntake?: FounderIntake;
     about?: string;
