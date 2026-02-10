@@ -5,8 +5,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Rocket, Menu, X } from "lucide-react";
+import { Rocket, Menu, X, Sparkles } from "lucide-react";
 import { FullPageLoader } from "@/components/ui/Loader";
+import { AISidekick } from "@/components/shared/AISidekick";
 
 export default function FounderLayout({
     children,
@@ -17,11 +18,10 @@ export default function FounderLayout({
     const router = useRouter();
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isSidekickOpen, setIsSidekickOpen] = useState(false);
     const pathname = usePathname(); // Need this for active state
 
-    useEffect(() => {
-        setIsMobileMenuOpen(false);
-    }, [pathname]);
+
 
     useEffect(() => {
         if (!loading) {
@@ -77,6 +77,7 @@ export default function FounderLayout({
                                 <Link
                                     key={item.href}
                                     href={item.href}
+                                    onClick={() => setIsMobileMenuOpen(false)}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive
                                         ? "bg-zinc-900 text-white dark:bg-white dark:text-black"
                                         : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900"
@@ -96,6 +97,24 @@ export default function FounderLayout({
                     {children}
                 </div>
             </main>
+
+            {/* Global AI Sidekick */}
+            <div className="fixed bottom-6 right-6 z-[60]">
+                <button
+                    onClick={() => setIsSidekickOpen(true)}
+                    className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all group relative"
+                >
+                    <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-zinc-950 rounded-full" />
+                </button>
+            </div>
+
+            <AISidekick
+                isOpen={isSidekickOpen}
+                onClose={() => setIsSidekickOpen(false)}
+                startupId={userData?.activeStartupId || ""}
+                userId={user?.uid || ""}
+            />
         </div>
     );
 }

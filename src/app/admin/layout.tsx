@@ -10,7 +10,6 @@ import {
     Rocket,
     LogOut,
     Shield,
-    MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +41,6 @@ export default function AdminLayout({
         { name: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
         { name: "User Base", href: "/admin/users", icon: Users },
         { name: "Startups", href: "/admin/startups", icon: Rocket },
-        { name: "Chat", href: "/admin/messages", icon: MessageSquare },
     ];
 
     return (

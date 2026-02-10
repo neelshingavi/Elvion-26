@@ -10,13 +10,11 @@ import {
     CheckSquare,
     FileText,
     Globe,
-    MessageSquare,
     LogOut,
     UserCircle,
     Rocket,
     ChevronRight,
     Shield,
-    Sparkles,
     Calendar,
     Presentation
 } from "lucide-react";
@@ -32,7 +30,6 @@ export const navItems = [
     { name: "Weekly Review", href: "/founder/weekly-review", icon: Calendar },
     { name: "Pitch Deck", href: "/founder/pitch-deck", icon: Presentation },
     { name: "Market Intel", href: "/founder/market-intel", icon: Globe },
-    { name: "Messages", href: "/founder/chats", icon: MessageSquare },
     { name: "Profile", href: "/founder/profile", icon: UserCircle },
 ];
 

@@ -1,17 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
     Rocket,
     MessageSquare,
     Target,
     CheckCircle2,
-    AlertTriangle,
     TrendingUp,
     Clock,
-    MapPin,
     BarChart3,
     ChevronRight,
     Sparkles,
@@ -20,12 +17,8 @@ import {
     Shield,
     Zap,
     FileText,
-    Users,
     Activity,
     RefreshCw,
-    ExternalLink,
-    Play,
-    Pause,
     MoreHorizontal
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -35,6 +28,7 @@ import { db } from "@/lib/firebase";
 import { getPrimaryAction } from "@/lib/orchestrator";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { AISidekick } from "@/components/shared/AISidekick";
 
 // Agent Configuration for UI
 const AGENTS = [
@@ -89,7 +83,6 @@ interface AgentActivity {
 
 export default function DashboardPage() {
     const { user } = useAuth();
-    const router = useRouter();
 
     // State
     const [startup, setStartup] = useState<Startup | null>(null);
@@ -103,7 +96,6 @@ export default function DashboardPage() {
         weeklyGoalProgress: 0
     });
     const [agentActivities, setAgentActivities] = useState<AgentActivity[]>([]);
-    const [activeAgents, setActiveAgents] = useState<Set<string>>(new Set());
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
 
@@ -326,7 +318,6 @@ export default function DashboardPage() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 {AGENTS.map((agent) => {
-                                    const isActive = activeAgents.has(agent.id);
                                     const recentActivity = agentActivities.find(a => a.agentId === agent.id);
 
                                     return (
@@ -349,16 +340,9 @@ export default function DashboardPage() {
                                                 )}>
                                                     <agent.icon className="w-5 h-5" />
                                                 </div>
-                                                {isActive ? (
-                                                    <div className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full text-xs font-bold">
-                                                        <Activity className="w-3 h-3" />
-                                                        Active
-                                                    </div>
-                                                ) : (
-                                                    <div className="px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-full text-xs font-bold">
-                                                        Ready
-                                                    </div>
-                                                )}
+                                                <div className="px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-full text-xs font-bold">
+                                                    Ready
+                                                </div>
                                             </div>
 
                                             <h4 className="font-bold text-sm">{agent.name}</h4>
@@ -548,81 +532,12 @@ export default function DashboardPage() {
             </div>
 
             {/* AI Sidekick Panel */}
-            <AnimatePresence>
-                {sidebarOpen && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setSidebarOpen(false)}
-                            className="fixed inset-0 bg-black/50 z-40"
-                        />
-                        <motion.div
-                            initial={{ x: "100%" }}
-                            animate={{ x: 0 }}
-                            exit={{ x: "100%" }}
-                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 z-50 flex flex-col"
-                        >
-                            {/* Panel Header */}
-                            <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                                        <Sparkles className="w-5 h-5 text-white" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold">AI Sidekick</h3>
-                                        <p className="text-xs text-zinc-500">Ask anything about your startup</p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => setSidebarOpen(false)}
-                                    className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg"
-                                >
-                                    ✕
-                                </button>
-                            </div>
-
-                            {/* Chat Area */}
-                            <div className="flex-1 p-6 overflow-y-auto">
-                                <div className="space-y-4">
-                                    <div className="flex gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
-                                            <Sparkles className="w-4 h-4 text-indigo-500" />
-                                        </div>
-                                        <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl rounded-tl-sm p-4">
-                                            <p className="text-sm">
-                                                Hi! I'm your AI sidekick. I can help you with:
-                                            </p>
-                                            <ul className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 space-y-1">
-                                                <li>• Strategic questions about your startup</li>
-                                                <li>• Market research and competitor analysis</li>
-                                                <li>• Task prioritization and planning</li>
-                                                <li>• Drafting content and communications</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Input */}
-                            <div className="p-4 border-t border-zinc-100 dark:border-zinc-800">
-                                <div className="flex gap-3">
-                                    <input
-                                        type="text"
-                                        placeholder="Ask me anything..."
-                                        className="flex-1 p-4 bg-zinc-100 dark:bg-zinc-800 rounded-xl border-0 focus:ring-2 focus:ring-indigo-500 outline-none"
-                                    />
-                                    <button className="px-4 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 transition-all">
-                                        <ChevronRight className="w-5 h-5" />
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+            <AISidekick 
+                isOpen={sidebarOpen} 
+                onClose={() => setSidebarOpen(false)} 
+                startupId={startup?.startupId || ""} 
+                userId={user?.uid || ""} 
+            />
         </div>
     );
 }
@@ -636,7 +551,7 @@ function MetricCard({
     trend,
     progress
 }: {
-    icon: any;
+    icon: React.ElementType;
     label: string;
     value: string | number;
     color: string;
@@ -684,7 +599,7 @@ function QuickActionButton({
     label,
     href
 }: {
-    icon: any;
+    icon: React.ElementType;
     label: string;
     href: string;
 }) {

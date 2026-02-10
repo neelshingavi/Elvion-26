@@ -3,13 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, setDoc, collection, query, where, getDocs, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Globe,
     TrendingUp,
     TrendingDown,
-    Users,
     Building2,
     AlertTriangle,
     Sparkles,
@@ -19,7 +18,6 @@ import {
     Plus,
     ChevronRight,
     BarChart3,
-    LineChart,
     Newspaper,
     Gavel,
     IndianRupee,
@@ -27,8 +25,7 @@ import {
     ArrowDown,
     Minus,
     Clock,
-    X,
-    Loader2
+    X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -203,6 +200,16 @@ export default function MarketIntelPage() {
     const [newCompetitor, setNewCompetitor] = useState({ name: "", website: "", description: "" });
     const [searchQuery, setSearchQuery] = useState("");
 
+    // Helper to safely convert Firestore timestamps or strings to Date
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const toDate = (date: any): Date => {
+        if (!date) return new Date();
+        if (date instanceof Date) return date;
+        if (date.toDate && typeof date.toDate === "function") return date.toDate(); // Firestore Timestamp
+        if (date.seconds) return new Date(date.seconds * 1000); // Firestore Timestamp raw object
+        return new Date(date);
+    };
+
     // Load data
     useEffect(() => {
         const loadData = async () => {
@@ -226,7 +233,38 @@ export default function MarketIntelPage() {
                     const intelDoc = await getDoc(doc(db, "marketIntel", activeStartupId));
                     if (intelDoc.exists()) {
                         const data = intelDoc.data();
-                        if (data.competitors) setCompetitors(data.competitors);
+                        if (data.pulse) setMarketPulse(data.pulse);
+                        
+                        if (data.competitors) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const formattedCompetitors = data.competitors.map((c: any) => ({
+                                ...c,
+                                lastUpdated: toDate(c.lastUpdated),
+                                lastFunding: c.lastFunding ? {
+                                    ...c.lastFunding,
+                                    date: toDate(c.lastFunding.date)
+                                } : undefined,
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                alerts: (c.alerts || []).map((a: any) => ({
+                                    ...a,
+                                    date: toDate(a.date)
+                                }))
+                            }));
+                            setCompetitors(formattedCompetitors);
+                        }
+
+                        if (data.regulatory) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const formattedRegulatory = data.regulatory.map((r: any) => ({
+                                ...r,
+                                date: toDate(r.date)
+                            }));
+                            setRegulatory(formattedRegulatory);
+                        }
+                    } else {
+                        // If no data exists, trigger generation automatically
+                        // triggerGeneration(activeStartupId, user.uid);
+                        // For now, we keep sample data as fallback until user clicks refresh
                     }
                 }
             } catch (error) {
@@ -241,18 +279,51 @@ export default function MarketIntelPage() {
 
     // Refresh market data
     const refreshData = async () => {
+        if (!startupId || !user) return;
         setRefreshing(true);
 
-        // Simulate API call to gather market data
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        try {
+            const response = await fetch("/api/market-intel", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ startupId, userId: user.uid })
+            });
 
-        // Update with new data
-        setMarketPulse(prev => ({
-            ...prev,
-            overallSentiment: prev.overallSentiment + Math.floor(Math.random() * 10) - 5
-        }));
+            if (!response.ok) throw new Error("Failed to fetch market intel");
 
-        setRefreshing(false);
+            const data = await response.json();
+            
+            if (data.pulse) setMarketPulse(data.pulse);
+            
+            if (data.competitors) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const formattedCompetitors = data.competitors.map((c: any) => ({
+                    ...c,
+                    lastUpdated: new Date(),
+                    lastFunding: c.lastFunding ? {
+                        ...c.lastFunding,
+                        date: c.lastFunding.date ? new Date(c.lastFunding.date) : new Date()
+                    } : undefined,
+                    alerts: c.alerts || []
+                }));
+                setCompetitors(formattedCompetitors);
+            }
+
+            if (data.regulatory) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const formattedRegulatory = data.regulatory.map((r: any) => ({
+                    ...r,
+                    date: r.date ? new Date(r.date) : new Date()
+                }));
+                setRegulatory(formattedRegulatory);
+            }
+
+        } catch (error) {
+            console.error("Error refreshing market data:", error);
+            // Optional: Add toast notification here
+        } finally {
+            setRefreshing(false);
+        }
     };
 
     // Add competitor
@@ -282,7 +353,9 @@ export default function MarketIntelPage() {
     };
 
     // Format relative time
-    const formatRelativeTime = (date: Date) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const formatRelativeTime = (dateInput: Date | any) => {
+        const date = toDate(dateInput);
         const diff = Date.now() - date.getTime();
         const days = Math.floor(diff / 86400000);
 
@@ -339,7 +412,7 @@ export default function MarketIntelPage() {
                     ].map(tab => (
                         <button
                             key={tab.id}
-                            onClick={() => setActiveTab(tab.id as any)}
+                            onClick={() => setActiveTab(tab.id as "pulse" | "competitors" | "regulatory")}
                             className={cn(
                                 "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
                                 activeTab === tab.id
@@ -352,6 +425,7 @@ export default function MarketIntelPage() {
                         </button>
                     ))}
                 </div>
+
 
                 {/* Market Pulse Tab */}
                 {activeTab === "pulse" && (
@@ -577,7 +651,8 @@ export default function MarketIntelPage() {
                                             {competitor.alerts.length > 0 && (
                                                 <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
                                                     <div className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-2">Recent Activity</div>
-                                                    {competitor.alerts.slice(0, 2).map(alert => (
+                                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                                    {competitor.alerts.slice(0, 2).map((alert: any) => (
                                                         <div key={alert.id} className="flex items-start gap-2 text-sm py-2">
                                                             <div className={cn(
                                                                 "w-6 h-6 rounded-full flex items-center justify-center shrink-0",

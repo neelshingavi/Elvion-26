@@ -358,7 +358,8 @@ export type AgentType =
     | "executor"      // Converts strategy into tasks
     | "validator"     // Idea validation
     | "planner"       // Roadmap generation
-    | "networking";   // Founder connections
+    | "networking"    // Founder connections
+    | "market_analyst"; // Market research & competitor analysis
 
 export interface AgentRun {
     id: string;
