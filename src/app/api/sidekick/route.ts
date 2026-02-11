@@ -39,6 +39,30 @@ export async function POST(req: Request) {
         const startup = { startupId, ...access.startup } as any;
         const memories = await getStartupMemoryAdmin(startupId);
 
+        // 1. Retrieve RAG Context from Vector DB (Production-Grade)
+        let ragContext = "";
+        let ragConfidence = 0;
+        try {
+            const { retrieveContext } = await import("@/lib/rag");
+            const ragResult = await retrieveContext(startupId, message, {
+                limit: 8,
+                minSimilarity: 0.65
+            });
+
+            ragContext = "\n\n" + ragResult.text;
+            ragConfidence = ragResult.confidence;
+
+            console.log(`[RAG] Confidence: ${ragConfidence.toFixed(2)}`);
+
+            // Tier 2: Confidence Gating
+            if (ragConfidence < 0.5) {
+                console.warn("[RAG] Low confidence, falling back to basic memory.");
+                ragContext = ""; // Don't inject low-quality context
+            }
+        } catch (ragError) {
+            console.warn("RAG retrieval failed, falling back to basic memory:", ragError);
+        }
+
         const historyContext = history.length > 0
             ? "\nRECENT CHAT HISTORY:\n" + history.map((h: { role: string; content: string }) => `${h.role === 'user' ? 'Founder' : 'Sidekick'}: ${h.content}`).join("\n")
             : "";
@@ -46,7 +70,7 @@ export async function POST(req: Request) {
         const result = await executeAgent("strategist", message, {
             startup,
             memories: memories as any,
-            additionalContext: historyContext
+            additionalContext: historyContext + ragContext
         });
 
         if (!result.success) {

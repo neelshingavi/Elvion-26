@@ -128,9 +128,9 @@ src/
 
 | Table | Purpose | Key Columns |
 |-------|---------|-------------|
-| `memory_chunks` | Stores semantic memory | `id`, `project_id`, `content`, `embedding` (vector), `metadata`, `causal_parent_id` |
-| `ingestion_jobs` | Tracks async processing | `id`, `project_id`, `status`, `source_url` |
-| `audit_logs` | Security & usage logs | `id`, `project_id`, `user_id`, `action`, `resource_id` |
+| `project_memory` | Stores semantic memory chunks | `id`, `project_id` (text), `content`, `embedding` (vector), `metadata` |
+| `node_comments` | HITL Feedback & Approvals | `id`, `project_id`, `node_id`, `message`, `action_taken` |
+| `projects` | High-level project metadata | `id`, `user_id`, `name`, `vertical` |
 
 ### B. Firestore (Application Data)
 

@@ -12,6 +12,22 @@ const MODELS = [
     "gemini-flash-latest"
 ];
 
+export const generateEmbedding = async (text: string): Promise<number[]> => {
+    if (!genAI) {
+        throw new Error("GEMINI_API_KEY is not configured.");
+    }
+
+    try {
+        const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+        const result = await model.embedContent(text);
+        const embedding = result.embedding;
+        return embedding.values;
+    } catch (error: any) {
+        console.error("Embedding generation failed:", error.message);
+        throw error;
+    }
+};
+
 export const callGemini = async (prompt: string, isJson: boolean = true, retries = 2) => {
     let lastError: any;
 
