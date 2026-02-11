@@ -400,7 +400,7 @@ export default function CanvasPage() {
             case "bullet_list":
                 return (
                     <div className="flex items-start gap-3">
-                        <span className="w-2 h-2 mt-2.5 rounded-full bg-zinc-400" />
+                        <span className="w-2 h-2 mt-2.5 rounded-full bg-subtle" />
                         <textarea
                             value={block.content}
                             onChange={(e) => updateBlock(block.id, e.target.value)}
@@ -416,7 +416,7 @@ export default function CanvasPage() {
                 const index = blocks.filter(b => b.type === "numbered_list").findIndex(b => b.id === block.id) + 1;
                 return (
                     <div className="flex items-start gap-3">
-                        <span className="w-6 text-zinc-400 font-medium">{index}.</span>
+                        <span className="w-6 text-subtle font-medium">{index}.</span>
                         <textarea
                             value={block.content}
                             onChange={(e) => updateBlock(block.id, e.target.value)}
@@ -430,7 +430,7 @@ export default function CanvasPage() {
                 );
             case "quote":
                 return (
-                    <div className="border-l-4 border-indigo-500 pl-4 italic text-zinc-600 dark:text-zinc-400">
+                    <div className="border-l-4 border-primary pl-4 italic text-muted">
                         <textarea
                             value={block.content}
                             onChange={(e) => updateBlock(block.id, e.target.value)}
@@ -444,7 +444,7 @@ export default function CanvasPage() {
                 );
             case "code":
                 return (
-                    <div className="bg-zinc-900 text-zinc-100 rounded-xl p-4 font-mono text-sm">
+                    <div className="bg-surface text-subtle rounded-xl p-4 font-mono text-sm">
                         <textarea
                             value={block.content}
                             onChange={(e) => updateBlock(block.id, e.target.value)}
@@ -456,11 +456,11 @@ export default function CanvasPage() {
                     </div>
                 );
             case "divider":
-                return <hr className="border-zinc-200 dark:border-zinc-800" />;
+                return <hr className="border-subtle" />;
             case "ai_suggestion":
                 return (
-                    <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-4 border border-indigo-200 dark:border-indigo-800">
-                        <div className="flex items-center gap-2 mb-2 text-indigo-600">
+                    <div className="bg-primary-soft rounded-xl p-4 border border-primary/20">
+                        <div className="flex items-center gap-2 mb-2 text-primary">
                             <Sparkles className="w-4 h-4" />
                             <span className="text-xs font-bold uppercase tracking-widest">AI Suggestion</span>
                         </div>
@@ -486,28 +486,28 @@ export default function CanvasPage() {
         return (
             <div className="flex min-h-screen items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-10 h-10 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-zinc-500">Loading canvas...</span>
+                    <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-muted">Loading canvas...</span>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-white dark:bg-[#0a0a0a]">
+        <div className="min-h-screen bg-surface dark:bg-[#0a0a0a]">
             {/* Top Bar */}
-            <div className="sticky top-0 z-30 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-lg border-b border-zinc-200 dark:border-zinc-800">
+            <div className="sticky top-0 z-30 bg-surface/80 dark:bg-[#0a0a0a]/80 backdrop-blur-lg border-b border-subtle">
                 <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <h1 className="font-bold text-lg">{document?.title || "Canvas"}</h1>
                         {saving && (
-                            <div className="flex items-center gap-2 text-xs text-zinc-500">
-                                <div className="w-3 h-3 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                            <div className="flex items-center gap-2 text-xs text-muted">
+                                <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                                 Saving...
                             </div>
                         )}
                         {!saving && document && (
-                            <div className="flex items-center gap-2 text-xs text-zinc-400">
+                            <div className="flex items-center gap-2 text-xs text-subtle">
                                 <Save className="w-3 h-3" />
                                 Saved
                             </div>
@@ -520,8 +520,8 @@ export default function CanvasPage() {
                             className={cn(
                                 "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all",
                                 aiPanelOpen
-                                    ? "bg-indigo-500 text-white"
-                                    : "bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                                    ? "bg-primary text-white"
+                                    : "bg-surface-alt hover:bg-surface"
                             )}
                         >
                             <Sparkles className="w-4 h-4" />
@@ -546,7 +546,7 @@ export default function CanvasPage() {
                                 key={block.id}
                                 className={cn(
                                     "group relative",
-                                    activeBlockId === block.id && "bg-zinc-50 dark:bg-zinc-900/50 -mx-4 px-4 py-2 rounded-xl"
+                                    activeBlockId === block.id && "bg-surface-alt  -mx-4 px-4 py-2 rounded-xl"
                                 )}
                             >
                                 {/* Block Controls */}
@@ -556,11 +556,11 @@ export default function CanvasPage() {
                                             setActiveBlockId(block.id);
                                             setShowBlockMenu(true);
                                         }}
-                                        className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-400"
+                                        className="p-1.5 hover:bg-surface-alt dark:hover:bg-surface-alt rounded-lg text-subtle"
                                     >
                                         <Plus className="w-4 h-4" />
                                     </button>
-                                    <button className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-400 cursor-grab">
+                                    <button className="p-1.5 hover:bg-surface-alt dark:hover:bg-surface-alt rounded-lg text-subtle cursor-grab">
                                         <GripVertical className="w-4 h-4" />
                                     </button>
                                 </div>
@@ -579,18 +579,18 @@ export default function CanvasPage() {
                                                 exit={{ opacity: 0, y: -10 }}
                                                 className={cn(
                                                     "flex items-start gap-3 p-3 rounded-xl text-sm border-l-4",
-                                                    annotation.type === "warning" && "bg-amber-50 dark:bg-amber-900/20 border-amber-500",
-                                                    annotation.type === "risk" && "bg-red-50 dark:bg-red-900/20 border-red-500",
-                                                    annotation.type === "suggestion" && "bg-blue-50 dark:bg-blue-900/20 border-blue-500",
-                                                    annotation.type === "insight" && "bg-green-50 dark:bg-green-900/20 border-green-500"
+                                                    annotation.type === "warning" && "bg-warning-soft border-warning",
+                                                    annotation.type === "risk" && "bg-danger-soft border-danger",
+                                                    annotation.type === "suggestion" && "bg-info-soft border-info",
+                                                    annotation.type === "insight" && "bg-success-soft border-success"
                                                 )}
                                             >
                                                 <div className={cn(
                                                     "w-6 h-6 rounded-full flex items-center justify-center shrink-0",
-                                                    annotation.type === "warning" && "bg-amber-200 text-amber-700",
-                                                    annotation.type === "risk" && "bg-red-200 text-red-700",
-                                                    annotation.type === "suggestion" && "bg-blue-200 text-blue-700",
-                                                    annotation.type === "insight" && "bg-green-200 text-green-700"
+                                                    annotation.type === "warning" && "bg-warning-soft text-warning",
+                                                    annotation.type === "risk" && "bg-danger-soft text-danger",
+                                                    annotation.type === "suggestion" && "bg-info-soft text-info",
+                                                    annotation.type === "insight" && "bg-success-soft text-success"
                                                 )}>
                                                     {annotation.type === "warning" && <AlertTriangle className="w-3 h-3" />}
                                                     {annotation.type === "risk" && <AlertTriangle className="w-3 h-3" />}
@@ -598,14 +598,14 @@ export default function CanvasPage() {
                                                     {annotation.type === "insight" && <Sparkles className="w-3 h-3" />}
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="text-zinc-700 dark:text-zinc-300">{annotation.message}</p>
-                                                    <p className="text-xs text-zinc-500 mt-1">
+                                                    <p className="text-muted">{annotation.message}</p>
+                                                    <p className="text-xs text-muted mt-1">
                                                         Confidence: {annotation.confidence}%
                                                     </p>
                                                 </div>
                                                 <button
                                                     onClick={() => dismissAnnotation(block.id, annotation.id)}
-                                                    className="p-1 hover:bg-black/10 rounded-lg text-zinc-400 hover:text-zinc-600"
+                                                    className="p-1 hover:bg-black/10 rounded-lg text-subtle hover:text-muted"
                                                 >
                                                     <X className="w-4 h-4" />
                                                 </button>
@@ -619,19 +619,19 @@ export default function CanvasPage() {
                                     <div className="flex items-center gap-1">
                                         <button
                                             onClick={() => moveBlock(block.id, "up")}
-                                            className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-400"
+                                            className="p-1.5 hover:bg-surface-alt dark:hover:bg-surface-alt rounded-lg text-subtle"
                                         >
                                             <ArrowUp className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={() => moveBlock(block.id, "down")}
-                                            className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-400"
+                                            className="p-1.5 hover:bg-surface-alt dark:hover:bg-surface-alt rounded-lg text-subtle"
                                         >
                                             <ArrowDown className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={() => deleteBlock(block.id)}
-                                            className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg text-zinc-400 hover:text-red-500"
+                                            className="p-1.5 hover:bg-danger-soft rounded-lg text-subtle hover:text-danger"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
@@ -643,7 +643,7 @@ export default function CanvasPage() {
                         {/* Add Block Button */}
                         <button
                             onClick={() => addBlock("paragraph")}
-                            className="w-full py-4 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-400 hover:border-indigo-500 hover:text-indigo-500 transition-all flex items-center justify-center gap-2"
+                            className="w-full py-4 border-2 border-dashed border-subtle rounded-xl text-subtle hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2"
                         >
                             <Plus className="w-5 h-5" />
                             Add block
@@ -659,10 +659,10 @@ export default function CanvasPage() {
                             animate={{ x: 0 }}
                             exit={{ x: "100%" }}
                             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="fixed right-0 top-0 bottom-0 w-80 bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 flex flex-col z-20"
+                            className="fixed right-0 top-0 bottom-0 w-80 bg-surface border-l border-subtle flex flex-col z-20"
                         >
                             {/* Panel Header */}
-                            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                            <div className="p-4 border-b border-subtle flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
                                         <Sparkles className="w-4 h-4 text-white" />
@@ -671,7 +671,7 @@ export default function CanvasPage() {
                                 </div>
                                 <button
                                     onClick={() => setAiPanelOpen(false)}
-                                    className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg"
+                                    className="p-2 hover:bg-surface-alt dark:hover:bg-surface-alt rounded-lg"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
@@ -679,43 +679,43 @@ export default function CanvasPage() {
 
                             {/* Quick Actions */}
                             <div className="p-4 space-y-2">
-                                <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-3">Quick Actions</p>
+                                <p className="text-xs font-bold uppercase tracking-widest text-subtle mb-3">Quick Actions</p>
 
                                 <button
                                     onClick={() => askAI("Suggest improvements for this section")}
-                                    className="w-full p-3 text-left rounded-xl bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all"
+                                    className="w-full p-3 text-left rounded-xl bg-surface-alt hover:bg-surface transition-all"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <Lightbulb className="w-5 h-5 text-amber-500" />
+                                        <Lightbulb className="w-5 h-5 text-warning" />
                                         <div>
                                             <p className="font-medium text-sm">Suggest Improvements</p>
-                                            <p className="text-xs text-zinc-500">Review and enhance content</p>
+                                            <p className="text-xs text-muted">Review and enhance content</p>
                                         </div>
                                     </div>
                                 </button>
 
                                 <button
                                     onClick={() => askAI("Find risky assumptions")}
-                                    className="w-full p-3 text-left rounded-xl bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all"
+                                    className="w-full p-3 text-left rounded-xl bg-surface-alt hover:bg-surface transition-all"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <AlertTriangle className="w-5 h-5 text-red-500" />
+                                        <AlertTriangle className="w-5 h-5 text-danger" />
                                         <div>
                                             <p className="font-medium text-sm">Find Risky Assumptions</p>
-                                            <p className="text-xs text-zinc-500">Stress-test your strategy</p>
+                                            <p className="text-xs text-muted">Stress-test your strategy</p>
                                         </div>
                                     </div>
                                 </button>
 
                                 <button
                                     onClick={() => askAI("Generate tasks from this content")}
-                                    className="w-full p-3 text-left rounded-xl bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all"
+                                    className="w-full p-3 text-left rounded-xl bg-surface-alt hover:bg-surface transition-all"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <List className="w-5 h-5 text-green-500" />
+                                        <List className="w-5 h-5 text-success" />
                                         <div>
                                             <p className="font-medium text-sm">Generate Tasks</p>
-                                            <p className="text-xs text-zinc-500">Create actionable items</p>
+                                            <p className="text-xs text-muted">Create actionable items</p>
                                         </div>
                                     </div>
                                 </button>
@@ -725,21 +725,21 @@ export default function CanvasPage() {
                             {aiGenerating && (
                                 <div className="flex-1 flex items-center justify-center">
                                     <div className="flex flex-col items-center gap-4">
-                                        <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                                        <p className="text-sm text-zinc-500">Analyzing...</p>
+                                        <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                                        <p className="text-sm text-muted">Analyzing...</p>
                                     </div>
                                 </div>
                             )}
 
                             {/* Chat Input */}
-                            <div className="mt-auto p-4 border-t border-zinc-200 dark:border-zinc-800">
+                            <div className="mt-auto p-4 border-t border-subtle">
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
                                         placeholder="Ask about this document..."
-                                        className="flex-1 p-3 bg-zinc-100 dark:bg-zinc-800 rounded-xl border-0 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                                        className="flex-1 p-3 bg-surface-alt rounded-xl border-0 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                                     />
-                                    <button className="p-3 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 transition-all">
+                                    <button className="p-3 bg-primary text-white rounded-xl hover:bg-primary transition-all">
                                         <MessageSquare className="w-4 h-4" />
                                     </button>
                                 </div>
@@ -762,10 +762,10 @@ export default function CanvasPage() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
                             style={{ left: blockMenuPosition.x, top: blockMenuPosition.y }}
-                            className="fixed z-50 w-64 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-hidden"
+                            className="fixed z-50 w-64 bg-surface rounded-xl border border-subtle shadow-xl overflow-hidden"
                         >
                             <div className="p-2 space-y-1">
-                                <p className="px-3 py-2 text-xs font-bold uppercase tracking-widest text-zinc-400">Block Types</p>
+                                <p className="px-3 py-2 text-xs font-bold uppercase tracking-widest text-subtle">Block Types</p>
                                 {BLOCK_TYPES.map(blockType => (
                                     <button
                                         key={blockType.type}
@@ -782,12 +782,12 @@ export default function CanvasPage() {
                                             }
                                             setShowBlockMenu(false);
                                         }}
-                                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all"
+                                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-surface-alt dark:hover:bg-surface-alt transition-all"
                                     >
-                                        <blockType.icon className="w-4 h-4 text-zinc-500" />
+                                        <blockType.icon className="w-4 h-4 text-muted" />
                                         <span className="text-sm font-medium">{blockType.label}</span>
                                         {blockType.shortcut && (
-                                            <span className="ml-auto text-xs text-zinc-400 font-mono">
+                                            <span className="ml-auto text-xs text-subtle font-mono">
                                                 {blockType.shortcut}
                                             </span>
                                         )}

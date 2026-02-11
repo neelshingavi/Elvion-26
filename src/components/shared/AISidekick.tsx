@@ -133,7 +133,7 @@ export function AISidekick({ isOpen, onClose, startupId, userId }: AISidekickPro
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[100]"
+                        className="fixed inset-0 bg-overlay backdrop-blur-[2px] z-[100]"
                     />
                     
                     {/* Panel */}
@@ -142,32 +142,32 @@ export function AISidekick({ isOpen, onClose, startupId, userId }: AISidekickPro
                         animate={{ x: 0 }}
                         exit={{ x: "100%" }}
                         transition={{ type: "spring", damping: 25, stiffness: 240 }}
-                        className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white dark:bg-[#0a0a0b] shadow-2xl z-[101] flex flex-col border-l border-zinc-200 dark:border-zinc-800"
+                        className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-surface shadow-float z-[101] flex flex-col border-l border-subtle"
                     >
                         {/* Header */}
-                        <div className="p-6 border-b border-zinc-100 dark:border-zinc-800/50 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/30">
+                        <div className="p-6 border-b border-subtle flex items-center justify-between bg-surface-alt">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                                    <Bot className="w-5 h-5 text-white" />
+                                <div className="w-10 h-10 rounded-2xl bg-primary-gradient flex items-center justify-center shadow-card">
+                                    <Bot className="w-5 h-5 text-on-primary" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">AI Sidekick</h3>
+                                    <h3 className="text-h3 text-strong uppercase tracking-tight">AI Sidekick</h3>
                                     <div className="flex items-center gap-1.5">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Strategist Persona Active</p>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                                        <p className="text-overline text-subtle">Strategist Persona Active</p>
                                     </div>
                                 </div>
                             </div>
                             <button
                                 onClick={onClose}
-                                className="p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                                className="p-2 hover:bg-surface rounded-xl transition-colors text-subtle hover:text-strong"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         {/* Messages Area */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-zinc-200 dark:scrollbar-thumb-zinc-800">
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-app">
                             {messages.map((msg) => (
                                 <motion.div
                                     key={msg.id}
@@ -181,23 +181,23 @@ export function AISidekick({ isOpen, onClose, startupId, userId }: AISidekickPro
                                     <div className={cn(
                                         "w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1",
                                         msg.role === "user" 
-                                            ? "bg-zinc-100 dark:bg-zinc-800" 
-                                            : "bg-indigo-100 dark:bg-indigo-900/40"
+                                            ? "bg-surface border border-subtle" 
+                                            : "bg-primary-soft"
                                     )}>
-                                        {msg.role === "user" ? <User className="w-4 h-4" /> : <Sparkles className="w-4 h-4 text-indigo-500" />}
+                                        {msg.role === "user" ? <User className="w-4 h-4 text-subtle" /> : <Sparkles className="w-4 h-4 text-primary" />}
                                     </div>
                                     <div className={cn(
                                         "p-4 rounded-2xl text-sm leading-relaxed",
                                         msg.role === "user" 
-                                            ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-black rounded-tr-none" 
-                                            : "bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 rounded-tl-none border border-zinc-200/50 dark:border-zinc-700/50"
+                                            ? "bg-primary text-on-primary rounded-tr-none shadow-card" 
+                                            : "bg-surface-alt text-strong rounded-tl-none border border-subtle"
                                     )}>
                                         <ReactMarkdown 
                                             components={{
                                                 p: ({ children }) => <p className="mb-0">{children}</p>,
                                                 ul: ({ children }) => <ul className="mt-2 space-y-1">{children}</ul>,
                                                 li: ({ children }) => <li className="list-disc ml-4">{children}</li>,
-                                                strong: ({ children }) => <strong className="font-bold text-indigo-500 dark:text-indigo-400">{children}</strong>
+                                                strong: ({ children }) => <strong className="font-bold text-primary">{children}</strong>
                                             }}
                                         >
                                             {msg.content}
@@ -207,10 +207,10 @@ export function AISidekick({ isOpen, onClose, startupId, userId }: AISidekickPro
                             ))}
                             {isLoading && (
                                 <div className="flex gap-3 max-w-[85%] mr-auto">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center shrink-0 mt-1">
-                                        <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" />
+                                    <div className="w-8 h-8 rounded-full bg-primary-soft flex items-center justify-center shrink-0 mt-1">
+                                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
                                     </div>
-                                    <div className="p-4 rounded-2xl text-sm bg-zinc-100 dark:bg-zinc-800/80 text-zinc-500 rounded-tl-none border border-zinc-200/50 dark:border-zinc-700/50 animate-pulse">
+                                    <div className="p-4 rounded-2xl text-sm bg-surface-alt text-muted rounded-tl-none border border-subtle animate-pulse">
                                         Strategizing...
                                     </div>
                                 </div>
@@ -219,7 +219,7 @@ export function AISidekick({ isOpen, onClose, startupId, userId }: AISidekickPro
                         </div>
 
                         {/* Footer / Input Area */}
-                        <div className="p-4 bg-zinc-50 dark:bg-zinc-900/50 border-t border-zinc-100 dark:border-zinc-800/50">
+                        <div className="p-4 bg-surface-alt border-t border-subtle">
                             {messages.length === 1 && !isLoading && (
                                 <div className="flex flex-wrap gap-2 mb-4">
                                     {suggestions.map((suggestion) => (
@@ -228,7 +228,7 @@ export function AISidekick({ isOpen, onClose, startupId, userId }: AISidekickPro
                                             onClick={() => {
                                                 setInput(suggestion);
                                             }}
-                                            className="px-3 py-1.5 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-[11px] font-medium text-zinc-600 dark:text-zinc-400 hover:border-indigo-500 hover:text-indigo-500 transition-all shadow-sm"
+                                            className="px-3 py-1.5 rounded-full bg-surface border border-subtle text-[11px] font-semibold text-muted hover:border-primary hover:text-primary transition-all shadow-sm"
                                         >
                                             {suggestion}
                                         </button>
@@ -242,22 +242,22 @@ export function AISidekick({ isOpen, onClose, startupId, userId }: AISidekickPro
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     placeholder="Type a message..."
-                                    className="flex-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl px-5 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                                    className="input flex-1 rounded-2xl px-5 py-3.5 text-sm"
                                 />
                                 <button
                                     type="submit"
                                     disabled={!input.trim() || isLoading}
                                     className={cn(
-                                        "p-3.5 rounded-2xl bg-indigo-600 text-white shadow-lg transition-all",
+                                        "p-3.5 rounded-2xl bg-primary-gradient text-on-primary shadow-card transition-all",
                                         (!input.trim() || isLoading) 
                                             ? "opacity-50 cursor-not-allowed" 
-                                            : "hover:bg-indigo-500 hover:scale-105 active:scale-95 shadow-indigo-500/20"
+                                            : "hover:scale-105 active:scale-95"
                                     )}
                                 >
                                     <Send className="w-5 h-5" />
                                 </button>
                             </form>
-                            <p className="mt-3 text-center text-[10px] text-zinc-400 font-medium uppercase tracking-widest">
+                            <p className="mt-3 text-center text-overline">
                                 AI may provide inaccurate info. Plan accordingly.
                             </p>
                         </div>

@@ -139,18 +139,18 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
     if (!currentUser) return null;
 
     return (
-        <div className="flex h-full w-full bg-white dark:bg-[#050505] overflow-hidden relative overscroll-none touch-none">
+        <div className="flex h-full w-full bg-app overflow-hidden relative overscroll-none touch-none">
 
             {/* Conversations List */}
             <div className={cn(
-                "w-full md:w-[380px] border-r border-zinc-200 dark:border-zinc-800/10 flex flex-col bg-zinc-50/50 dark:bg-black/40 backdrop-blur-3xl z-20",
+                "w-full md:w-[380px] border-r border-subtle flex flex-col bg-surface-alt z-20",
                 activeOtherId ? "hidden md:flex" : "flex"
             )}>
                 <div className="p-8 space-y-6">
                     <div className="flex items-center justify-between">
                         <div className="space-y-1">
-                            <h2 className="text-2xl font-black tracking-tighter text-zinc-900 dark:text-white uppercase italic underline decoration-indigo-500 underline-offset-8">Relay Hub</h2>
-                            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-indigo-500/80 pt-2">
+                            <h2 className="text-h2 text-strong uppercase tracking-tight">Relay Hub</h2>
+                            <p className="text-overline text-primary pt-2">
                                 {roleContext} Secure Channel
                             </p>
                         </div>
@@ -158,13 +158,13 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
 
                     <div className="relative group">
                         <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-subtle" />
                             <input
                                 type="text"
                                 placeholder="Locate connection..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all font-medium placeholder:text-zinc-500"
+                                className="input pl-11 pr-4 py-3.5 text-xs font-medium placeholder:text-subtle"
                             />
                         </div>
                     </div>
@@ -173,8 +173,8 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                 <div className="flex-1 overflow-y-auto px-4 pb-10 space-y-2 custom-scrollbar">
                     {loadingRooms ? (
                         <div className="flex flex-col items-center justify-center p-20 gap-4 opacity-20">
-                            <Loader2 className="w-6 h-6 animate-spin" />
-                            <span className="text-[8px] font-black uppercase tracking-widest">Initialising...</span>
+                            <Loader2 className="w-6 h-6 animate-spin text-subtle" />
+                            <span className="text-overline">Initialising...</span>
                         </div>
                     ) : displayList.length > 0 ? (
                         displayList.map((item) => {
@@ -186,34 +186,34 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                                     key={item.userId}
                                     onClick={() => setActiveOtherId(item.userId)}
                                     className={cn(
-                                        "w-full flex items-center gap-4 p-5 rounded-[2rem] transition-all group duration-300",
+                                        "w-full flex items-center gap-4 p-5 radius-card border border-subtle transition-all group duration-300",
                                         isActive
-                                            ? "bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-xl"
-                                            : "hover:bg-white/60 dark:hover:bg-zinc-900/40 border border-transparent"
+                                            ? "bg-surface shadow-card"
+                                            : "bg-surface-alt hover:bg-surface"
                                     )}
                                 >
                                     <div className="relative shrink-0">
-                                        <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-zinc-200 dark:border-zinc-700">
+                                        <div className="w-12 h-12 rounded-2xl bg-surface flex items-center justify-center overflow-hidden border border-subtle">
                                             <img
                                                 src={u?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u?.displayName || item.userId}`}
                                                 className="w-full h-full object-cover"
                                                 alt=""
                                             />
                                         </div>
-                                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-zinc-950 rounded-full shadow-lg" />
+                                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-success border-2 border-surface rounded-full shadow-lg" />
                                     </div>
                                     <div className="flex-1 text-left min-w-0">
                                         <div className="flex justify-between items-baseline mb-1">
-                                            <h4 className="text-[11px] font-black uppercase text-zinc-900 dark:text-white truncate tracking-tight">
+                                            <h4 className="text-sm font-semibold text-strong truncate">
                                                 {u?.displayName || "Loading Node..."}
                                             </h4>
                                             {item.room?.lastTimestamp && (
-                                                <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest">
+                                                <span className="text-caption uppercase tracking-widest">
                                                     {formatDistanceToNow(item.room.lastTimestamp.toDate())}
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-[10px] text-zinc-400 font-medium truncate uppercase tracking-tighter">
+                                        <p className="text-caption text-muted truncate">
                                             {item.room?.lastMessage || "Begin stable connection..."}
                                         </p>
                                     </div>
@@ -222,12 +222,12 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                         })
                     ) : (
                         <div className="py-20 text-center space-y-6 opacity-30">
-                            <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-900 rounded-[2rem] mx-auto flex items-center justify-center border border-zinc-200 dark:border-zinc-800">
-                                <Sparkles className="w-6 h-6 text-zinc-400" />
+                            <div className="w-16 h-16 bg-surface rounded-[2rem] mx-auto flex items-center justify-center border border-subtle">
+                                <Sparkles className="w-6 h-6 text-subtle" />
                             </div>
                             <div className="space-y-1">
-                                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400">Zero Transmissions</p>
-                                <p className="text-[8px] font-medium text-zinc-500 max-w-[180px] mx-auto leading-relaxed">Ensure users are in your 'Accepted' connection list to begin relayed messaging.</p>
+                                <p className="text-overline">Zero Transmissions</p>
+                                <p className="text-caption text-muted max-w-[180px] mx-auto leading-relaxed">Ensure users are in your "Accepted" connection list to begin relayed messaging.</p>
                             </div>
                         </div>
                     )}
@@ -236,38 +236,38 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
 
             {/* Chat Window */}
             <div className={cn(
-                "flex-1 flex flex-col bg-white dark:bg-[#050505] relative",
-                !activeOtherId && "hidden md:flex items-center justify-center bg-zinc-50/20 dark:bg-[#050505]"
+                "flex-1 flex flex-col bg-surface relative",
+                !activeOtherId && "hidden md:flex items-center justify-center bg-app"
             )}>
                 {activeOtherId ? (
                     <>
                         {/* Header */}
-                        <div className="p-6 md:px-12 border-b border-zinc-200 dark:border-zinc-800/20 flex items-center justify-between z-30 bg-white/80 dark:bg-[#050505]/80 backdrop-blur-xl">
+                        <div className="p-6 md:px-12 border-b border-subtle flex items-center justify-between z-30 bg-surface-glass backdrop-blur-xl">
                             <div className="flex items-center gap-6">
                                 <button
                                     onClick={() => setActiveOtherId(null)}
-                                    className="md:hidden p-3 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-2xl transition-all"
+                                    className="md:hidden p-3 hover:bg-surface-alt rounded-2xl transition-all"
                                 >
-                                    <ChevronLeft className="w-5 h-5 text-zinc-400" />
+                                    <ChevronLeft className="w-5 h-5 text-subtle" />
                                 </button>
                                 <div className="flex items-center gap-4">
                                     <div className="relative">
-                                        <div className="w-12 h-12 rounded-2xl bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center border border-zinc-100 dark:border-zinc-800 overflow-hidden shadow-lg shadow-black/5">
+                                        <div className="w-12 h-12 rounded-2xl bg-surface flex items-center justify-center border border-subtle overflow-hidden shadow-card">
                                             <img
                                                 src={activeOtherUserData?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${activeOtherUserData?.displayName || activeOtherId}`}
                                                 className="w-full h-full object-cover"
                                                 alt=""
                                             />
                                         </div>
-                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-4 border-white dark:border-[#050505] rounded-full" />
+                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-success border-4 border-surface rounded-full" />
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-black uppercase tracking-tight text-zinc-900 dark:text-white">
+                                        <h3 className="text-sm font-semibold uppercase tracking-tight text-strong">
                                             {activeOtherUserData?.displayName || "Protocol Node"}
                                         </h3>
                                         <div className="flex items-center gap-2">
-                                            <div className="flex items-center gap-1.5 font-black text-green-500 text-[8px] uppercase tracking-[0.2em]">
-                                                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                            <div className="flex items-center gap-1.5 font-semibold text-success text-[9px] uppercase tracking-[0.2em]">
+                                                <div className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
                                                 Verified Transmission
                                             </div>
                                         </div>
@@ -277,13 +277,13 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                         </div>
 
                         {/* Stream Area */}
-                        <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-10 custom-scrollbar bg-[#050505]">
+                        <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-10 bg-app">
                             {messages.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center opacity-20 gap-6">
-                                    <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center">
-                                        <Info className="w-6 h-6" />
+                                <div className="h-full flex flex-col items-center justify-center opacity-30 gap-6">
+                                    <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center border border-subtle">
+                                        <Info className="w-6 h-6 text-subtle" />
                                     </div>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.4em]">E2E Secure Channel Ready</p>
+                                    <p className="text-overline text-muted">E2E Secure Channel Ready</p>
                                 </div>
                             ) : messages.map((msg, idx) => {
                                 const isMe = msg.senderId === currentUser?.uid;
@@ -298,14 +298,14 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                                         )}
                                     >
                                         <div className={cn(
-                                            "max-w-[80%] p-6 rounded-[2.5rem] relative shadow-lg shadow-black/5",
+                                            "max-w-[80%] p-6 rounded-[2.5rem] relative",
                                             isMe
-                                                ? "bg-zinc-900 text-white dark:bg-white dark:text-black rounded-br-[0.5rem] ring-4 ring-zinc-900/5 dark:ring-white/5"
-                                                : "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 border border-zinc-100 dark:border-zinc-800 rounded-bl-[0.5rem] ring-4 ring-zinc-50 dark:ring-zinc-950/20"
+                                                ? "bg-primary text-on-primary rounded-br-[0.5rem] shadow-float"
+                                                : "bg-surface text-strong border border-subtle rounded-bl-[0.5rem] shadow-card"
                                         )}>
                                             <p className="text-[14px] font-medium leading-relaxed tracking-tight whitespace-pre-wrap">{msg.text}</p>
                                         </div>
-                                        <div className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-4 px-2">
+                                        <div className="text-caption uppercase tracking-widest text-subtle mb-4 px-2">
                                             {msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "---"}
                                         </div>
                                     </motion.div>
@@ -315,11 +315,11 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                         </div>
 
                         {/* Interactive Input Hub - Absolute fixed to bottom of container */}
-                        <div className="p-10 border-t border-zinc-200 dark:border-zinc-800/10 bg-white dark:bg-[#050505] z-30">
+                        <div className="p-10 border-t border-subtle bg-surface z-30">
                             <div className="relative group flex items-end gap-5">
                                 <div className="flex-1 relative">
-                                    <div className="relative flex items-center bg-zinc-50 dark:bg-zinc-900/50 rounded-[2.2rem] border border-zinc-100 dark:border-zinc-800 px-6 py-2 transition-all focus-within:ring-1 focus-within:ring-indigo-500/50">
-                                        <button className="p-3 text-zinc-400 hover:text-indigo-500 transition-colors">
+                                    <div className="relative flex items-center bg-surface-alt rounded-[2.2rem] border border-subtle px-6 py-2 transition-all focus-within:shadow-card">
+                                        <button className="p-3 text-subtle hover:text-primary transition-colors">
                                             <Paperclip className="w-5 h-5" />
                                         </button>
                                         <textarea
@@ -337,9 +337,9 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                                                 }
                                             }}
                                             placeholder="Transmit intelligence..."
-                                            className="flex-1 bg-transparent border-none text-[15px] font-medium focus:ring-0 placeholder:text-zinc-400 py-4 max-h-[150px] resize-none overflow-y-auto custom-scrollbar"
+                                            className="flex-1 bg-transparent border-none text-[15px] font-medium focus:ring-0 placeholder:text-subtle py-4 max-h-[150px] resize-none overflow-y-auto"
                                         />
-                                        <button className="p-3 text-zinc-400 hover:text-indigo-500 transition-colors">
+                                        <button className="p-3 text-subtle hover:text-primary transition-colors">
                                             <Smile className="w-5 h-5" />
                                         </button>
                                     </div>
@@ -349,7 +349,7 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => handleSend()}
                                     disabled={!messageText.trim()}
-                                    className="h-[68px] w-[68px] rounded-[2.2rem] bg-zinc-900 dark:bg-white text-white dark:text-black flex items-center justify-center shadow-2xl hover:bg-black dark:hover:bg-zinc-100 transition-all disabled:opacity-30 disabled:scale-100 group/send"
+                                    className="h-[68px] w-[68px] radius-card bg-primary-gradient text-on-primary flex items-center justify-center shadow-float transition-all disabled:opacity-30 disabled:scale-100 group/send"
                                 >
                                     <Send className="w-6 h-6 group-hover/send:translate-x-1 group-hover/send:-translate-y-1 transition-transform" />
                                 </motion.button>
@@ -359,15 +359,15 @@ export function MessagingHub({ roleContext }: MessagingHubProps) {
                 ) : (
                     <div className="flex flex-col items-center justify-center space-y-8 text-center max-w-sm px-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
                         <div className="relative">
-                            <div className="absolute -inset-12 bg-indigo-500/10 rounded-full blur-[80px]" />
-                            <div className="relative w-32 h-32 rounded-[3.5rem] bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center border border-zinc-100 dark:border-zinc-800 shadow-2xl">
-                                <MessageSquare className="w-12 h-12 text-zinc-200 dark:text-zinc-800" />
+                            <div className="absolute -inset-12 bg-primary-soft rounded-full blur-[80px]" />
+                            <div className="relative w-32 h-32 rounded-[3.5rem] bg-surface flex items-center justify-center border border-subtle shadow-float">
+                                <MessageSquare className="w-12 h-12 text-subtle" />
                             </div>
                         </div>
                         <div className="space-y-4">
-                            <h3 className="text-2xl font-black tracking-tighter uppercase text-zinc-900 dark:text-white underline decoration-indigo-500 decoration-4 underline-offset-8">Secure Relay Hub</h3>
+                            <h3 className="text-h2 text-strong uppercase tracking-tight">Secure Relay Hub</h3>
                             <div className="pt-4 space-y-2 px-6">
-                                <p className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400 leading-relaxed italic opacity-80">
+                                <p className="text-caption text-muted uppercase tracking-[0.25em] leading-relaxed italic">
                                     Initialize end-to-end encrypted protocol with verified connections in your network.
                                 </p>
                             </div>

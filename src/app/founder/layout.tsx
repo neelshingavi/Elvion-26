@@ -38,18 +38,18 @@ export default function FounderLayout({
     if (!user) return null;
 
     return (
-        <div className="flex h-screen bg-[#fafafa] dark:bg-[#050505]">
+        <div className="flex h-screen bg-app">
             <Sidebar />
 
             {/* Mobile Header */}
-            <div className="md:hidden fixed top-0 w-full p-4 glass z-40 flex items-center justify-between bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
+            <div className="md:hidden fixed top-0 w-full p-4 glass z-40 flex items-center justify-between border-b border-subtle">
                 <div className="flex items-center gap-2">
-                    <Rocket className="w-5 h-5 text-indigo-500" />
-                    <h1 className="font-bold text-zinc-900 dark:text-zinc-50">FounderFlow</h1>
+                    <Rocket className="w-5 h-5 text-primary" />
+                    <h1 className="font-bold text-strong">FounderFlow</h1>
                 </div>
                 <button
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    className="p-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-zinc-900 dark:text-zinc-100"
+                    className="p-2 bg-surface-alt rounded-lg text-strong"
                 >
                     {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </button>
@@ -57,15 +57,15 @@ export default function FounderLayout({
 
             {/* Mobile Menu Overlay */}
             {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-50 md:hidden flex flex-col bg-white dark:bg-zinc-950 animate-in slide-in-from-right duration-200">
-                    <div className="p-6 flex items-center justify-between border-b border-zinc-100 dark:border-zinc-900">
+                <div className="fixed inset-0 z-50 md:hidden flex flex-col bg-surface animate-in slide-in-from-right duration-200">
+                    <div className="p-6 flex items-center justify-between border-b border-subtle">
                         <div className="flex items-center gap-2">
-                            <Rocket className="w-5 h-5 text-indigo-500" />
-                            <h1 className="font-bold text-xl">Menu</h1>
+                            <Rocket className="w-5 h-5 text-primary" />
+                            <h1 className="font-bold text-xl text-strong">Menu</h1>
                         </div>
                         <button
                             onClick={() => setIsMobileMenuOpen(false)}
-                            className="p-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg"
+                            className="p-2 bg-surface-alt rounded-lg"
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -79,8 +79,8 @@ export default function FounderLayout({
                                     href={item.href}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive
-                                        ? "bg-zinc-900 text-white dark:bg-white dark:text-black"
-                                        : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                                        ? "bg-primary-soft text-primary"
+                                        : "text-muted hover:bg-surface-alt"
                                         }`}
                                 >
                                     <item.icon className="w-5 h-5" />
@@ -102,10 +102,10 @@ export default function FounderLayout({
             <div className="fixed bottom-6 right-6 z-[60]">
                 <button
                     onClick={() => setIsSidekickOpen(true)}
-                    className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all group relative"
+                    className="w-14 h-14 rounded-full bg-primary-gradient text-on-primary flex items-center justify-center shadow-float hover:scale-110 active:scale-95 transition-all group relative"
                 >
                     <Sparkles className="w-6 h-6 group-hover:rotate-12 transition-transform" />
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-zinc-950 rounded-full" />
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-success border-2 border-surface rounded-full" />
                 </button>
             </div>
 

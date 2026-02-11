@@ -461,13 +461,13 @@ export default function OnboardingPage() {
     // Loading state
     if (initializing) {
         return (
-            <div className="flex min-h-screen flex-col items-center justify-center bg-[#fafafa] dark:bg-[#050505] p-4">
+            <div className="flex min-h-screen flex-col items-center justify-center bg-app p-4">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="p-4 bg-black dark:bg-white rounded-2xl">
-                        <Rocket className="w-8 h-8 text-white dark:text-black" />
+                    <div className="p-4 bg-primary rounded-2xl">
+                        <Rocket className="w-8 h-8 text-on-primary" />
                     </div>
-                    <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">
+                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-subtle">
                         Initializing FounderFlow...
                     </span>
                 </div>
@@ -476,7 +476,7 @@ export default function OnboardingPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] p-4 md:p-8">
+        <div className="min-h-screen bg-app p-4 md:p-8">
             <div className="max-w-4xl mx-auto">
 
                 {/* Progress Indicator */}
@@ -486,10 +486,10 @@ export default function OnboardingPage() {
                             <div className={cn(
                                 "w-10 h-10 rounded-full flex items-center justify-center text-xs font-black transition-all",
                                 step === s
-                                    ? "bg-indigo-500 text-white scale-110"
+                                    ? "bg-primary text-on-primary scale-110"
                                     : ["project", "interview", "first48", "complete"].indexOf(step) > i
-                                        ? "bg-green-500 text-white"
-                                        : "bg-zinc-100 dark:bg-zinc-900 text-zinc-400"
+                                        ? "bg-success text-on-primary"
+                                        : "bg-surface-alt  text-subtle"
                             )}>
                                 {["project", "interview", "first48", "complete"].indexOf(step) > i
                                     ? <CheckCircle2 className="w-5 h-5" />
@@ -499,8 +499,8 @@ export default function OnboardingPage() {
                                 <div className={cn(
                                     "w-16 h-1 rounded-full transition-all",
                                     ["project", "interview", "first48", "complete"].indexOf(step) > i
-                                        ? "bg-green-500"
-                                        : "bg-zinc-200 dark:bg-zinc-800"
+                                        ? "bg-success"
+                                        : "bg-surface-alt "
                                 )} />
                             )}
                         </React.Fragment>
@@ -514,13 +514,13 @@ export default function OnboardingPage() {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="mb-8 p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm font-medium flex items-center gap-2"
+                            className="mb-8 p-4 rounded-2xl bg-danger-soft border border-danger text-danger text-sm font-medium flex items-center gap-2"
                         >
                             <AlertCircle className="w-4 h-4 flex-shrink-0" />
                             {error}
                             <button
                                 onClick={() => setError(null)}
-                                className="ml-auto text-red-400 hover:text-red-600"
+                                className="ml-auto text-danger hover:text-danger"
                             >×</button>
                         </motion.div>
                     )}
@@ -537,14 +537,14 @@ export default function OnboardingPage() {
                             className="space-y-8"
                         >
                             <div className="text-center space-y-4">
-                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-500 rounded-full text-xs font-black uppercase tracking-widest">
+                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-soft text-primary rounded-full text-xs font-black uppercase tracking-widest">
                                     <Rocket className="w-4 h-4" />
                                     Step 1 of 4
                                 </div>
-                                <h1 className="text-4xl font-black tracking-tight">
-                                    Launch Your <span className="text-indigo-500">Project</span>
+                                <h1 className="text-h1 text-strong">
+                                    Launch Your <span className="text-primary">Project</span>
                                 </h1>
-                                <p className="text-zinc-500 max-w-lg mx-auto">
+                                <p className="text-muted max-w-lg mx-auto">
                                     Let's define your venture. Be specific – this helps our AI agents understand your context.
                                 </p>
                             </div>
@@ -553,8 +553,8 @@ export default function OnboardingPage() {
                                 {/* Project Name & Industry */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
-                                            <Rocket className="w-4 h-4 text-indigo-500" />
+                                        <label className="text-overline flex items-center gap-2">
+                                            <Rocket className="w-4 h-4 text-primary" />
                                             Startup Name *
                                         </label>
                                         <input
@@ -562,19 +562,19 @@ export default function OnboardingPage() {
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                             placeholder="e.g. FinPay, HealthMate"
-                                            className="w-full p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-lg"
+                                            className="input text-lg"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
-                                            <Target className="w-4 h-4 text-indigo-500" />
+                                        <label className="text-overline flex items-center gap-2">
+                                            <Target className="w-4 h-4 text-primary" />
                                             Industry *
                                         </label>
                                         <select
                                             required
                                             value={formData.industry}
                                             onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                                            className="w-full p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none"
+                                            className="select text-lg"
                                         >
                                             <option value="" disabled>Select Industry</option>
                                             {INDUSTRIES.map(ind => (
@@ -586,11 +586,11 @@ export default function OnboardingPage() {
 
                                 {/* One-Sentence Pitch */}
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
-                                        <Zap className="w-4 h-4 text-indigo-500" />
+                                    <label className="text-overline flex items-center gap-2">
+                                        <Zap className="w-4 h-4 text-primary" />
                                         One-Sentence Pitch *
                                     </label>
-                                    <p className="text-xs text-zinc-500">
+                                    <p className="text-xs text-muted">
                                         Explain what you're building in one clear sentence.
                                     </p>
                                     <textarea
@@ -598,14 +598,14 @@ export default function OnboardingPage() {
                                         value={formData.oneSentencePitch}
                                         onChange={(e) => setFormData({ ...formData, oneSentencePitch: e.target.value })}
                                         placeholder="We help [target customer] achieve [benefit] by [unique approach]"
-                                        className="w-full h-24 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none"
+                                        className="input h-24 resize-none"
                                     />
                                 </div>
 
                                 {/* Target Demographic - India Specific */}
                                 <div className="space-y-3">
-                                    <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
-                                        <MapPin className="w-4 h-4 text-indigo-500" />
+                                    <label className="text-overline flex items-center gap-2">
+                                        <MapPin className="w-4 h-4 text-primary" />
                                         Target Indian Demographic *
                                     </label>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -617,49 +617,49 @@ export default function OnboardingPage() {
                                                 className={cn(
                                                     "p-4 rounded-2xl border text-left transition-all",
                                                     formData.targetDemographic === demo.value
-                                                        ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 ring-2 ring-indigo-500"
-                                                        : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                                                        ? "border-primary bg-primary-soft shadow-card"
+                                                        : "border-subtle hover:border-primary"
                                                 )}
                                             >
                                                 <div className="font-bold text-sm">{demo.label}</div>
-                                                <div className="text-xs text-zinc-500 mt-1">{demo.description}</div>
+                                                <div className="text-xs text-muted mt-1">{demo.description}</div>
                                             </button>
                                         ))}
                                     </div>
                                 </div>
 
                                 {/* Optional Fields */}
-                                <div className="space-y-6 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                                    <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">Optional Details</p>
+                                <div className="space-y-6 pt-4 border-t border-subtle">
+                                    <p className="text-overline">Optional Details</p>
 
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                                        <label className="text-overline">
                                             Problem Statement
                                         </label>
                                         <textarea
                                             value={formData.problemStatement}
                                             onChange={(e) => setFormData({ ...formData, problemStatement: e.target.value })}
                                             placeholder="What painful problem are you solving?"
-                                            className="w-full h-20 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none"
+                                            className="input h-20 resize-none"
                                         />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                                        <label className="text-overline">
                                             Long-Term Vision
                                         </label>
                                         <textarea
                                             value={formData.vision}
                                             onChange={(e) => setFormData({ ...formData, vision: e.target.value })}
                                             placeholder="Where do you see this in 5 years?"
-                                            className="w-full h-20 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none"
+                                            className="input h-20 resize-none"
                                         />
                                     </div>
                                 </div>
 
                                 <button
                                     type="submit"
-                                    className="w-full flex items-center justify-center gap-3 px-8 py-5 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-black rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-[1.02] transition-all shadow-2xl"
+                                    className="w-full btn-primary hover:scale-[1.02] transition-all"
                                 >
                                     Continue to Interview
                                     <ChevronRight className="w-5 h-5" />
@@ -678,32 +678,32 @@ export default function OnboardingPage() {
                             className="space-y-8"
                         >
                             <div className="text-center space-y-4">
-                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-500 rounded-full text-xs font-black uppercase tracking-widest">
+                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-soft text-primary rounded-full text-xs font-black uppercase tracking-widest">
                                     <MessageSquare className="w-4 h-4" />
                                     Step 2 of 4
                                 </div>
-                                <h1 className="text-4xl font-black tracking-tight">
-                                    Quick <span className="text-indigo-500">Interview</span>
+                                <h1 className="text-h1 text-strong">
+                                    Quick <span className="text-primary">Interview</span>
                                 </h1>
-                                <p className="text-zinc-500 max-w-lg mx-auto">
+                                <p className="text-muted max-w-lg mx-auto">
                                     ~5 minutes • This helps personalize your AI co-founder experience
                                 </p>
                             </div>
 
                             {/* Chat Interface */}
                             <div className="max-w-2xl mx-auto">
-                                <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xl">
+                                <div className="card overflow-hidden">
                                     {/* Chat Header */}
-                                    <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/50">
+                                    <div className="p-6 border-b border-subtle bg-surface-alt">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                                                <Sparkles className="w-5 h-5 text-white" />
+                                            <div className="w-10 h-10 rounded-full bg-primary-gradient flex items-center justify-center">
+                                                <Sparkles className="w-5 h-5 text-on-primary" />
                                             </div>
                                             <div>
                                                 <div className="font-bold">FounderFlow AI</div>
-                                                <div className="text-xs text-zinc-500">Getting to know you...</div>
+                                                <div className="text-xs text-muted">Getting to know you...</div>
                                             </div>
-                                            <div className="ml-auto flex items-center gap-2 text-xs text-zinc-400">
+                                            <div className="ml-auto flex items-center gap-2 text-xs text-subtle">
                                                 <Clock className="w-3 h-3" />
                                                 {currentQuestionIndex + 1} / {INTERVIEW_QUESTIONS.length}
                                             </div>
@@ -716,18 +716,18 @@ export default function OnboardingPage() {
                                         {INTERVIEW_QUESTIONS.slice(0, currentQuestionIndex).map((q, i) => (
                                             <div key={q.id} className="space-y-4">
                                                 <div className="flex gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
-                                                        <Sparkles className="w-4 h-4 text-indigo-500" />
+                                                    <div className="w-8 h-8 rounded-full bg-primary-soft flex items-center justify-center flex-shrink-0">
+                                                        <Sparkles className="w-4 h-4 text-primary" />
                                                     </div>
-                                                    <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl rounded-tl-sm p-4 max-w-[80%]">
+                                                    <div className="bg-surface-alt rounded-2xl rounded-tl-sm p-4 max-w-[80%]">
                                                         <p className="text-sm">{q.question}</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex gap-3 justify-end">
-                                                    <div className="bg-indigo-500 text-white rounded-2xl rounded-tr-sm p-4 max-w-[80%]">
+                                                    <div className="bg-primary text-on-primary rounded-2xl rounded-tr-sm p-4 max-w-[80%]">
                                                         <p className="text-sm">{interviewAnswers[q.id as keyof InterviewAnswers]}</p>
                                                     </div>
-                                                    <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center flex-shrink-0">
+                                                    <div className="w-8 h-8 rounded-full bg-surface-alt flex items-center justify-center flex-shrink-0">
                                                         <User className="w-4 h-4" />
                                                     </div>
                                                 </div>
@@ -736,10 +736,10 @@ export default function OnboardingPage() {
 
                                         {/* Current Question */}
                                         <div className="flex gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
-                                                <Sparkles className="w-4 h-4 text-indigo-500" />
+                                            <div className="w-8 h-8 rounded-full bg-primary-soft flex items-center justify-center flex-shrink-0">
+                                                <Sparkles className="w-4 h-4 text-primary" />
                                             </div>
-                                            <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl rounded-tl-sm p-4 max-w-[80%]">
+                                            <div className="bg-surface-alt rounded-2xl rounded-tl-sm p-4 max-w-[80%]">
                                                 <p className="text-sm font-medium">
                                                     {INTERVIEW_QUESTIONS[currentQuestionIndex].question}
                                                 </p>
@@ -749,14 +749,14 @@ export default function OnboardingPage() {
                                         {/* AI Response */}
                                         {aiTyping && (
                                             <div className="flex gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
-                                                    <Sparkles className="w-4 h-4 text-indigo-500" />
+                                                <div className="w-8 h-8 rounded-full bg-primary-soft dark:bg-primary-soft flex items-center justify-center flex-shrink-0">
+                                                    <Sparkles className="w-4 h-4 text-primary" />
                                                 </div>
-                                                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl rounded-tl-sm p-4">
+                                                <div className="bg-surface-alt rounded-2xl rounded-tl-sm p-4">
                                                     <div className="flex gap-1">
-                                                        <span className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                                                        <span className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                                                        <span className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                                                        <span className="w-2 h-2 bg-subtle rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                                                        <span className="w-2 h-2 bg-subtle rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                                                        <span className="w-2 h-2 bg-subtle rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                                                     </div>
                                                 </div>
                                             </div>
@@ -764,11 +764,11 @@ export default function OnboardingPage() {
 
                                         {aiResponse && (
                                             <div className="flex gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
-                                                    <Sparkles className="w-4 h-4 text-indigo-500" />
+                                                <div className="w-8 h-8 rounded-full bg-primary-soft dark:bg-primary-soft flex items-center justify-center flex-shrink-0">
+                                                    <Sparkles className="w-4 h-4 text-primary" />
                                                 </div>
-                                                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl rounded-tl-sm p-4 max-w-[80%]">
-                                                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                                                <div className="bg-surface-alt rounded-2xl rounded-tl-sm p-4 max-w-[80%]">
+                                                    <p className="text-sm text-muted">
                                                         {aiResponse}
                                                     </p>
                                                 </div>
@@ -779,13 +779,13 @@ export default function OnboardingPage() {
                                     </div>
 
                                     {/* Input Area */}
-                                    <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/50">
+                                    <div className="p-4 border-t border-subtle bg-surface-alt">
                                         <div className="flex gap-3">
                                             <textarea
                                                 value={currentAnswer}
                                                 onChange={(e) => setCurrentAnswer(e.target.value)}
                                                 placeholder={INTERVIEW_QUESTIONS[currentQuestionIndex].placeholder}
-                                                className="flex-1 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500 outline-none resize-none min-h-[80px]"
+                                                className="input min-h-[80px] resize-none"
                                                 onKeyDown={(e) => {
                                                     if (e.key === "Enter" && !e.shiftKey) {
                                                         e.preventDefault();
@@ -796,12 +796,12 @@ export default function OnboardingPage() {
                                             <button
                                                 onClick={handleAnswerSubmit}
                                                 disabled={currentAnswer.length < INTERVIEW_QUESTIONS[currentQuestionIndex].minLength || aiTyping}
-                                                className="px-6 py-4 bg-indigo-500 hover:bg-indigo-600 disabled:bg-zinc-300 text-white rounded-2xl transition-all self-end"
+                                                className="btn-primary self-end"
                                             >
                                                 <Send className="w-5 h-5" />
                                             </button>
                                         </div>
-                                        <p className="text-xs text-zinc-400 mt-2 text-center">
+                                        <p className="text-xs text-subtle mt-2 text-center">
                                             Press Enter to send • Shift+Enter for new line
                                         </p>
                                     </div>
@@ -820,24 +820,24 @@ export default function OnboardingPage() {
                             className="space-y-8"
                         >
                             <div className="text-center space-y-4">
-                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-500 rounded-full text-xs font-black uppercase tracking-widest">
+                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-soft text-primary rounded-full text-xs font-black uppercase tracking-widest">
                                     <Clock className="w-4 h-4" />
                                     Step 3 of 4
                                 </div>
                                 <h1 className="text-4xl font-black tracking-tight">
-                                    Your First <span className="text-indigo-500">48 Hours</span>
+                                    Your First <span className="text-primary">48 Hours</span>
                                 </h1>
-                                <p className="text-zinc-500 max-w-lg mx-auto">
+                                <p className="text-muted max-w-lg mx-auto">
                                     AI-generated action plan to validate your core assumptions fast.
                                 </p>
                             </div>
 
                             {generatingPlan ? (
                                 <div className="max-w-2xl mx-auto py-20 flex flex-col items-center gap-6">
-                                    <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                                    <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                                     <div className="text-center space-y-2">
                                         <p className="font-bold">Generating your personalized plan...</p>
-                                        <p className="text-sm text-zinc-500">
+                                        <p className="text-sm text-muted">
                                             Analyzing your startup context and creating actionable tasks
                                         </p>
                                     </div>
@@ -845,7 +845,7 @@ export default function OnboardingPage() {
                             ) : (
                                 <div className="max-w-3xl mx-auto space-y-6">
                                     {/* Summary Card */}
-                                    <div className="p-6 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl text-white">
+                                    <div className="p-6 bg-primary-gradient rounded-3xl text-on-primary">
                                         <div className="flex items-center gap-3 mb-4">
                                             <Zap className="w-6 h-6" />
                                             <span className="font-black uppercase tracking-widest text-sm">Sprint Overview</span>
@@ -855,7 +855,7 @@ export default function OnboardingPage() {
                                                 <div className="text-3xl font-black">{first48Tasks.length}</div>
                                                 <div className="text-xs opacity-80">Tasks</div>
                                             </div>
-                                            <div className="text-center border-x border-white/20">
+                                            <div className="text-center border-x border-subtle">
                                                 <div className="text-3xl font-black">
                                                     {first48Tasks.reduce((acc, t) => acc + t.timeHours, 0)}h
                                                 </div>
@@ -878,38 +878,38 @@ export default function OnboardingPage() {
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: i * 0.1 }}
-                                                className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3"
+                                                className="p-6 bg-surface rounded-2xl border border-subtle space-y-3"
                                             >
                                                 <div className="flex items-start justify-between gap-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className={cn(
-                                                            "w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm",
-                                                            task.priority === "high" ? "bg-red-500" :
-                                                                task.priority === "medium" ? "bg-yellow-500" :
-                                                                    "bg-green-500"
+                                                            "w-8 h-8 rounded-lg flex items-center justify-center text-on-primary font-bold text-sm",
+                                                            task.priority === "high" ? "bg-danger" :
+                                                                task.priority === "medium" ? "bg-warning" :
+                                                                    "bg-success"
                                                         )}>
                                                             {i + 1}
                                                         </div>
                                                         <div>
                                                             <h3 className="font-bold">{task.title}</h3>
-                                                            <p className="text-sm text-zinc-500">{task.description}</p>
+                                                            <p className="text-sm text-muted">{task.description}</p>
                                                         </div>
                                                     </div>
                                                     <div className="text-right shrink-0">
-                                                        <div className="font-bold text-indigo-500">{task.timeHours}h</div>
+                                                        <div className="font-bold text-primary">{task.timeHours}h</div>
                                                         <div className={cn(
                                                             "text-xs font-bold uppercase",
-                                                            task.priority === "high" ? "text-red-500" :
-                                                                task.priority === "medium" ? "text-yellow-500" :
-                                                                    "text-green-500"
+                                                            task.priority === "high" ? "text-danger" :
+                                                                task.priority === "medium" ? "text-warning" :
+                                                                    "text-success"
                                                         )}>
                                                             {task.priority}
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800">
-                                                    <p className="text-xs text-zinc-400">
-                                                        <strong className="text-zinc-500">Validating:</strong> {task.assumption}
+                                                <div className="pt-3 border-t border-subtle">
+                                                    <p className="text-xs text-subtle">
+                                                        <strong className="text-muted">Validating:</strong> {task.assumption}
                                                     </p>
                                                 </div>
                                             </motion.div>
@@ -919,11 +919,11 @@ export default function OnboardingPage() {
                                     <button
                                         onClick={handleCompleteOnboarding}
                                         disabled={loading}
-                                        className="w-full flex items-center justify-center gap-3 px-8 py-5 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-black rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-[1.02] transition-all shadow-2xl disabled:opacity-50"
+                                        className="w-full btn-primary hover:scale-[1.02] transition-all disabled:opacity-50"
                                     >
                                         {loading ? (
                                             <>
-                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                <div className="w-5 h-5 border-2 border-subtle border-t-primary rounded-full animate-spin" />
                                                 Setting Up Your Workspace...
                                             </>
                                         ) : (
@@ -950,24 +950,24 @@ export default function OnboardingPage() {
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 transition={{ type: "spring", delay: 0.2 }}
-                                className="w-24 h-24 mx-auto rounded-full bg-green-500 flex items-center justify-center"
+                                className="w-24 h-24 mx-auto rounded-full bg-success flex items-center justify-center"
                             >
-                                <CheckCircle2 className="w-12 h-12 text-white" />
+                                <CheckCircle2 className="w-12 h-12 text-on-primary" />
                             </motion.div>
 
                             <div className="space-y-4">
-                                <h1 className="text-4xl font-black tracking-tight">
+                                <h1 className="text-h1 text-strong">
                                     You're All Set! 🚀
                                 </h1>
-                                <p className="text-zinc-500 max-w-lg mx-auto">
+                                <p className="text-muted max-w-lg mx-auto">
                                     Your workspace is ready. Redirecting to your dashboard...
                                 </p>
                             </div>
 
                             <div className="flex justify-center gap-4">
-                                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                                <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                                <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                                <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                             </div>
                         </motion.div>
                     )}

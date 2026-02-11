@@ -45,23 +45,23 @@ export default function AdminUsersPage() {
         }
     };
 
-    if (loading) return <div className="text-zinc-500">Loading registry...</div>;
+    if (loading) return <div className="text-muted">Loading registry...</div>;
 
     return (
         <div className="space-y-6">
             <header className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">User Registry</h1>
-                    <p className="text-zinc-400">Manage platform access and roles.</p>
+                    <h1 className="text-h2 text-strong">User Registry</h1>
+                    <p className="text-subtle">Manage platform access and roles.</p>
                 </div>
-                <div className="px-3 py-1 bg-zinc-900 rounded-full border border-zinc-800 text-xs text-zinc-400">
+                <div className="px-3 py-1 bg-surface rounded-full border border-subtle text-xs text-subtle">
                     Total: {users.length}
                 </div>
             </header>
 
-            <div className="border border-zinc-800 rounded-xl overflow-hidden">
-                <table className="w-full text-sm text-left text-zinc-400">
-                    <thead className="text-xs uppercase bg-zinc-900 text-zinc-500">
+            <div className="card rounded-xl overflow-hidden">
+                <table className="w-full text-sm text-left text-subtle">
+                    <thead className="text-xs uppercase bg-surface text-muted">
                         <tr>
                             <th className="px-6 py-3">User</th>
                             <th className="px-6 py-3">Role</th>
@@ -69,17 +69,17 @@ export default function AdminUsersPage() {
                             <th className="px-6 py-3 text-right">Action</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-zinc-800 bg-zinc-950">
+                    <tbody className="divide-y divide-subtle bg-surface">
                         {users.map((user) => (
-                            <tr key={user.id} className="hover:bg-zinc-900/50 transition-colors">
-                                <td className="px-6 py-4 font-medium text-white">
+                            <tr key={user.id} className="hover:bg-surface-alt transition-colors">
+                                <td className="px-6 py-4 font-medium text-strong">
                                     <div>{user.displayName || "Unknown"}</div>
-                                    <div className="text-xs text-zinc-500">{user.email}</div>
+                                    <div className="text-xs text-muted">{user.email}</div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${user.role === "founder" ? "bg-blue-900/30 text-blue-400" :
-                                        user.role === "admin" ? "bg-purple-900/30 text-purple-400" :
-                                            "bg-zinc-800 text-zinc-400"
+                                    <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${user.role === "founder" ? "bg-info-soft text-info" :
+                                        user.role === "admin" ? "bg-primary-soft text-primary" :
+                                            "bg-surface-alt text-subtle"
                                         }`}>
                                         {user.role || "N/A"}
                                     </span>
@@ -92,7 +92,7 @@ export default function AdminUsersPage() {
                                 <td className="px-6 py-4 text-right">
                                     <button
                                         onClick={() => handleDelete(user.id)}
-                                        className="text-red-500 hover:text-red-400 hover:bg-red-950/30 p-2 rounded-lg transition-all"
+                                        className="text-danger hover:bg-danger-soft p-2 rounded-lg transition-all"
                                         title="Delete User"
                                     >
                                         <Trash2 className="w-4 h-4" />
