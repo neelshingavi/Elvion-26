@@ -17,9 +17,8 @@ export default function Navbar() {
         <motion.nav
             initial={{ y: -100 }}
             animate={{ y: 0 }}
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-                scrolled ? "bg-black/50 backdrop-blur-md border-b border-white/10" : "bg-transparent"
-            }`}
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-black/50 backdrop-blur-md border-b border-white/10" : "bg-transparent"
+                }`}
         >
             <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                 <Link href="/" className="text-2xl font-black tracking-tighter flex items-center gap-2">
@@ -34,14 +33,11 @@ export default function Navbar() {
                         <Link href="#features" className="hover:text-white transition-colors">
                             Features
                         </Link>
-                        <Link href="#pricing" className="hover:text-white transition-colors">
-                            Pricing
-                        </Link>
                         <Link href="#about" className="hover:text-white transition-colors">
                             About
                         </Link>
                     </div>
-                    
+
                     <div className="h-6 w-px bg-white/10 hidden md:block" />
 
                     <div className="flex items-center gap-3">
@@ -50,12 +46,6 @@ export default function Navbar() {
                             className="text-sm font-medium text-zinc-300 hover:text-white transition-colors px-4 py-2"
                         >
                             Log in
-                        </Link>
-                        <Link
-                            href="/signup" // Provided signup is handled in login or separate, usually same flow in standard auth
-                            className="text-sm font-bold bg-white text-black hover:bg-zinc-200 transition-colors px-5 py-2.5 rounded-full flex items-center gap-2"
-                        >
-                            Get Started
                         </Link>
                     </div>
                 </div>
