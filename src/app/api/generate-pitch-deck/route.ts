@@ -36,33 +36,42 @@ export async function POST(req: Request) {
         const canvasDoc = await db.collection("canvases").doc(`${startupId}_main`).get();
         const canvasContent = canvasDoc.exists ? (canvasDoc.data()?.blocks || []).map((b: any) => b.content).join("\n") : "";
 
-        const prompt = `You are an expert pitch deck creator. Generate a professional investor pitch deck for this startup.
+        const prompt = `You are a Tier-1 Venture Capital Pitch Strategist. Generate a fundable, psychological, investor-grade pitch deck for this startup.
 
 Startup Details:
 - Name: ${startup.name}
 - Industry: ${startup.industry}
-- Idea: ${startup.idea || startup.oneSentencePitch}
 - Stage: ${startup.stage}
-- Problem Statement: ${startup.problemStatement || "Not specified"}
+- Concept: ${startup.idea || startup.oneSentencePitch}
+- Problem: ${startup.problemStatement || "Not specified"}
 
-Additional Context from Canvas:
+Context:
 ${canvasContent.substring(0, 2000)}
 
-Previous Work:
+Memories:
 ${memories.slice(0, 3).map((m: any) => m.content.substring(0, 300)).join("\n")}
 
-Generate a 7-slide pitch deck with the following structure. For each slide, provide 3-4 bullet points of real content (not placeholders).
+Strict Rules:
+- 12 Slides exactly.
+- No fluff ("Revolutionary", "Disruptive"). Use data-backed claims.
+- Bottom-up market sizing only.
+- Focus on "Inevitability" and "Unfair Advantage".
 
-Return ONLY valid JSON:
+Return ONLY valid JSON with this exact structure:
 {
     "slides": [
-        { "id": "s1", "type": "title", "title": "Company Name", "content": ["One-line pitch", "Key tagline"] },
-        { "id": "s2", "type": "problem", "title": "The Problem", "content": ["Pain point 1", "Pain point 2", "Current solution issues"] },
-        { "id": "s3", "type": "solution", "title": "Our Solution", "content": ["Solution overview", "Key feature 1", "Key feature 2"] },
-        { "id": "s4", "type": "market", "title": "Market Opportunity", "content": ["TAM estimation", "SAM estimation", "SOM estimation"] },
-        { "id": "s5", "type": "traction", "title": "Traction", "content": ["Key metrics", "Growth indicators", "Milestones"] },
-        { "id": "s6", "type": "team", "title": "The Team", "content": ["Founder backgrounds", "Key expertise", "Advisory support"] },
-        { "id": "s7", "type": "ask", "title": "The Ask", "content": ["Funding amount", "Use of funds breakdown", "Expected runway"] }
+        { "id": "s1", "type": "vision", "title": "The Vision", "content": ["One-line category defining statement", "Clear customer identification"] },
+        { "id": "s2", "type": "problem", "title": "The Problem", "content": ["The broken status quo", "Quantified pain point", "Why current solutions fail"] },
+        { "id": "s3", "type": "solution", "title": "The Solution", "content": ["High-level value prop", "The 'Aha' moment", "Outcome (Speed/Cost/Quality)"] },
+        { "id": "s4", "type": "whynow", "title": "Why Now", "content": ["Regulatory/Tech/Behavioral shift", "Why this wasn't possible 5 years ago"] },
+        { "id": "s5", "type": "market", "title": "Market Size", "content": ["TAM (Total Addressable)", "SAM (Serviceable)", "SOM (Obtainable - 3 yrs)"] },
+        { "id": "s6", "type": "product", "title": "The Product", "content": ["Core workflow", "Defensible moat", "Secret sauce"] },
+        { "id": "s7", "type": "traction", "title": "Traction", "content": ["Revenue/Users metrics", "Growth rate", "Key partnerships/LOIs"] },
+        { "id": "s8", "type": "business_model", "title": "Business Model", "content": ["Revenue streams", "Pricing logic", "Unit economics (LTV/CAC)"] },
+        { "id": "s9", "type": "competition", "title": "Competition", "content": ["Competitor 1 vs Us", "Competitor 2 vs Us", "Our unfair advantage"] },
+        { "id": "s10", "type": "gtm", "title": "Go-To-Market", "content": ["Acquisition channels", "Distribution strategy", "First 10k users plan"] },
+        { "id": "s11", "type": "team", "title": "The Team", "content": ["CEO superpower", "CTO superpower", "Why this team wins"] },
+        { "id": "s12", "type": "ask", "title": "The Ask", "content": ["Raise amount", "Runway length", "Key milestones to hit"] }
     ]
 }`;
 
