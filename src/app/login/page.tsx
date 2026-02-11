@@ -169,16 +169,17 @@ export default function LoginPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-6xl bg-black/40 backdrop-blur-2xl border border-white/5 rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-2 relative z-10"
       >
-        {/* Left Image */}
-        <div className="hidden md:block relative">
+        {/* Left Panel - Illustration */}
+        <div className="hidden md:block relative h-full bg-white">
           <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url('/auth-image.jpg')" }}
+            className="absolute inset-0 bg-contain bg-center bg-no-repeat p-12"
+            style={{ backgroundImage: "url('/auth-v3.jpg')" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
+          {/* Subtle overlay to soften the white if needed */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/5 pointer-events-none" />
         </div>
 
-        {/* Right Form */}
+        {/* Right Panel - Form */}
         <div className="p-6 md:p-10 flex flex-col justify-center relative">
           <Link href="/" className="absolute top-4 right-4 text-zinc-400 hover:text-white">
             <X className="w-5 h-5" />
