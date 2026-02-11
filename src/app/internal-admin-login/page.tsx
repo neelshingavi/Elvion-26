@@ -24,58 +24,58 @@ export default function AdminLoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-zinc-950 p-4 font-sans">
-            <div className="w-full max-w-sm space-y-8 bg-zinc-900 p-8 rounded-2xl border border-zinc-800 shadow-2xl">
+        <div className="min-h-screen flex items-center justify-center bg-app p-4 font-sans">
+            <div className="w-full max-w-sm space-y-8 card p-8">
                 <div className="text-center space-y-2">
-                    <div className="mx-auto w-12 h-12 bg-red-900/20 rounded-xl flex items-center justify-center mb-4">
-                        <ShieldAlert className="w-6 h-6 text-red-500" />
+                    <div className="mx-auto w-12 h-12 bg-danger-soft rounded-xl flex items-center justify-center mb-4">
+                        <ShieldAlert className="w-6 h-6 text-danger" />
                     </div>
-                    <h1 className="text-2xl font-bold text-zinc-100">Restricted Access</h1>
-                    <p className="text-sm text-zinc-500">Internal Admin System Only</p>
+                    <h1 className="text-h2 text-strong">Restricted Access</h1>
+                    <p className="text-body">Internal Admin System Only</p>
                 </div>
 
                 {error && (
-                    <div className="p-3 bg-red-900/20 border border-red-900/50 rounded-lg text-red-400 text-xs font-bold text-center">
+                    <div className="p-3 bg-danger-soft border border-danger rounded-lg text-danger text-xs font-bold text-center">
                         {error}
                     </div>
                 )}
 
                 <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-2">
-                        <label className="text-xs uppercase font-bold text-zinc-500 pl-1">Admin ID</label>
+                        <label className="text-overline pl-1">Admin ID</label>
                         <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-subtle" />
                             <input
                                 type="text"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-zinc-100 text-sm focus:outline-none focus:border-zinc-600 transition-colors"
+                                className="input pl-10 pr-4 py-3 text-sm"
                                 placeholder="admin@123"
                             />
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs uppercase font-bold text-zinc-500 pl-1">Passkey</label>
+                        <label className="text-overline pl-1">Passkey</label>
                         <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-subtle" />
                             <input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-zinc-100 text-sm focus:outline-none focus:border-zinc-600 transition-colors"
+                                className="input pl-10 pr-4 py-3 text-sm"
                                 placeholder="••••••"
                             />
                         </div>
                     </div>
                     <button
                         type="submit"
-                        className="w-full bg-zinc-100 text-zinc-950 font-bold py-3 rounded-xl hover:bg-white transition-colors mt-4"
+                        className="w-full btn-primary mt-4"
                     >
                         Authenticate
                     </button>
                 </form>
 
-                <p className="text-[10px] text-zinc-600 text-center font-mono">
+                <p className="text-overline text-center font-mono">
                     IP LOGGED • SECURE CONNECTION
                 </p>
             </div>

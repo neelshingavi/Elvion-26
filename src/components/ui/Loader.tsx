@@ -9,17 +9,17 @@ export function Loader({ className = "", size = "md" }: { className?: string, si
 
     return (
         <div className={`flex items-center justify-center h-full w-full ${className}`}>
-            <Loader2 className={`${sizeClasses[size]} animate-spin text-indigo-500`} />
+            <Loader2 className={`${sizeClasses[size]} animate-spin text-primary`} />
         </div>
     );
 }
 
 export function FullPageLoader() {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-sm">
             <div className="flex flex-col items-center gap-4">
                 <Loader size="lg" />
-                <p className="text-sm font-medium text-zinc-500 animate-pulse">Loading FounderFlow...</p>
+                <p className="text-sm font-medium text-muted animate-pulse">Loading FounderFlow...</p>
             </div>
         </div>
     );
