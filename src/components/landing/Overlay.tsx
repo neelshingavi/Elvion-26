@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import Footer from "@/components/landing/Footer";
 
 const Section = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
     <section className={`min-h-screen flex flex-col justify-center items-center p-8 ${className}`}>
@@ -105,6 +106,8 @@ export default function Overlay() {
                     © {new Date().getFullYear()} FounderFlow Inc.
                 </footer>
             </Section>
+
+            <Footer />
         </div>
     );
 }
