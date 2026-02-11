@@ -71,18 +71,25 @@ export default function ProfileEditor() {
 
         fetchInitialData();
 
-        // 2. Real-time sync for connection counts and dynamic fields
+        // 2. Real-time sync for connection counts and dynamic fields ONLY
+        // Do NOT overwrite fields the user might be editing
         const unsubscribe = subscribeToProfile(user.uid, (updatedProfile) => {
-            setFormData(prev => ({
-                ...prev,
-                ...updatedProfile,
-                // Preserve local edits for specifically defined fields if they are different?
-                // Actually, standard practice is to overwrite unless focused.
-                // For simplicity in this OS-like app, we'll merge.
-                photoURL: updatedProfile.photoURL,
-                bannerURL: updatedProfile.bannerURL,
-                connectionCount: updatedProfile.connectionCount
-            } as UserData));
+            setFormData(prev => {
+                if (!prev) return updatedProfile as UserData;
+
+                // Only sync read-only/computed fields to avoid overwriting user edits
+                return {
+                    ...prev,
+                    // Sync these fields (they're not user-editable in this view)
+                    photoURL: updatedProfile.photoURL || prev.photoURL,
+                    bannerURL: updatedProfile.bannerURL || prev.bannerURL,
+                    connectionCount: updatedProfile.connectionCount || prev.connectionCount,
+                    score: updatedProfile.score || prev.score,
+                    isOnboardingCompleted: updatedProfile.isOnboardingCompleted,
+                    // DO NOT sync: displayName, about, skills, projects, socialLinks, etc.
+                    // These are actively being edited by the user
+                } as UserData;
+            });
         });
 
         return () => unsubscribe();

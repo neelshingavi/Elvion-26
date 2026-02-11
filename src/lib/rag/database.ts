@@ -27,27 +27,55 @@ export interface SearchResult {
  * Save a batch of memory chunks with deduplication
  */
 export async function saveChunks(chunks: MemoryChunk[]) {
-    // 1. Check for duplicates using content_hash
-    const newChunks = [];
-    for (const chunk of chunks) {
-        if (!chunk.content_hash) continue;
+    if (chunks.length === 0) return;
 
-        // Check if hash exists for this project (Tier 4 Performance)
-        const { data } = await supabase
+    // 1. Batch deduplication check (Performance optimization)
+    const chunksWithHash = chunks.filter(c => c.content_hash);
+    if (chunksWithHash.length === 0) {
+        // No hashes to check, insert all
+        const { error } = await supabase
             .from("project_memory")
-            .select("id")
-            .eq("project_id", chunk.project_id)
-            .eq("content_hash", chunk.content_hash)
-            .single();
-
-        if (!data) {
-            newChunks.push(chunk);
-        } else {
-            console.log(`Duplicate chunk found (hash: ${chunk.content_hash}), skipping embedding.`);
+            .insert(chunks);
+        if (error) {
+            console.error("Error saving RAG chunks:", error);
+            throw error;
         }
+        return;
     }
 
-    if (newChunks.length === 0) return;
+    // Get all hashes in a single query
+    const hashes = chunksWithHash.map(c => c.content_hash);
+    const projectId = chunks[0].project_id; // Assume all chunks are for same project
+
+    const { data: existingHashes, error: checkError } = await supabase
+        .from("project_memory")
+        .select("content_hash")
+        .eq("project_id", projectId)
+        .in("content_hash", hashes);
+
+    if (checkError) {
+        console.warn("Error checking dedup, proceeding with insert:", checkError.message);
+    }
+
+    // Build set of existing hashes for O(1) lookup
+    const existingHashSet = new Set(
+        (existingHashes || []).map((row: any) => row.content_hash)
+    );
+
+    // Filter out duplicates
+    const newChunks = chunks.filter(chunk => {
+        if (!chunk.content_hash) return true; // Keep chunks without hash
+        if (existingHashSet.has(chunk.content_hash)) {
+            console.log(`Duplicate chunk found (hash: ${chunk.content_hash}), skipping.`);
+            return false;
+        }
+        return true;
+    });
+
+    if (newChunks.length === 0) {
+        console.log("All chunks were duplicates, nothing to insert.");
+        return;
+    }
 
     // 2. Insert new chunks
     const { error } = await supabase
@@ -58,6 +86,8 @@ export async function saveChunks(chunks: MemoryChunk[]) {
         console.error("Error saving RAG chunks:", error);
         throw error;
     }
+
+    console.log(`Inserted ${newChunks.length} new chunks (${chunks.length - newChunks.length} duplicates skipped).`);
 }
 
 /**

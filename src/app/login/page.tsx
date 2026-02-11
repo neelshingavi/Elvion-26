@@ -152,6 +152,17 @@ export default function LoginPage() {
       if (err.code === "auth/email-already-in-use") msg = "Email already in use.";
       if (err.code === "auth/invalid-credential") msg = "Invalid email or password.";
       if (err.code === "auth/weak-password") msg = "Password should be at least 6 characters.";
+
+      // If DB write failed after successful auth creation, try to clean up
+      if (auth.currentUser && mode === "signup" && !err.code?.startsWith("auth/")) {
+        try {
+          await auth.currentUser.delete();
+          msg = "Registration failed due to network error. Please try again.";
+        } catch (delErr) {
+          console.error("Failed to rollback user creation:", delErr);
+        }
+      }
+
       setError(msg);
     } finally {
       setLoading(false);

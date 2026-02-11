@@ -365,7 +365,7 @@ export default function OnboardingPage() {
 
     // Complete onboarding and create startup
     const handleCompleteOnboarding = async () => {
-        if (!user) return;
+        if (!user || loading) return; // Prevent double-submit
 
         setLoading(true);
         setError(null);
