@@ -52,7 +52,7 @@ Startup Context:
 - Founder Background: ${founderBackground || "Not specified"}
 
 Previous Context:
-${memories.slice(0, 5).map(m => `- ${m.type}: ${String(m.content).substring(0, 200)}`).join("\n")}
+${memories.slice(0, 5).map((m: any) => `- ${m.type}: ${String(m.content).substring(0, 200)}`).join("\n")}
 `;
 
         const prompt = `You are the Planner Agent for an AI-powered startup operating system. Generate a comprehensive "First 48 Hours" action plan for this startup founder.

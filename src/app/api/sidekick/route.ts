@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
         const result = await executeAgent("strategist", message, {
             startup,
-            memories,
+            memories: memories as any,
             additionalContext: historyContext
         });
 
