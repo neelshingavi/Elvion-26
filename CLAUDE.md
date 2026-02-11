@@ -58,8 +58,8 @@ User input on client page -> Firestore read or POST to API route -> API route us
 
 ## Authentication and authorization
 - Founder auth: Firebase Auth with Google and email password. AuthContext subscribes to users/{uid} for profile and onboarding state.
-- Admin auth: client side credentials from NEXT_PUBLIC_ADMIN_USERNAME and NEXT_PUBLIC_ADMIN_PASSWORD. A cookie named founderflow_admin_session is set client side and middleware only checks the cookie presence.
-- Authorization today: most API routes trust input and do not verify Firebase ID tokens or startup membership. This is a major security gap.
+- Admin auth: server-side credentials via ADMIN_USERNAME / ADMIN_PASSWORD and a signed httpOnly session cookie (founderflow_admin_session) checked in middleware and admin APIs.
+- Authorization: API routes verify Firebase ID tokens and validate startup membership before accessing data.
 
 ## Core user journey
 - Landing page: src/app/page.tsx. Marketing only.
@@ -148,7 +148,7 @@ Output: { success, message }
 - NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
 - NEXT_PUBLIC_FIREBASE_APP_ID
 - GEMINI_API_KEY
-- NEXT_PUBLIC_ADMIN_USERNAME and NEXT_PUBLIC_ADMIN_PASSWORD are used client side for admin login and are insecure in their current form.
+- Admin credentials are now server-only (ADMIN_USERNAME / ADMIN_PASSWORD) with a signed session cookie.
 - scripts/wipe-db.ts expects FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY for Admin SDK.
 
 ## Build and run

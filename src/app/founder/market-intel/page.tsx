@@ -283,15 +283,20 @@ export default function MarketIntelPage() {
         setRefreshing(true);
 
         try {
+            const token = await user.getIdToken();
             const response = await fetch("/api/market-intel", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ startupId, userId: user.uid })
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ startupId })
             });
 
-            if (!response.ok) throw new Error("Failed to fetch market intel");
-
             const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data?.error?.message || "Failed to fetch market intel");
+            }
             
             if (data.pulse) setMarketPulse(data.pulse);
             
@@ -344,6 +349,7 @@ export default function MarketIntelPage() {
 
         // Save to Firestore
         await setDoc(doc(db, "marketIntel", startupId), {
+            startupId,
             competitors: updated,
             updatedAt: serverTimestamp()
         }, { merge: true });

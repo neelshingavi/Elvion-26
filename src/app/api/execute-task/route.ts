@@ -1,14 +1,56 @@
 import { NextResponse } from "next/server";
 import { callGemini } from "@/lib/gemini";
-import { db } from "@/lib/firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { requireUser, requireStartupAccess, safeJson } from "@/lib/server/auth";
+import { getAdminDb } from "@/lib/firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function POST(request: Request) {
-    try {
-        const { taskId, instruction, startupId } = await request.json();
+    const auth = await requireUser(request);
+    if (!auth.ok) return auth.response;
 
-        if (!taskId || !instruction) {
-            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    const body = await safeJson<{ taskId?: string; instruction?: string; startupId?: string }>(request);
+    if (!body) {
+        return NextResponse.json(
+            { error: { message: "Invalid JSON payload.", code: "request/invalid-json" } },
+            { status: 400 }
+        );
+    }
+
+    const taskId = String(body.taskId || "");
+    const instruction = String(body.instruction || "").trim();
+    const startupId = String(body.startupId || "");
+
+    if (!taskId || !instruction || !startupId) {
+        return NextResponse.json(
+            { error: { message: "taskId, instruction, and startupId are required.", code: "request/missing-fields" } },
+            { status: 400 }
+        );
+    }
+    if (instruction.length < 3 || instruction.length > 4000) {
+        return NextResponse.json(
+            { error: { message: "Instruction length must be between 3 and 4000 characters.", code: "request/invalid-instruction" } },
+            { status: 400 }
+        );
+    }
+
+    const access = await requireStartupAccess(startupId, auth.uid);
+    if (!access.ok) return access.response;
+
+    try {
+        const db = await getAdminDb();
+        const taskSnap = await db.collection("tasks").doc(taskId).get();
+        if (!taskSnap.exists) {
+            return NextResponse.json(
+                { error: { message: "Task not found.", code: "task/not-found" } },
+                { status: 404 }
+            );
+        }
+        const taskData = taskSnap.data() || {};
+        if (taskData.startupId !== startupId) {
+            return NextResponse.json(
+                { error: { message: "Task does not belong to this startup.", code: "task/invalid-startup" } },
+                { status: 403 }
+            );
         }
 
         const prompt = `
@@ -28,17 +70,19 @@ export async function POST(request: Request) {
 
         const text = await callGemini(prompt, false);
 
-        // Update task in Firestore
-        const taskRef = doc(db, "tasks", taskId);
-        await updateDoc(taskRef, {
+        await db.collection("tasks").doc(taskId).update({
             aiResponse: text,
             status: "done",
-            updatedAt: new Date()
+            updatedAt: FieldValue.serverTimestamp(),
+            completedAt: FieldValue.serverTimestamp()
         });
 
         return NextResponse.json({ success: true, aiResponse: text });
     } catch (error: any) {
         console.error("Task execution error:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json(
+            { error: { message: error.message || "Failed to execute task", code: "execute-task/failed" } },
+            { status: 500 }
+        );
     }
 }

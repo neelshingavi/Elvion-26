@@ -154,6 +154,12 @@ export default function RoadmapPage() {
                     const data = roadmapDoc.data();
                     if (data.phases) {
                         setPhases(data.phases);
+                    } else if (data.generatedRoadmap?.roadmap) {
+                        const updatedPhases = DEFAULT_PHASES.map(phase => ({
+                            ...phase,
+                            goals: data.generatedRoadmap.roadmap?.[phase.id]?.goals || []
+                        }));
+                        setPhases(updatedPhases);
                     }
                 }
             } catch (error) {
@@ -169,13 +175,21 @@ export default function RoadmapPage() {
     // Generate AI roadmap
     const generateRoadmap = async () => {
         if (!startup || !startupId) return;
+        if (!user) {
+            console.error("User not authenticated.");
+            return;
+        }
 
         setGenerating(true);
 
         try {
+            const token = await user.getIdToken();
             const response = await fetch("/api/generate-roadmap", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     startupId,
                     idea: startup.idea || startup.oneSentencePitch,
@@ -184,8 +198,8 @@ export default function RoadmapPage() {
                 })
             });
 
+            const data = await response.json();
             if (response.ok) {
-                const data = await response.json();
 
                 // Parse AI response into phases
                 if (data.roadmap) {
@@ -199,11 +213,14 @@ export default function RoadmapPage() {
 
                     // Save to Firestore
                     await setDoc(doc(db, "roadmaps", startupId), {
+                        startupId,
                         phases: updatedPhases,
                         generatedAt: serverTimestamp(),
                         updatedAt: serverTimestamp()
-                    });
+                    }, { merge: true });
                 }
+            } else {
+                throw new Error(data?.error?.message || "Failed to generate roadmap");
             }
         } catch (error) {
             console.error("Error generating roadmap:", error);
@@ -214,7 +231,7 @@ export default function RoadmapPage() {
 
     // Add new goal
     const handleAddGoal = async () => {
-        if (!newGoal.title || !newGoal.phase || !startupId) return;
+        if (!newGoal.title || !newGoal.phase || !newGoal.targetDate || !startupId) return;
 
         const goalId = `goal_${Date.now()}`;
         const goal: Goal = {
@@ -244,6 +261,7 @@ export default function RoadmapPage() {
 
         // Save to Firestore
         await setDoc(doc(db, "roadmaps", startupId), {
+            startupId,
             phases: updatedPhases,
             updatedAt: serverTimestamp()
         }, { merge: true });
@@ -278,7 +296,7 @@ export default function RoadmapPage() {
                                 m.id === milestoneId ? { ...m, status: newStatus } : m
                             );
                             const achievedCount = updatedMilestones.filter(m => m.status === "achieved").length;
-                            const progress = Math.round((achievedCount / updatedMilestones.length) * 100);
+                            const progress = updatedMilestones.length === 0 ? 0 : Math.round((achievedCount / updatedMilestones.length) * 100);
 
                             return {
                                 ...goal,
@@ -298,6 +316,7 @@ export default function RoadmapPage() {
 
         if (startupId) {
             await setDoc(doc(db, "roadmaps", startupId), {
+                startupId,
                 phases: updatedPhases,
                 updatedAt: serverTimestamp()
             }, { merge: true });

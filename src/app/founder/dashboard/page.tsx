@@ -127,11 +127,11 @@ export default function DashboardPage() {
 
                     setMetrics({
                         openTasks: allTasks.filter(t => t.status === "pending").length,
-                        completedThisWeek: allTasks.filter(t =>
-                            t.status === "done" &&
-                            t.completedAt &&
-                            t.completedAt.toDate() > weekAgo
-                        ).length,
+                        completedThisWeek: allTasks.filter(t => {
+                            if (t.status !== "done" || !t.completedAt) return false;
+                            const completedAt = (t.completedAt as any).toDate ? (t.completedAt as any).toDate() : new Date(t.completedAt as any);
+                            return completedAt > weekAgo;
+                        }).length,
                         memoryItems: memories.length,
                         validationScore: null, // Would come from validation results
                         weeklyGoalProgress: Math.min(100, Math.round((allTasks.filter(t => t.status === "done").length / Math.max(1, allTasks.length)) * 100))

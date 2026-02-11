@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "@/lib/firebase";
-import { collection, getDocs, orderBy, query, deleteDoc, doc } from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
 import { Trash2 } from "lucide-react";
 
@@ -13,9 +11,10 @@ export default function AdminUsersPage() {
     const fetchUsers = async () => {
         try {
             // Fetch all users - in production use pagination
-            const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
-            const snapshot = await getDocs(q);
-            setUsers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            const res = await fetch("/api/admin/users");
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.error?.message || "Failed to fetch users");
+            setUsers(data.users || []);
         } catch (error) {
             console.error("Error fetching users:", error);
         } finally {
@@ -31,7 +30,13 @@ export default function AdminUsersPage() {
         if (!window.confirm("ARE YOU SURE? This will permanently delete this user and cannot be undone.")) return;
 
         try {
-            await deleteDoc(doc(db, "users", userId));
+            const res = await fetch("/api/admin/delete-user", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ uid: userId })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.error?.message || "Failed to delete user");
             // Refresh list
             setUsers(prev => prev.filter(u => u.id !== userId));
         } catch (error) {

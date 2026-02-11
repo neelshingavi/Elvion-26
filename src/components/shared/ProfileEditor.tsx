@@ -51,14 +51,16 @@ export default function ProfileEditor() {
             const snap = await getDoc(docRef);
             if (snap.exists()) {
                 const data = snap.data();
+                const skillsValue = Array.isArray(data.skills) ? data.skills.join(", ") : data.skills || "";
+                const ageValue = typeof data.age === "number" ? String(data.age) : data.age || "";
                 setFormData(prev => ({
                     ...prev,
                     displayName: user.displayName || "",
                     email: user.email || "",
                     role: data.role || "Founder",
                     about: data.about || "",
-                    skills: data.skills || "",
-                    age: data.age || "",
+                    skills: skillsValue,
+                    age: ageValue,
                     phone: data.phone || "",
                     education: data.education || "",
                     location: data.location || "",
@@ -105,6 +107,10 @@ export default function ProfileEditor() {
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'banner') => {
         const file = e.target.files?.[0];
         if (!file || !user) return;
+        if (file.size > 5 * 1024 * 1024) {
+            alert("File is too large. Please upload an image smaller than 5MB.");
+            return;
+        }
 
         setLoading(true);
         try {
@@ -158,6 +164,12 @@ export default function ProfileEditor() {
         setSuccess(false);
 
         try {
+            const skillsArray = formData.skills
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean);
+            const parsedAge = formData.age ? Number(formData.age) : undefined;
+
             // Update Auth display name
             await updateProfile(user, { displayName: formData.displayName });
 
@@ -165,8 +177,8 @@ export default function ProfileEditor() {
             await updateDoc(doc(db, "users", user.uid), {
                 displayName: formData.displayName,
                 about: formData.about,
-                skills: formData.skills,
-                age: formData.age,
+                skills: skillsArray,
+                age: Number.isFinite(parsedAge) ? parsedAge : null,
                 phone: formData.phone,
                 education: formData.education,
                 location: formData.location,

@@ -384,7 +384,11 @@ export default function OnboardingPage() {
                     formData.industry,
                     formData.oneSentencePitch,  // Using pitch as idea
                     formData.vision,
-                    formData.problemStatement
+                    formData.problemStatement,
+                    {
+                        oneSentencePitch: formData.oneSentencePitch,
+                        targetDemographic: formData.targetDemographic
+                    }
                 ),
                 20000,
                 "Startup creation timed out. Please try again."

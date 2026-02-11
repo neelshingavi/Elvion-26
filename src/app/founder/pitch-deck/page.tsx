@@ -73,19 +73,28 @@ export default function PitchDeckPage() {
 
     const generateDeck = async () => {
         if (!startupId) return;
+        if (!user) {
+            console.error("User not authenticated.");
+            return;
+        }
         setGenerating(true);
         try {
+            const token = await user.getIdToken();
             const response = await fetch("/api/generate-pitch-deck", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({ startupId })
             });
-            if (response.ok) {
-                const data = await response.json();
-                if (data.slides) {
-                    setSlides(data.slides);
-                    await setDoc(doc(db, "pitchDecks", startupId), { slides: data.slides, updatedAt: serverTimestamp() });
-                }
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data?.error?.message || "Failed to generate pitch deck");
+            }
+            if (data.slides) {
+                setSlides(data.slides);
+                await setDoc(doc(db, "pitchDecks", startupId), { slides: data.slides, updatedAt: serverTimestamp(), startupId }, { merge: true });
             }
         } catch (error) { console.error("Error:", error); }
         finally { setGenerating(false); }
@@ -94,7 +103,7 @@ export default function PitchDeckPage() {
     const updateSlide = async (slideId: string, content: string[]) => {
         const updated = slides.map(s => s.id === slideId ? { ...s, content } : s);
         setSlides(updated);
-        if (startupId) await setDoc(doc(db, "pitchDecks", startupId), { slides: updated, updatedAt: serverTimestamp() }, { merge: true });
+        if (startupId) await setDoc(doc(db, "pitchDecks", startupId), { startupId, slides: updated, updatedAt: serverTimestamp() }, { merge: true });
     };
 
     const addSlide = (type: string = "custom") => {

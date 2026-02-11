@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, X, Send, User, Bot, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
+import { useAuth } from "@/context/AuthContext";
 
 interface Message {
     id: string;
@@ -21,6 +22,7 @@ interface AISidekickProps {
 }
 
 export function AISidekick({ isOpen, onClose, startupId, userId }: AISidekickProps) {
+    const { user } = useAuth();
     const [messages, setMessages] = useState<Message[]>([
         {
             id: "welcome",
@@ -41,6 +43,19 @@ export function AISidekick({ isOpen, onClose, startupId, userId }: AISidekickPro
     const handleSubmit = async (e?: React.FormEvent) => {
         e?.preventDefault();
         if (!input.trim() || isLoading) return;
+        if (!startupId) {
+            setMessages(prev => [...prev, {
+                id: `error_${Date.now()}`,
+                role: "assistant",
+                content: "Please select or create a startup before using the Sidekick.",
+                timestamp: new Date()
+            }]);
+            return;
+        }
+        if (!user) {
+            console.error("User not authenticated.");
+            return;
+        }
 
         const userMessage: Message = {
             id: Date.now().toString(),
@@ -54,9 +69,13 @@ export function AISidekick({ isOpen, onClose, startupId, userId }: AISidekickPro
         setIsLoading(true);
 
         try {
+            const token = await user.getIdToken();
             const response = await fetch("/api/sidekick", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     startupId,
                     userId,
@@ -70,7 +89,10 @@ export function AISidekick({ isOpen, onClose, startupId, userId }: AISidekickPro
 
             const data = await response.json();
 
-            if (data.error) throw new Error(data.error);
+            if (!response.ok || data.error) {
+                const message = typeof data.error === "string" ? data.error : data.error?.message || "Sidekick failed";
+                throw new Error(message);
+            }
 
             const aiMessage: Message = {
                 id: (Date.now() + 1).toString(),

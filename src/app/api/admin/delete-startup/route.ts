@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ADMIN_COOKIE_NAME, verifyAdminSessionCookie } from "@/lib/server/admin-session";
-import { deleteUserFullyAdmin } from "@/lib/server/admin-data";
+import { deleteStartupFullyAdmin } from "@/lib/server/admin-data";
 
 async function requireAdmin(request: Request) {
     const cookie = request.headers.get("cookie") || "";
@@ -23,21 +23,20 @@ export async function POST(request: Request) {
     }
 
     try {
-        const { uid } = await request.json();
-
-        if (!uid) {
+        const { startupId } = await request.json();
+        if (!startupId) {
             return NextResponse.json(
-                { error: { message: "uid is required.", code: "admin/missing-uid" } },
+                { error: { message: "startupId is required.", code: "admin/missing-startup" } },
                 { status: 400 }
             );
         }
 
-        await deleteUserFullyAdmin(String(uid));
+        await deleteStartupFullyAdmin(String(startupId));
         return NextResponse.json({ success: true });
-    } catch (error: any) {
-        console.error("Delete User API Error:", error);
+    } catch (error) {
+        console.error("Delete startup error:", error);
         return NextResponse.json(
-            { error: { message: error.message || "Failed to delete user", code: "admin/delete-user-failed" } },
+            { error: { message: "Failed to delete startup.", code: "admin/delete-startup-failed" } },
             { status: 500 }
         );
     }

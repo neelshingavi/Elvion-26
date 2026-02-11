@@ -11,11 +11,12 @@ export default function AdminLoginPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
 
-        if (loginAdmin(username, password)) {
+        const ok = await loginAdmin(username, password);
+        if (ok) {
             router.push("/admin/dashboard");
         } else {
             setError("Invalid credentials. Access Denied.");

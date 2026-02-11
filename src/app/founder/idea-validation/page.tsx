@@ -128,17 +128,26 @@ export default function IdeaValidationPage() {
         try {
             let startupId = startup?.startupId;
             if (!startupId) {
-                startupId = await createStartup(user.uid, "My Startup", "Tech", idea);
+                startupId = await createStartup(user.uid, "My Startup", "Tech", idea, "", "", {
+                    oneSentencePitch: idea
+                });
             }
 
+            const token = await user.getIdToken();
             const res = await fetch("/api/validate-idea", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({ idea, startupId, userId: user.uid }),
             });
 
             const data = await res.json();
-            if (data.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+            if (!res.ok || data.error) {
+                const message = typeof data.error === "string" ? data.error : data.error?.message || "Validation failed";
+                throw new Error(message);
+            }
             setResult(data);
             setView("result");
         } catch (error: any) {

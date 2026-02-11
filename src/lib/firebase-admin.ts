@@ -1,5 +1,7 @@
 import "server-only";
 import admin from "firebase-admin";
+import { getAuth } from "firebase-admin/auth";
+import { getFirestore } from "firebase-admin/firestore";
 
 interface FirebaseAdminConfig {
     projectId: string;
@@ -42,4 +44,14 @@ export async function initAdmin() {
     }
 
     return createFirebaseAdminApp(params);
+}
+
+export async function getAdminAuth() {
+    const app = await initAdmin();
+    return getAuth(app);
+}
+
+export async function getAdminDb() {
+    const app = await initAdmin();
+    return getFirestore(app);
 }

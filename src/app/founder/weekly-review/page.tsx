@@ -86,22 +86,31 @@ export default function WeeklyReviewPage() {
     }, [user]);
 
     const runPivotSimulation = async () => {
-        if (!startupId || !pivotInput) return;
+        if (!startupId || !pivotInput || !user) return;
         setGenerating(true);
-        // Simulate API call
-        setTimeout(() => {
-            const newPivot: PivotSimulation = {
-                id: `pivot_${Date.now()}`,
-                scenario: pivotInput,
-                description: `Analysis of pivoting to: ${pivotInput}`,
-                impact: { revenue: Math.floor(Math.random() * 50) + 10, timeline: Math.floor(Math.random() * 6) + 3, risk: Math.floor(Math.random() * 40) + 20 },
-                recommendation: "Consider testing this pivot with a small segment before full commitment."
-            };
+        try {
+            const token = await user.getIdToken();
+            const response = await fetch("/api/simulate-pivot", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ startupId, scenario: pivotInput })
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data?.error?.message || "Failed to simulate pivot");
+            }
+            const newPivot = data.simulation as PivotSimulation;
             setReviewData(prev => prev ? { ...prev, pivotSimulations: [...prev.pivotSimulations, newPivot] } : null);
             setSelectedPivot(newPivot);
             setPivotInput("");
+        } catch (error) {
+            console.error("Pivot simulation failed:", error);
+        } finally {
             setGenerating(false);
-        }, 2000);
+        }
     };
 
     if (loading) return <div className="flex min-h-screen items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>;

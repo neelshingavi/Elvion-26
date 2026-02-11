@@ -30,10 +30,22 @@ export interface FounderProfile {
     phone?: string;
     education?: string;
     location?: string;
+    socialLinks?: {
+        linkedin?: string;
+        twitter?: string;
+        website?: string;
+    };
+    projects?: Array<{
+        name: string;
+        description: string;
+        role: string;
+        link: string;
+    }>;
+    score?: number;
     // Account metadata
-    accountStatus: "active" | "suspended";
+    accountStatus?: "active" | "suspended";
     lastLoginAt?: Timestamp;
-    createdAt: Timestamp;
+    createdAt?: Timestamp;
     connectionCount?: number;
     industries?: string[];
     // India-specific demographics
@@ -80,8 +92,8 @@ export interface Startup {
     startupId: string;
     ownerId: string;
     name: string;
-    oneSentencePitch: string;        // Required: One-sentence pitch
-    targetDemographic: IndianDemographic;  // Required: India-specific segment
+    oneSentencePitch?: string;        // Optional: One-sentence pitch
+    targetDemographic?: IndianDemographic;  // Optional: India-specific segment
     industry: string;
     stage: StartupStage;
     projectStatus: ProjectStatus;
@@ -93,8 +105,8 @@ export interface Startup {
     // First 48 hours data
     first48HoursPlan?: First48HoursPlan;
     // Timestamps
-    createdAt: Timestamp;
-    updatedAt: Timestamp;
+    createdAt?: Timestamp;
+    updatedAt?: Timestamp;
 }
 
 export interface StartupMember {
@@ -131,7 +143,9 @@ export interface First48HoursTask {
     title: string;
     description: string;
     assumptionBeingValidated: string;
-    timeBoxHours: number;
+    timeBoxHours?: number;
+    timeHours?: number;
+    estimatedHours?: number;
     status: "pending" | "in_progress" | "done";
     priority: "high" | "medium" | "low";
     dueAt: Timestamp;
@@ -218,11 +232,16 @@ export interface Task {
     aiResponse?: string;
     aiPriorityScore?: number;  // 0-100
     isStale?: boolean;
+    isFirst48?: boolean;
+    estimatedHours?: number;
+    agentType?: string;
+    category?: string;
     // Timestamps
     createdAt: Timestamp;
     updatedAt?: Timestamp;
     completedAt?: Timestamp;
     dueDate?: Timestamp;
+    dueAt?: Timestamp;
     // Feedback
     rating?: 1 | 2 | 3 | 4 | 5;
 }

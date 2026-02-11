@@ -21,7 +21,7 @@ const industries = [
 ];
 
 export default function CreateProjectPage() {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -48,7 +48,10 @@ export default function CreateProjectPage() {
                 formData.industry,
                 formData.idea,
                 formData.vision,
-                formData.problemStatement
+                formData.problemStatement,
+                {
+                    oneSentencePitch: formData.idea
+                }
             );
             router.push("/founder/dashboard");
         } catch (err: any) {
@@ -58,6 +61,14 @@ export default function CreateProjectPage() {
             setLoading(false);
         }
     };
+
+    React.useEffect(() => {
+        if (!authLoading && !user) {
+            router.push("/login");
+        }
+    }, [authLoading, user, router]);
+
+    if (!user && !authLoading) return null;
 
     
     return (

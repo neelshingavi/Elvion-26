@@ -7,7 +7,6 @@ import {
     getStartupMemory,
     getTasks,
     getAgentRuns,
-    getUserData,
     Startup,
     StartupMemory,
     Task,
@@ -83,6 +82,8 @@ export function useStartup() {
         );
         const memoryUnsubscribe = onSnapshot(memoryQuery, (snapshot) => {
             setMemory(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any);
+        }, (err) => {
+            console.error("Memory subscription error:", err);
         });
 
         // 4. Listen to tasks
@@ -93,6 +94,8 @@ export function useStartup() {
         );
         const tasksUnsubscribe = onSnapshot(tasksQuery, (snapshot) => {
             setTasks(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any);
+        }, (err) => {
+            console.error("Tasks subscription error:", err);
         });
 
         // 5. Listen to agent runs
@@ -103,6 +106,8 @@ export function useStartup() {
         );
         const agentRunsUnsubscribe = onSnapshot(agentRunsQuery, (snapshot) => {
             setAgentRuns(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any);
+        }, (err) => {
+            console.error("Agent runs subscription error:", err);
         });
 
         // 6. Fetch User Role (One-time fetch usually sufficient, or listener if roles change often)
@@ -119,6 +124,8 @@ export function useStartup() {
             } else {
                 setUserRole(null);
             }
+        }, (err) => {
+            console.error("Member subscription error:", err);
         });
 
         return () => {

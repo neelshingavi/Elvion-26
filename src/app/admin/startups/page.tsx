@@ -1,11 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "@/lib/firebase";
-import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { formatDistanceToNow } from "date-fns";
 import { Trash2 } from "lucide-react";
-import { deleteStartupFully } from "@/lib/admin-service";
 
 export default function AdminStartupsPage() {
     const [startups, setStartups] = useState<any[]>([]);
@@ -13,9 +10,10 @@ export default function AdminStartupsPage() {
 
     const fetchStartups = async () => {
         try {
-            const q = query(collection(db, "startups"), orderBy("createdAt", "desc"));
-            const snapshot = await getDocs(q);
-            setStartups(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            const res = await fetch("/api/admin/startups");
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.error?.message || "Failed to fetch startups");
+            setStartups(data.startups || []);
         } catch (error) {
             console.error("Error fetching startups:", error);
         } finally {
@@ -31,7 +29,13 @@ export default function AdminStartupsPage() {
         if (!window.confirm("ARE YOU SURE? This will permanently delete this startup (including tasks, memory, etc).")) return;
 
         try {
-            await deleteStartupFully(startupId);
+            const res = await fetch("/api/admin/delete-startup", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ startupId })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.error?.message || "Failed to delete startup");
             setStartups(prev => prev.filter(s => s.id !== startupId));
         } catch (error) {
             console.error("Failed to delete startup:", error);

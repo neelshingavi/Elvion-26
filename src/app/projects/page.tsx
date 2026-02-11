@@ -9,13 +9,18 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export default function ProjectsPage() {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const [projects, setProjects] = useState<Startup[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchProjects = async () => {
+            if (!authLoading && !user) {
+                router.push("/login");
+                setLoading(false);
+                return;
+            }
             if (user) {
                 try {
                     const data = await getUserStartups(user.uid);
@@ -29,7 +34,7 @@ export default function ProjectsPage() {
         };
 
         fetchProjects();
-    }, [user]);
+    }, [user, authLoading, router]);
 
     const handleSelectProject = async (startupId: string) => {
         if (!user) return;

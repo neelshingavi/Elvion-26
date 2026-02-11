@@ -1,23 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { executeAgent } from "@/lib/agents/agent-system";
-import { Startup } from "@/lib/types/founder";
+import { requireUser, requireStartupAccess, safeJson } from "@/lib/server/auth";
+import { getAdminDb } from "@/lib/firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function POST(req: NextRequest) {
+    const auth = await requireUser(req);
+    if (!auth.ok) return auth.response;
+
+    const body = await safeJson<{ startupId?: string }>(req);
+    if (!body) {
+        return NextResponse.json(
+            { error: { message: "Invalid JSON payload.", code: "request/invalid-json" } },
+            { status: 400 }
+        );
+    }
+
+    const startupId = String(body.startupId || "");
+    if (!startupId) {
+        return NextResponse.json(
+            { error: { message: "startupId is required.", code: "request/missing-startup" } },
+            { status: 400 }
+        );
+    }
+
+    const access = await requireStartupAccess(startupId, auth.uid);
+    if (!access.ok) return access.response;
+
     try {
-        const { startupId, userId } = await req.json();
-
-        if (!startupId || !userId) {
-            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-        }
-
-        // 1. Fetch Startup Context
-        const startupDoc = await getDoc(doc(db, "startups", startupId));
-        if (!startupDoc.exists()) {
-            return NextResponse.json({ error: "Startup not found" }, { status: 404 });
-        }
-        const startup = startupDoc.data() as Startup;
+        const startup = access.startup as any;
 
         // 2. Construct Prompt
         const prompt = `
@@ -26,7 +37,7 @@ export async function POST(req: NextRequest) {
             Name: ${startup.name}
             One-Liner: ${startup.oneSentencePitch}
             Industry: ${startup.industry}
-            Target Audience: ${startup.targetDemographic}
+            Target Audience: ${startup.targetDemographic || "Not specified"}
             Description: ${startup.idea}
 
             Generate a comprehensive market intelligence report in JSON format with the following 3 sections:
@@ -63,7 +74,7 @@ export async function POST(req: NextRequest) {
         // 3. Execute Agent
         const result = await executeAgent("market_analyst", prompt, {
             startup,
-            additionalContext: `User ID: ${userId}`
+            additionalContext: `User ID: ${auth.uid}`
         });
 
         if (!result.success) {
@@ -83,9 +94,11 @@ export async function POST(req: NextRequest) {
 
         // 5. Save to Firestore
         // We save it as a "marketIntel" document keyed by startupId, acting as a cache/state
-        await setDoc(doc(db, "marketIntel", startupId), {
+        const db = await getAdminDb();
+        await db.collection("marketIntel").doc(startupId).set({
             ...data,
-            lastUpdated: serverTimestamp()
+            startupId,
+            lastUpdated: FieldValue.serverTimestamp()
         }, { merge: true });
 
         // 6. Return Data
@@ -93,6 +106,9 @@ export async function POST(req: NextRequest) {
 
     } catch (error: unknown) {
         console.error("Market Intel API Error:", error);
-        return NextResponse.json({ error: error instanceof Error ? error.message : "Internal Server Error" }, { status: 500 });
+        return NextResponse.json(
+            { error: { message: error instanceof Error ? error.message : "Internal Server Error", code: "market-intel/failed" } },
+            { status: 500 }
+        );
     }
 }

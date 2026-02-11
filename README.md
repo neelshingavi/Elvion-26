@@ -234,8 +234,9 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 GEMINI_API_KEY=your_gemini_api_key
 
 # Admin Credentials (for internal portal)
-NEXT_PUBLIC_ADMIN_USERNAME=admin
-NEXT_PUBLIC_ADMIN_PASSWORD=secure_password
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=secure_password
+ADMIN_SESSION_SECRET=long_random_string
 ```
 
 ### **Step 3: Run Locally**

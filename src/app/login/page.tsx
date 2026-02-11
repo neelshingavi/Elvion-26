@@ -52,15 +52,16 @@ export default function LoginPage() {
                     email: result.user.email,
                     displayName: result.user.displayName,
                     role: "founder",
+                    accountStatus: "active",
                     createdAt: serverTimestamp(),
-                    lastLogin: serverTimestamp(),
+                    lastLoginAt: serverTimestamp(),
                     isOnboardingCompleted: false
                 });
                 router.push("/onboarding");
             } else {
                 // Existing user -> LOGIN
                 await updateDoc(userRef, {
-                    lastLogin: serverTimestamp()
+                    lastLoginAt: serverTimestamp()
                 });
 
                 const userData = userSnap.data();
@@ -106,6 +107,7 @@ export default function LoginPage() {
                     email: formData.email,
                     displayName: formData.name,
                     role: "founder",
+                    accountStatus: "active",
                     createdAt: serverTimestamp(),
                     isOnboardingCompleted: false
                 });
@@ -117,6 +119,9 @@ export default function LoginPage() {
                 // Check onboarding status
                 const userRef = doc(db, "users", userCredential.user.uid);
                 const userSnap = await getDoc(userRef);
+                if (userSnap.exists()) {
+                    await updateDoc(userRef, { lastLoginAt: serverTimestamp() });
+                }
 
                 if (userSnap.exists() && (userSnap.data()?.isOnboardingCompleted || userSnap.data()?.activeStartupId)) {
                     router.push("/founder/dashboard");

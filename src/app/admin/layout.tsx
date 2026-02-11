@@ -23,15 +23,24 @@ export default function AdminLayout({
     const [authorized, setAuthorized] = useState(false);
 
     useEffect(() => {
-        if (!isAdminLoggedIn()) {
-            router.push("/internal-admin-login");
-        } else {
-            setAuthorized(true);
-        }
+        let mounted = true;
+        const checkSession = async () => {
+            const ok = await isAdminLoggedIn();
+            if (!mounted) return;
+            if (!ok) {
+                router.push("/internal-admin-login");
+            } else {
+                setAuthorized(true);
+            }
+        };
+        checkSession();
+        return () => {
+            mounted = false;
+        };
     }, [router]);
 
-    const handleLogout = () => {
-        logoutAdmin();
+    const handleLogout = async () => {
+        await logoutAdmin();
         router.push("/internal-admin-login");
     };
 

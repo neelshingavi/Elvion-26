@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const apiKey = process.env.GEMINI_API_KEY;
+const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -13,6 +14,10 @@ const MODELS = [
 
 export const callGemini = async (prompt: string, isJson: boolean = true, retries = 2) => {
     let lastError: any;
+
+    if (!genAI) {
+        throw new Error("GEMINI_API_KEY is not configured.");
+    }
 
     for (const modelName of MODELS) {
         console.log(`Trying model: ${modelName}`);

@@ -1,30 +1,40 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore";
-import { getStartupMemory } from "@/lib/startup-service";
 import { callGemini } from "@/lib/gemini";
+import { requireUser, requireStartupAccess, safeJson } from "@/lib/server/auth";
+import { getStartupMemoryAdmin } from "@/lib/server/startup-data";
+import { getAdminDb } from "@/lib/firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function POST(req: Request) {
+    const auth = await requireUser(req);
+    if (!auth.ok) return auth.response;
+
+    const body = await safeJson<{ startupId?: string }>(req);
+    if (!body) {
+        return NextResponse.json(
+            { error: { message: "Invalid JSON payload.", code: "request/invalid-json" } },
+            { status: 400 }
+        );
+    }
+
+    const startupId = String(body.startupId || "");
+    if (!startupId) {
+        return NextResponse.json(
+            { error: { message: "startupId is required.", code: "request/missing-startup" } },
+            { status: 400 }
+        );
+    }
+
+    const access = await requireStartupAccess(startupId, auth.uid);
+    if (!access.ok) return access.response;
+
     try {
-        const { startupId } = await req.json();
+        const db = await getAdminDb();
+        const startup = access.startup;
+        const memories = await getStartupMemoryAdmin(startupId);
 
-        if (!startupId) {
-            return NextResponse.json({ error: "Missing startupId" }, { status: 400 });
-        }
-
-        const startupRef = doc(db, "startups", startupId);
-        const startupSnap = await getDoc(startupRef);
-
-        if (!startupSnap.exists()) {
-            return NextResponse.json({ error: "Startup not found" }, { status: 404 });
-        }
-
-        const startup = startupSnap.data();
-        const memories = await getStartupMemory(startupId);
-
-        // Get canvas content if available
-        const canvasDoc = await getDoc(doc(db, "canvases", startupId));
-        const canvasContent = canvasDoc.exists() ? canvasDoc.data().blocks?.map((b: any) => b.content).join("\n") : "";
+        const canvasDoc = await db.collection("canvases").doc(`${startupId}_main`).get();
+        const canvasContent = canvasDoc.exists ? (canvasDoc.data()?.blocks || []).map((b: any) => b.content).join("\n") : "";
 
         const prompt = `You are an expert pitch deck creator. Generate a professional investor pitch deck for this startup.
 
@@ -82,15 +92,19 @@ Return ONLY valid JSON:
         }
 
         // Save to Firestore
-        await setDoc(doc(db, "pitchDecks", startupId), {
+        await db.collection("pitchDecks").doc(startupId).set({
             ...deckData,
-            generatedAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-        });
+            startupId,
+            generatedAt: FieldValue.serverTimestamp(),
+            updatedAt: FieldValue.serverTimestamp()
+        }, { merge: true });
 
         return NextResponse.json(deckData);
     } catch (error: any) {
         console.error("Pitch deck generation error:", error);
-        return NextResponse.json({ error: error.message || "Failed to generate pitch deck" }, { status: 500 });
+        return NextResponse.json(
+            { error: { message: error.message || "Failed to generate pitch deck", code: "pitch-deck/failed" } },
+            { status: 500 }
+        );
     }
 }

@@ -4,12 +4,14 @@ import { CheckSquare, ListTodo, Plus, Loader2, Sparkles, AlertCircle, Play, Chec
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useStartup } from "@/hooks/useStartup";
+import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 
 export default function TasksPage() {
+    const { user } = useAuth();
     const { tasks, loading, startup } = useStartup();
     const [executingTaskIds, setExecutingTaskIds] = useState<string[]>([]);
     const [selectedTask, setSelectedTask] = useState<any>(null);
@@ -49,24 +51,38 @@ export default function TasksPage() {
 
     const runParallelSprint = async () => {
         if (pendingTasks.length === 0 || isSprintRunning) return;
+        if (!user) {
+            console.error("User not authenticated.");
+            return;
+        }
+        if (!startup?.startupId) {
+            console.error("No active startup selected.");
+            return;
+        }
 
         setIsSprintRunning(true);
         const taskIdsToRun = pendingTasks.map(t => t.id);
         setExecutingTaskIds(taskIdsToRun);
+
+        const token = await user.getIdToken();
 
         // Run all tasks in parallel
         await Promise.all(pendingTasks.map(async (task) => {
             try {
                 const res = await fetch("/api/execute-task", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
                     body: JSON.stringify({
                         taskId: task.id,
                         instruction: task.instruction || task.title,
                         startupId: startup?.startupId
                     })
                 });
-                if (!res.ok) throw new Error("Task execution failed");
+                const data = await res.json();
+                if (!res.ok) throw new Error(data?.error?.message || "Task execution failed");
             } catch (error) {
                 console.error(`Task ${task.title} failed:`, error);
             } finally {
@@ -140,7 +156,9 @@ export default function TasksPage() {
                                     <h4 className="font-bold text-xs tracking-tight">{task.title}</h4>
                                     <div className={cn(
                                         "px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter",
-                                        task.priority === "high" ? "bg-red-500 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"
+                                        task.priority === "high" || task.priority === "critical"
+                                            ? "bg-red-500 text-white"
+                                            : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"
                                     )}>
                                         {task.priority}
                                     </div>

@@ -14,7 +14,8 @@ import {
     deleteDoc,
     writeBatch,
     Timestamp,
-    FieldValue
+    FieldValue,
+    documentId
 } from "firebase/firestore";
 
 import {
@@ -88,7 +89,8 @@ export const createStartup = async (
     industry: string,
     idea: string,
     vision: string = "",
-    problemStatement: string = ""
+    problemStatement: string = "",
+    options?: { oneSentencePitch?: string; targetDemographic?: string }
 ) => {
     try {
         if (!name || !name.trim()) throw new Error("Startup Name is required.");
@@ -99,11 +101,12 @@ export const createStartup = async (
 
         // 1. Create Startup Doc Reference
         const startupRef = doc(collection(db, "startups"));
-        const startupData = {
+        const startupData: Record<string, any> = {
             ownerId: userId,
             name,
             industry,
             idea,
+            oneSentencePitch: options?.oneSentencePitch || idea,
             vision,
             problemStatement,
             stage: "idea_submitted",
@@ -111,6 +114,9 @@ export const createStartup = async (
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
         };
+        if (options?.targetDemographic) {
+            startupData.targetDemographic = options.targetDemographic;
+        }
         batch.set(startupRef, startupData);
 
         // 2. Add Owner to Startup Members
@@ -146,15 +152,28 @@ export const createStartup = async (
 
 export const getUserStartups = async (userId: string): Promise<Startup[]> => {
     try {
-        const q = query(
-            collection(db, "startups"),
-            where("ownerId", "==", userId)
-        );
+        const ownedQuery = query(collection(db, "startups"), where("ownerId", "==", userId));
+        const [ownedSnap, memberSnap] = await Promise.all([
+            getDocs(ownedQuery),
+            getDocs(query(collection(db, "startup_members"), where("userId", "==", userId)))
+        ]);
 
-        const querySnapshot = await getDocs(q);
-        const startups = querySnapshot.docs.map(doc => ({ startupId: doc.id, ...doc.data() })) as Startup[];
+        const ownedStartups = ownedSnap.docs.map(doc => ({ startupId: doc.id, ...doc.data() })) as Startup[];
+        const memberIds = Array.from(new Set(memberSnap.docs.map(doc => doc.data().startupId).filter(Boolean)));
 
-        return startups
+        const memberStartups: Startup[] = [];
+        const chunkSize = 10;
+        for (let i = 0; i < memberIds.length; i += chunkSize) {
+            const chunk = memberIds.slice(i, i + chunkSize);
+            const chunkQuery = query(collection(db, "startups"), where(documentId(), "in", chunk));
+            const chunkSnap = await getDocs(chunkQuery);
+            memberStartups.push(...(chunkSnap.docs.map(doc => ({ startupId: doc.id, ...doc.data() })) as Startup[]));
+        }
+
+        const combined = [...ownedStartups, ...memberStartups];
+        const unique = Array.from(new Map(combined.map(s => [s.startupId, s])).values());
+
+        return unique
             .filter(s => s.projectStatus !== "archived")
             .sort((a, b) => {
                 const dateA = a.updatedAt?.seconds || a.createdAt?.seconds || 0;
@@ -243,7 +262,7 @@ export const getMemories = getStartupMemory;
 export const updateStartupStage = async (startupId: string, stage: Startup["stage"]) => {
     try {
         const startupRef = doc(db, "startups", startupId);
-        await updateDoc(startupRef, { stage });
+        await updateDoc(startupRef, { stage, updatedAt: serverTimestamp() });
     } catch (error) {
         console.error("Error updating stage:", error);
         throw error;
@@ -269,7 +288,11 @@ export const getTasks = async (startupId: string): Promise<Task[]> => {
 export const updateTaskStatus = async (taskId: string, status: Task["status"]) => {
     try {
         const taskRef = doc(db, "tasks", taskId);
-        await updateDoc(taskRef, { status });
+        const updates: Record<string, any> = { status, updatedAt: serverTimestamp() };
+        if (status === "done") {
+            updates.completedAt = serverTimestamp();
+        }
+        await updateDoc(taskRef, updates);
     } catch (error) {
         console.error("Error updating task status:", error);
     }
@@ -278,7 +301,7 @@ export const updateTaskStatus = async (taskId: string, status: Task["status"]) =
 export const saveTaskRating = async (taskId: string, rating: 1 | 2 | 3 | 4 | 5) => {
     try {
         const taskRef = doc(db, "tasks", taskId);
-        await updateDoc(taskRef, { rating });
+        await updateDoc(taskRef, { rating, updatedAt: serverTimestamp() });
     } catch (error) {
         console.error("Error saving task rating:", error);
     }

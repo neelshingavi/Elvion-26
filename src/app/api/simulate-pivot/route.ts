@@ -1,29 +1,46 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
-import { getStartupMemory } from "@/lib/startup-service";
 import { callGemini } from "@/lib/gemini";
+import { requireUser, requireStartupAccess, safeJson } from "@/lib/server/auth";
+import { getStartupMemoryAdmin } from "@/lib/server/startup-data";
+import { getAdminDb } from "@/lib/firebase-admin";
 
 export async function POST(req: Request) {
+    const auth = await requireUser(req);
+    if (!auth.ok) return auth.response;
+
+    const body = await safeJson<{ startupId?: string; scenario?: string }>(req);
+    if (!body) {
+        return NextResponse.json(
+            { error: { message: "Invalid JSON payload.", code: "request/invalid-json" } },
+            { status: 400 }
+        );
+    }
+
+    const startupId = String(body.startupId || "");
+    const scenario = String(body.scenario || "").trim();
+
+    if (!startupId || !scenario) {
+        return NextResponse.json(
+            { error: { message: "startupId and scenario are required.", code: "request/missing-fields" } },
+            { status: 400 }
+        );
+    }
+    if (scenario.length < 5 || scenario.length > 2000) {
+        return NextResponse.json(
+            { error: { message: "Scenario length must be between 5 and 2000 characters.", code: "request/invalid-scenario" } },
+            { status: 400 }
+        );
+    }
+
+    const access = await requireStartupAccess(startupId, auth.uid);
+    if (!access.ok) return access.response;
+
     try {
-        const { startupId, scenario } = await req.json();
+        const startup = access.startup;
+        const memories = await getStartupMemoryAdmin(startupId);
 
-        if (!startupId || !scenario) {
-            return NextResponse.json({ error: "Missing startupId or scenario" }, { status: 400 });
-        }
-
-        const startupRef = doc(db, "startups", startupId);
-        const startupSnap = await getDoc(startupRef);
-
-        if (!startupSnap.exists()) {
-            return NextResponse.json({ error: "Startup not found" }, { status: 404 });
-        }
-
-        const startup = startupSnap.data();
-        const memories = await getStartupMemory(startupId);
-
-        // Get current tasks and goals
-        const tasksSnap = await getDocs(query(collection(db, "tasks"), where("startupId", "==", startupId)));
+        const db = await getAdminDb();
+        const tasksSnap = await db.collection("tasks").where("startupId", "==", startupId).get();
         const tasks = tasksSnap.docs.map(d => d.data());
 
         const prompt = `You are a strategic advisor analyzing a potential pivot for a startup.
@@ -83,6 +100,9 @@ Return ONLY valid JSON:
         return NextResponse.json({ simulation: simulationData });
     } catch (error: any) {
         console.error("Pivot simulation error:", error);
-        return NextResponse.json({ error: error.message || "Failed to simulate pivot" }, { status: 500 });
+        return NextResponse.json(
+            { error: { message: error.message || "Failed to simulate pivot", code: "simulate-pivot/failed" } },
+            { status: 500 }
+        );
     }
 }

@@ -1,30 +1,46 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/firebase";
-import { doc, getDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { generateTasks } from "@/lib/agents/agent-system";
-import { getStartupMemory } from "@/lib/startup-service";
-import { Startup } from "@/lib/types/founder";
+import { requireUser, requireStartupAccess, safeJson } from "@/lib/server/auth";
+import { getStartupMemoryAdmin, updateStartupStageAdmin } from "@/lib/server/startup-data";
+import { getAdminDb } from "@/lib/firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
 
 export async function POST(req: Request) {
+    const auth = await requireUser(req);
+    if (!auth.ok) return auth.response;
+
+    const body = await safeJson<{ startupId?: string; idea?: string; strategy?: string }>(req);
+    if (!body) {
+        return NextResponse.json(
+            { error: { message: "Invalid JSON payload.", code: "request/invalid-json" } },
+            { status: 400 }
+        );
+    }
+
+    const startupId = String(body.startupId || "");
+    const idea = body.idea ? String(body.idea).trim() : "";
+    const strategy = body.strategy ? String(body.strategy).trim() : "";
+
+    if (!startupId || (!idea && !strategy)) {
+        return NextResponse.json(
+            { error: { message: "startupId and idea or strategy are required.", code: "request/missing-fields" } },
+            { status: 400 }
+        );
+    }
+    const sourceText = strategy || idea;
+    if (sourceText.length < 5 || sourceText.length > 6000) {
+        return NextResponse.json(
+            { error: { message: "Strategy/idea length must be between 5 and 6000 characters.", code: "request/invalid-strategy" } },
+            { status: 400 }
+        );
+    }
+
+    const access = await requireStartupAccess(startupId, auth.uid);
+    if (!access.ok) return access.response;
+
     try {
-        const { startupId, idea, strategy } = await req.json();
-
-        if (!startupId || (!idea && !strategy)) {
-            return NextResponse.json(
-                { error: "Missing startupId, idea, or strategy" },
-                { status: 400 }
-            );
-        }
-
-        const startupRef = doc(db, "startups", startupId);
-        const startupSnap = await getDoc(startupRef);
-
-        if (!startupSnap.exists()) {
-            return NextResponse.json({ error: "Startup not found" }, { status: 404 });
-        }
-
-        const startup = { startupId, ...startupSnap.data() } as Startup;
-        const memories = await getStartupMemory(startupId);
+        const startup = { startupId, ...access.startup } as any;
+        const memories = await getStartupMemoryAdmin(startupId);
 
         const result = await generateTasks({ startup, memories }, strategy || idea);
 
@@ -33,24 +49,30 @@ export async function POST(req: Request) {
         }
 
         const tasks = result.structuredData.tasks;
+        const db = await getAdminDb();
 
-        // Batch add to Firestore
-        const results = await Promise.all(tasks.map((task: any) =>
-            addDoc(collection(db, "tasks"), {
-                startupId,
-                title: task.title,
-                description: task.description || "",
-                priority: task.priority || "medium",
-                reason: task.reason || "",
-                status: "pending",
-                createdByAgent: "Executor Agent",
-                createdAt: serverTimestamp(),
-            })
-        ));
+        const results = await Promise.all(
+            tasks.map((task: any) =>
+                db.collection("tasks").add({
+                    startupId,
+                    title: task.title,
+                    description: task.description || "",
+                    priority: task.priority || "medium",
+                    reason: task.reason || "",
+                    status: "pending",
+                    createdByAgent: "Executor Agent",
+                    createdAt: FieldValue.serverTimestamp()
+                })
+            )
+        );
 
+        await updateStartupStageAdmin(startupId, "execution_active");
         return NextResponse.json({ success: true, count: results.length });
     } catch (error: any) {
         console.error("Task generation error:", error);
-        return NextResponse.json({ error: error.message || "Failed to generate tasks" }, { status: 500 });
+        return NextResponse.json(
+            { error: { message: error.message || "Failed to generate tasks", code: "generate-tasks/failed" } },
+            { status: 500 }
+        );
     }
 }

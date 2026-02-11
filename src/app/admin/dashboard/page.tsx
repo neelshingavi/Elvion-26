@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "@/lib/firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { Users, Rocket, TrendingUp, Activity } from "lucide-react";
+import { Users, Rocket, Activity } from "lucide-react";
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState({
@@ -16,22 +14,13 @@ export default function AdminDashboard() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const usersSnap = await getDocs(collection(db, "users"));
-                const startupsSnap = await getDocs(collection(db, "startups"));
-
-                let founders = 0;
-                let others = 0;
-
-                usersSnap.forEach(doc => {
-                    const data = doc.data();
-                    if (data.role === "founder") founders++;
-                    else others++;
-                });
-
+                const res = await fetch("/api/admin/stats");
+                const data = await res.json();
+                if (!res.ok) throw new Error(data?.error?.message || "Failed to load stats");
                 setStats({
-                    founders,
-                    others,
-                    startups: startupsSnap.size
+                    founders: data.founders || 0,
+                    others: data.others || 0,
+                    startups: data.startups || 0
                 });
             } catch (error) {
                 console.error("Admin stats error:", error);

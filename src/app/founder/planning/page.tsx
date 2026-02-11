@@ -30,6 +30,15 @@ export default function PlanningPage() {
     const [roadmap, setRoadmap] = useState<RoadmapData | null>(null);
     const [error, setError] = useState<string | null>(null);
 
+    const getVerdictLabel = (content: string) => {
+        try {
+            const parsed = JSON.parse(content);
+            return parsed.implementation_verdict || "Report";
+        } catch {
+            return "Report";
+        }
+    };
+
     useEffect(() => {
         const fetchHistory = async () => {
             if (startup?.startupId) {
@@ -52,14 +61,27 @@ export default function PlanningPage() {
 
     const handleGenerate = async () => {
         if (!startup || !selectedIdea) return;
+        if (!user) {
+            setError("You must be logged in to generate a roadmap.");
+            return;
+        }
 
         setGenerating(true);
         setError(null);
         try {
-            const ideaData = JSON.parse(selectedIdea.content);
+            let ideaData: any = {};
+            try {
+                ideaData = JSON.parse(selectedIdea.content);
+            } catch {
+                ideaData = { summary: selectedIdea.content };
+            }
+            const token = await user.getIdToken();
             const res = await fetch("/api/generate-roadmap", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     startupId: startup.startupId,
                     idea: ideaData.summary || selectedIdea.content.substring(0, 100),
@@ -68,7 +90,10 @@ export default function PlanningPage() {
             });
 
             const data = await res.json();
-            if (data.error) throw new Error(data.error);
+            if (!res.ok || data.error) {
+                const message = typeof data.error === "string" ? data.error : data.error?.message || "Failed to generate roadmap";
+                throw new Error(message);
+            }
             setRoadmap(data);
         } catch (err: any) {
             setError(err.message);
@@ -110,7 +135,7 @@ export default function PlanningPage() {
                             <option value="">Select Validated Idea</option>
                             {history.map((mem) => (
                                 <option key={mem.id} value={mem.id}>
-                                    {new Date(mem.timestamp?.toDate?.() || Date.now()).toLocaleDateString()} - {JSON.parse(mem.content).implementation_verdict || "Report"}
+                                    {new Date(mem.timestamp?.toDate?.() || Date.now()).toLocaleDateString()} - {getVerdictLabel(mem.content)}
                                 </option>
                             ))}
                         </select>
@@ -270,4 +295,3 @@ export default function PlanningPage() {
         </div>
     );
 }
-

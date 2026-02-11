@@ -1,23 +1,21 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { ADMIN_COOKIE_NAME, verifyAdminSessionCookie } from '@/lib/server/admin-session';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const isAdminPath = request.nextUrl.pathname.startsWith('/admin');
     const isInternalLogin = request.nextUrl.pathname === '/internal-admin-login';
 
-    // Check for admin session cookie
-    const isAdminLoggedIn = request.cookies.has('founderflow_admin_session');
+    const sessionCookie = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
+    const session = await verifyAdminSessionCookie(sessionCookie);
+    const isAdminLoggedIn = session.valid;
 
-    // Protect Admin Routes
-    if (isAdminPath) {
-        if (!isAdminLoggedIn) {
-            const url = request.nextUrl.clone();
-            url.pathname = '/internal-admin-login';
-            return NextResponse.redirect(url);
-        }
+    if (isAdminPath && !isAdminLoggedIn) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/internal-admin-login';
+        return NextResponse.redirect(url);
     }
 
-    // Redirect Logged-in Admins away from Login Page
     if (isInternalLogin && isAdminLoggedIn) {
         const url = request.nextUrl.clone();
         url.pathname = '/admin/dashboard';
