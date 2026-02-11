@@ -41,7 +41,7 @@ export async function POST(req: Request) {
         const startup = { startupId, ...access.startup } as any;
         const memories = await getStartupMemoryAdmin(startupId);
 
-        const result = await generateRoadmap({ startup, memories, additionalContext: context }, idea);
+        const result = await generateRoadmap({ startup, memories: memories as any, additionalContext: context }, idea);
 
         if (!result.success || !result.structuredData) {
             throw new Error(result.error || "Failed to generate roadmap");

@@ -532,11 +532,11 @@ export default function DashboardPage() {
             </div>
 
             {/* AI Sidekick Panel */}
-            <AISidekick 
-                isOpen={sidebarOpen} 
-                onClose={() => setSidebarOpen(false)} 
-                startupId={startup?.startupId || ""} 
-                userId={user?.uid || ""} 
+            <AISidekick
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
+                startupId={startup?.startupId || ""}
+                userId={user?.uid || ""}
             />
         </div>
     );
@@ -551,7 +551,7 @@ function MetricCard({
     trend,
     progress
 }: {
-    icon: React.ElementType;
+    icon: any;
     label: string;
     value: string | number;
     color: string;
@@ -599,7 +599,7 @@ function QuickActionButton({
     label,
     href
 }: {
-    icon: React.ElementType;
+    icon: any;
     label: string;
     href: string;
 }) {

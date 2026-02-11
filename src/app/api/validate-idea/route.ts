@@ -39,7 +39,7 @@ export async function POST(req: Request) {
         const startup = { startupId, ...access.startup } as any;
         const memories = await getStartupMemoryAdmin(startupId);
 
-        const result = await validateIdea({ startup, memories }, idea);
+        const result = await validateIdea({ startup, memories: memories as any }, idea);
 
         if (!result.success || !result.structuredData) {
             throw new Error(result.error || "Failed to validate idea");
