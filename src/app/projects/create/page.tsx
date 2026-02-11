@@ -72,28 +72,28 @@ export default function CreateProjectPage() {
 
     
     return (
-        <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] p-6 flex items-center justify-center font-sans">
-            <div className="w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl p-8 md:p-12 animate-in fade-in zoom-in-95 duration-500">
+        <div className="min-h-screen bg-app p-6 flex items-center justify-center font-sans">
+            <div className="w-full max-w-2xl card p-8 md:p-12 animate-in fade-in zoom-in-95 duration-500">
 
                 <button
                     onClick={() => router.back()}
-                    className="flex items-center gap-2 text-sm font-bold text-zinc-400 hover:text-black dark:hover:text-white transition-colors mb-8"
+                    className="flex items-center gap-2 text-sm font-bold text-subtle hover:text-strong transition-colors mb-8"
                 >
                     <ArrowLeft className="w-4 h-4" />
                     Back to Projects
                 </button>
 
                 <div className="space-y-2 mb-8">
-                    <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                    <h1 className="text-h1 text-strong">
                         New Project
                     </h1>
-                    <p className="text-zinc-500 dark:text-zinc-400">
+                    <p className="text-body">
                         Launch a new startup workspace. Your agents will be scoped to this project.
                     </p>
                 </div>
 
                 {error && (
-                    <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm font-medium flex items-center gap-2">
+                    <div className="mb-6 p-4 rounded-xl bg-danger-soft border border-danger text-danger text-sm font-medium flex items-center gap-2">
                         <AlertCircle className="w-4 h-4" />
                         {error}
                     </div>
@@ -102,7 +102,7 @@ export default function CreateProjectPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                            <label className="text-overline">
                                 Project Name
                             </label>
                             <input
@@ -110,19 +110,19 @@ export default function CreateProjectPage() {
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 placeholder="e.g. Acme Corp"
-                                className="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all"
+                                className="input"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                            <label className="text-overline">
                                 Industry
                             </label>
                             <select
                                 required
                                 value={formData.industry}
                                 onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                                className="w-full p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all appearance-none"
+                                className="select"
                             >
                                 <option value="" disabled>Select Industry</option>
                                 {industries.map(ind => (
@@ -133,19 +133,19 @@ export default function CreateProjectPage() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                        <label className="text-overline">
                             Problem Statement
                         </label>
                         <textarea
                             value={formData.problemStatement}
                             onChange={(e) => setFormData({ ...formData, problemStatement: e.target.value })}
                             placeholder="What painful problem are you solving?"
-                            className="w-full h-24 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all resize-none"
+                            className="input h-24 resize-none"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                        <label className="text-overline">
                             One-Liner Solution (The Idea)
                         </label>
                         <textarea
@@ -153,19 +153,19 @@ export default function CreateProjectPage() {
                             value={formData.idea}
                             onChange={(e) => setFormData({ ...formData, idea: e.target.value })}
                             placeholder="Describe your solution in one sentence..."
-                            className="w-full h-24 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all resize-none"
+                            className="input h-24 resize-none"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                        <label className="text-overline">
                             Long-Term Vision (Optional)
                         </label>
                         <textarea
                             value={formData.vision}
                             onChange={(e) => setFormData({ ...formData, vision: e.target.value })}
                             placeholder="Where do you see this in 5 years?"
-                            className="w-full h-24 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all resize-none"
+                            className="input h-24 resize-none"
                         />
                     </div>
 
@@ -173,7 +173,7 @@ export default function CreateProjectPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-black dark:bg-zinc-50 text-white dark:text-black rounded-2xl font-bold hover:scale-[1.01] transition-all shadow-xl shadow-black/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full btn-primary hover:scale-[1.01] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? "Creating Workspace..." : (
                                 <>

@@ -123,26 +123,26 @@ export default function PitchDeckPage() {
         if (currentSlide >= updated.length) setCurrentSlide(Math.max(0, updated.length - 1));
     };
 
-    if (loading) return <div className="flex min-h-screen items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-indigo-500" /></div>;
+    if (loading) return <div className="flex min-h-screen items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
     const slide = slides[currentSlide];
     const SlideIcon = slide ? SLIDE_TEMPLATES[slide.type]?.icon || Presentation : Presentation;
 
     return (
-        <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] p-6 md:p-8">
+        <div className="min-h-screen bg-app p-6 md:p-8">
             <div className="max-w-6xl mx-auto space-y-6">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-black flex items-center gap-3"><Presentation className="w-8 h-8 text-indigo-500" />Pitch Deck</h1>
-                        <p className="text-zinc-500 mt-1">Auto-updating deck from your canvas</p>
+                        <h1 className="text-3xl font-black flex items-center gap-3"><Presentation className="w-8 h-8 text-primary" />Pitch Deck</h1>
+                        <p className="text-muted mt-1">Auto-updating deck from your canvas</p>
                     </div>
                     <div className="flex items-center gap-3">
                         <button onClick={generateDeck} disabled={generating} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm disabled:opacity-50">
                             {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                             {generating ? "Generating..." : "AI Generate"}
                         </button>
-                        <button onClick={() => setPresentMode(true)} className="flex items-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl font-bold text-sm">
+                        <button onClick={() => setPresentMode(true)} className="flex items-center gap-2 px-4 py-2 bg-surface dark:bg-surface-alt text-white dark:text-strong rounded-xl font-bold text-sm">
                             <Eye className="w-4 h-4" />Present
                         </button>
                     </div>
@@ -152,8 +152,8 @@ export default function PitchDeckPage() {
                     {/* Slide List */}
                     <div className="lg:col-span-1 space-y-3">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Slides ({slides.length})</span>
-                            <button onClick={() => addSlide()} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg">
+                            <span className="text-xs font-bold uppercase tracking-widest text-subtle">Slides ({slides.length})</span>
+                            <button onClick={() => addSlide()} className="p-2 hover:bg-surface-alt dark:hover:bg-surface-alt rounded-lg">
                                 <Plus className="w-4 h-4" />
                             </button>
                         </div>
@@ -161,23 +161,23 @@ export default function PitchDeckPage() {
                             {slides.map((s, i) => (
                                 <div key={s.id} onClick={() => setCurrentSlide(i)}
                                     className={cn("p-3 rounded-xl border cursor-pointer transition-all group",
-                                        currentSlide === i ? "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-indigo-300")}>
+                                        currentSlide === i ? "bg-primary-soft border-primary" : "bg-surface border-subtle hover:border-primary")}>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold text-zinc-400">{i + 1}</span>
+                                        <span className="text-xs font-bold text-subtle">{i + 1}</span>
                                         <button onClick={(e) => { e.stopPropagation(); deleteSlide(s.id); }}
-                                            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded text-red-500"><Trash2 className="w-3 h-3" /></button>
+                                            className="opacity-0 group-hover:opacity-100 p-1 hover:bg-danger-soft rounded text-danger"><Trash2 className="w-3 h-3" /></button>
                                     </div>
                                     <h4 className="font-bold text-sm mt-1 truncate">{s.title}</h4>
-                                    <p className="text-xs text-zinc-500 truncate">{s.content[0]}</p>
+                                    <p className="text-xs text-muted truncate">{s.content[0]}</p>
                                 </div>
                             ))}
                         </div>
-                        <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                            <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-2">Add Slide</p>
+                        <div className="pt-4 border-t border-subtle">
+                            <p className="text-xs font-bold uppercase tracking-widest text-subtle mb-2">Add Slide</p>
                             <div className="grid grid-cols-2 gap-2">
                                 {Object.entries(SLIDE_TEMPLATES).slice(0, 4).map(([key, tpl]) => (
                                     <button key={key} onClick={() => addSlide(key)}
-                                        className="p-2 bg-zinc-50 dark:bg-zinc-800 rounded-lg text-xs font-medium hover:bg-zinc-100 dark:hover:bg-zinc-700 flex items-center gap-2">
+                                        className="p-2 bg-surface-alt rounded-lg text-xs font-medium hover:bg-surface flex items-center gap-2">
                                         <tpl.icon className="w-3 h-3" />{tpl.title.split(" ")[0]}
                                     </button>
                                 ))}
@@ -191,7 +191,7 @@ export default function PitchDeckPage() {
                             {slide && (
                                 <div className="absolute inset-0 p-12 flex flex-col text-white">
                                     <div className="flex items-center gap-3 mb-8">
-                                        <div className="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center">
+                                        <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
                                             <SlideIcon className="w-6 h-6" />
                                         </div>
                                         <h2 className="text-4xl font-black">{slide.title}</h2>
@@ -199,7 +199,7 @@ export default function PitchDeckPage() {
                                     <div className="flex-1 space-y-4">
                                         {slide.content.map((c, i) => (
                                             <div key={i} className="flex items-start gap-4">
-                                                {slide.type !== "title" && <div className="w-3 h-3 mt-2 bg-indigo-500 rounded-full shrink-0" />}
+                                                {slide.type !== "title" && <div className="w-3 h-3 mt-2 bg-primary rounded-full shrink-0" />}
                                                 {editMode ? (
                                                     <input value={c} onChange={e => {
                                                         const newContent = [...slide.content];
@@ -212,14 +212,14 @@ export default function PitchDeckPage() {
                                             </div>
                                         ))}
                                     </div>
-                                    <div className="flex items-center justify-between text-zinc-500 text-sm">
+                                    <div className="flex items-center justify-between text-muted text-sm">
                                         <span>{startup?.name}</span>
                                         <span>{currentSlide + 1} / {slides.length}</span>
                                     </div>
                                 </div>
                             )}
                             <button onClick={() => setEditMode(!editMode)}
-                                className={cn("absolute top-4 right-4 p-2 rounded-lg transition-all", editMode ? "bg-indigo-500 text-white" : "bg-white/10 hover:bg-white/20 text-white")}>
+                                className={cn("absolute top-4 right-4 p-2 rounded-lg transition-all", editMode ? "bg-primary text-white" : "bg-surface/10 hover:bg-surface/20 text-white")}>
                                 <Edit3 className="w-4 h-4" />
                             </button>
                         </div>
@@ -227,17 +227,17 @@ export default function PitchDeckPage() {
                         {/* Navigation */}
                         <div className="flex items-center justify-between mt-4">
                             <button onClick={() => setCurrentSlide(Math.max(0, currentSlide - 1))} disabled={currentSlide === 0}
-                                className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-xl font-medium disabled:opacity-50">
+                                className="flex items-center gap-2 px-4 py-2 bg-surface-alt rounded-xl font-medium disabled:opacity-50">
                                 <ChevronLeft className="w-4 h-4" />Previous
                             </button>
                             <div className="flex items-center gap-2">
                                 {slides.map((_, i) => (
                                     <button key={i} onClick={() => setCurrentSlide(i)}
-                                        className={cn("w-2 h-2 rounded-full transition-all", currentSlide === i ? "bg-indigo-500 w-6" : "bg-zinc-300 dark:bg-zinc-700")} />
+                                        className={cn("w-2 h-2 rounded-full transition-all", currentSlide === i ? "bg-primary w-6" : "bg-subtle")} />
                                 ))}
                             </div>
                             <button onClick={() => setCurrentSlide(Math.min(slides.length - 1, currentSlide + 1))} disabled={currentSlide === slides.length - 1}
-                                className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-xl font-medium disabled:opacity-50">
+                                className="flex items-center gap-2 px-4 py-2 bg-surface-alt rounded-xl font-medium disabled:opacity-50">
                                 Next<ChevronRight className="w-4 h-4" />
                             </button>
                         </div>
@@ -249,19 +249,19 @@ export default function PitchDeckPage() {
             <AnimatePresence>
                 {presentMode && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-zinc-900 z-50" onClick={() => setPresentMode(false)}>
+                        className="fixed inset-0 bg-surface z-50" onClick={() => setPresentMode(false)}>
                         <div className="h-full flex items-center justify-center p-8">
                             {slide && (
                                 <motion.div key={slide.id} initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }}
                                     className="w-full max-w-5xl aspect-video bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-3xl p-16 text-white">
                                     <div className="flex items-center gap-4 mb-12">
-                                        <div className="w-16 h-16 bg-indigo-500 rounded-2xl flex items-center justify-center"><SlideIcon className="w-8 h-8" /></div>
+                                        <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center"><SlideIcon className="w-8 h-8" /></div>
                                         <h2 className="text-6xl font-black">{slide.title}</h2>
                                     </div>
                                     <div className="space-y-6">
                                         {slide.content.map((c, i) => (
                                             <p key={i} className="text-3xl flex items-start gap-4">
-                                                {slide.type !== "title" && <span className="w-4 h-4 mt-2 bg-indigo-500 rounded-full shrink-0" />}{c}
+                                                {slide.type !== "title" && <span className="w-4 h-4 mt-2 bg-primary rounded-full shrink-0" />}{c}
                                             </p>
                                         ))}
                                     </div>
@@ -269,9 +269,9 @@ export default function PitchDeckPage() {
                             )}
                         </div>
                         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 text-white/50">
-                            <button onClick={(e) => { e.stopPropagation(); setCurrentSlide(Math.max(0, currentSlide - 1)); }} className="p-3 hover:bg-white/10 rounded-xl"><ChevronLeft className="w-6 h-6" /></button>
+                            <button onClick={(e) => { e.stopPropagation(); setCurrentSlide(Math.max(0, currentSlide - 1)); }} className="p-3 hover:bg-surface/10 rounded-xl"><ChevronLeft className="w-6 h-6" /></button>
                             <span className="font-bold">{currentSlide + 1} / {slides.length}</span>
-                            <button onClick={(e) => { e.stopPropagation(); setCurrentSlide(Math.min(slides.length - 1, currentSlide + 1)); }} className="p-3 hover:bg-white/10 rounded-xl"><ChevronRight className="w-6 h-6" /></button>
+                            <button onClick={(e) => { e.stopPropagation(); setCurrentSlide(Math.min(slides.length - 1, currentSlide + 1)); }} className="p-3 hover:bg-surface/10 rounded-xl"><ChevronRight className="w-6 h-6" /></button>
                         </div>
                         <button onClick={() => setPresentMode(false)} className="absolute top-8 right-8 text-white/50 hover:text-white">Press ESC to exit</button>
                     </motion.div>

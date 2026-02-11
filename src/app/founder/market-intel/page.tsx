@@ -376,25 +376,25 @@ export default function MarketIntelPage() {
         return (
             <div className="flex min-h-screen items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-10 h-10 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-zinc-500">Loading market intelligence...</span>
+                    <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-muted">Loading market intelligence...</span>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] p-6 md:p-8">
+        <div className="min-h-screen bg-app p-6 md:p-8">
             <div className="max-w-6xl mx-auto space-y-8">
 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                            <Globe className="w-8 h-8 text-indigo-500" />
+                            <Globe className="w-8 h-8 text-primary" />
                             Market Intelligence
                         </h1>
-                        <p className="text-zinc-500 mt-1">
+                        <p className="text-muted mt-1">
                             India-focused market data, competitor tracking, and regulatory updates
                         </p>
                     </div>
@@ -402,7 +402,7 @@ export default function MarketIntelPage() {
                     <button
                         onClick={refreshData}
                         disabled={refreshing}
-                        className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-xl font-medium text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 bg-surface-alt rounded-xl font-medium text-sm hover:bg-surface-alt  transition-all disabled:opacity-50"
                     >
                         <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} />
                         {refreshing ? "Refreshing..." : "Refresh Data"}
@@ -410,7 +410,7 @@ export default function MarketIntelPage() {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex bg-zinc-100 dark:bg-zinc-800 rounded-xl p-1 w-fit">
+                <div className="flex bg-surface-alt rounded-xl p-1 w-fit">
                     {[
                         { id: "pulse", label: "Market Pulse", icon: TrendingUp },
                         { id: "competitors", label: "Competitors", icon: Building2 },
@@ -422,8 +422,8 @@ export default function MarketIntelPage() {
                             className={cn(
                                 "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
                                 activeTab === tab.id
-                                    ? "bg-white dark:bg-zinc-700 shadow-sm"
-                                    : "text-zinc-500 hover:text-zinc-700"
+                                    ? "bg-surface  shadow-sm"
+                                    : "text-muted hover:text-muted"
                             )}
                         >
                             <tab.icon className="w-4 h-4" />
@@ -439,16 +439,16 @@ export default function MarketIntelPage() {
                         {/* Overview Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {/* Sentiment Card */}
-                            <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                            <div className="p-6 bg-surface rounded-2xl border border-subtle">
                                 <div className="flex items-center justify-between mb-4">
-                                    <span className="text-sm font-bold text-zinc-500">Market Sentiment</span>
+                                    <span className="text-sm font-bold text-muted">Market Sentiment</span>
                                     <span className={cn(
                                         "px-2 py-1 rounded-full text-xs font-bold",
                                         marketPulse.overallSentiment > 50
-                                            ? "bg-green-100 text-green-700"
+                                            ? "bg-success-soft text-success"
                                             : marketPulse.overallSentiment > 20
-                                                ? "bg-yellow-100 text-yellow-700"
-                                                : "bg-red-100 text-red-700"
+                                                ? "bg-warning-soft text-warning"
+                                                : "bg-danger-soft text-danger"
                                     )}>
                                         {marketPulse.overallSentiment > 50 ? "Bullish" : marketPulse.overallSentiment > 20 ? "Neutral" : "Bearish"}
                                     </span>
@@ -458,15 +458,15 @@ export default function MarketIntelPage() {
                                         {marketPulse.overallSentiment}
                                     </div>
                                     <div className="flex-1">
-                                        <div className="w-full h-3 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                        <div className="w-full h-3 bg-surface-alt rounded-full overflow-hidden">
                                             <div
                                                 className={cn(
                                                     "h-full rounded-full transition-all",
                                                     marketPulse.overallSentiment > 50
-                                                        ? "bg-green-500"
+                                                        ? "bg-success"
                                                         : marketPulse.overallSentiment > 20
-                                                            ? "bg-yellow-500"
-                                                            : "bg-red-500"
+                                                            ? "bg-warning"
+                                                            : "bg-danger"
                                                 )}
                                                 style={{ width: `${Math.max(0, Math.min(100, (marketPulse.overallSentiment + 100) / 2))}%` }}
                                             />
@@ -476,19 +476,19 @@ export default function MarketIntelPage() {
                             </div>
 
                             {/* Funding Activity */}
-                            <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                            <div className="p-6 bg-surface rounded-2xl border border-subtle">
                                 <div className="flex items-center justify-between mb-4">
-                                    <span className="text-sm font-bold text-zinc-500">India Funding (This Month)</span>
-                                    <IndianRupee className="w-5 h-5 text-zinc-400" />
+                                    <span className="text-sm font-bold text-muted">India Funding (This Month)</span>
+                                    <IndianRupee className="w-5 h-5 text-subtle" />
                                 </div>
                                 <div className="text-4xl font-black mb-2">
                                     {marketPulse.fundingActivity.totalAmount}
                                 </div>
                                 <div className="flex items-center gap-2 text-sm">
-                                    <span className="text-zinc-500">{marketPulse.fundingActivity.totalDeals} deals</span>
+                                    <span className="text-muted">{marketPulse.fundingActivity.totalDeals} deals</span>
                                     <span className={cn(
                                         "flex items-center gap-1",
-                                        marketPulse.fundingActivity.change > 0 ? "text-green-500" : "text-red-500"
+                                        marketPulse.fundingActivity.change > 0 ? "text-success" : "text-danger"
                                     )}>
                                         {marketPulse.fundingActivity.change > 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
                                         {Math.abs(marketPulse.fundingActivity.change)}% vs last month
@@ -497,15 +497,15 @@ export default function MarketIntelPage() {
                             </div>
 
                             {/* Trending Topics */}
-                            <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                            <div className="p-6 bg-surface rounded-2xl border border-subtle">
                                 <div className="flex items-center justify-between mb-4">
-                                    <span className="text-sm font-bold text-zinc-500">Trending in {industry || "Your Industry"}</span>
-                                    <Sparkles className="w-5 h-5 text-indigo-500" />
+                                    <span className="text-sm font-bold text-muted">Trending in {industry || "Your Industry"}</span>
+                                    <Sparkles className="w-5 h-5 text-primary" />
                                 </div>
                                 <div className="space-y-2">
                                     {marketPulse.trendingTopics.slice(0, 3).map((topic, i) => (
                                         <div key={i} className="flex items-center gap-2">
-                                            <span className="w-5 h-5 bg-indigo-100 dark:bg-indigo-900/30 rounded text-indigo-500 text-xs font-bold flex items-center justify-center">
+                                            <span className="w-5 h-5 bg-primary-soft dark:bg-primary-soft rounded text-primary text-xs font-bold flex items-center justify-center">
                                                 {i + 1}
                                             </span>
                                             <span className="text-sm font-medium">{topic}</span>
@@ -516,20 +516,20 @@ export default function MarketIntelPage() {
                         </div>
 
                         {/* Keyword Trends */}
-                        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-                            <div className="p-6 border-b border-zinc-100 dark:border-zinc-800">
+                        <div className="bg-surface rounded-2xl border border-subtle overflow-hidden">
+                            <div className="p-6 border-b border-subtle">
                                 <h3 className="font-black text-lg">Keyword Trends</h3>
-                                <p className="text-sm text-zinc-500">Search volume and trends for relevant keywords</p>
+                                <p className="text-sm text-muted">Search volume and trends for relevant keywords</p>
                             </div>
-                            <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                            <div className="divide-y divide-subtle ">
                                 {marketPulse.trends.map((trend, i) => (
-                                    <div key={i} className="p-4 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-all">
+                                    <div key={i} className="p-4 hover:bg-surface-alt dark:hover:bg-surface-alt/50 transition-all">
                                         <div className="flex items-center gap-4">
                                             <div className={cn(
                                                 "w-10 h-10 rounded-xl flex items-center justify-center",
-                                                trend.trend === "up" && "bg-green-100 dark:bg-green-900/30 text-green-600",
-                                                trend.trend === "stable" && "bg-zinc-100 dark:bg-zinc-800 text-zinc-600",
-                                                trend.trend === "down" && "bg-red-100 dark:bg-red-900/30 text-red-600"
+                                                trend.trend === "up" && "bg-success-soft text-success",
+                                                trend.trend === "stable" && "bg-surface-alt  text-muted",
+                                                trend.trend === "down" && "bg-danger-soft text-danger"
                                             )}>
                                                 {trend.trend === "up" && <TrendingUp className="w-5 h-5" />}
                                                 {trend.trend === "stable" && <Minus className="w-5 h-5" />}
@@ -537,24 +537,24 @@ export default function MarketIntelPage() {
                                             </div>
                                             <div className="flex-1">
                                                 <div className="font-bold">{trend.keyword}</div>
-                                                <div className="text-sm text-zinc-500">
+                                                <div className="text-sm text-muted">
                                                     {trend.volume.toLocaleString()} monthly searches
                                                 </div>
                                             </div>
                                             <div className="text-right">
                                                 <div className={cn(
                                                     "flex items-center gap-1 font-bold",
-                                                    trend.change > 0 ? "text-green-500" : trend.change < 0 ? "text-red-500" : "text-zinc-500"
+                                                    trend.change > 0 ? "text-success" : trend.change < 0 ? "text-danger" : "text-muted"
                                                 )}>
                                                     {trend.change > 0 ? "+" : ""}{trend.change}%
                                                 </div>
-                                                <div className="text-xs text-zinc-400">vs last month</div>
+                                                <div className="text-xs text-subtle">vs last month</div>
                                             </div>
                                             <div className="w-24">
-                                                <div className="text-xs text-zinc-400 mb-1">Relevance</div>
-                                                <div className="w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                                <div className="text-xs text-subtle mb-1">Relevance</div>
+                                                <div className="w-full h-2 bg-surface-alt rounded-full overflow-hidden">
                                                     <div
-                                                        className="h-full bg-indigo-500 rounded-full"
+                                                        className="h-full bg-primary rounded-full"
                                                         style={{ width: `${trend.relevanceScore}%` }}
                                                     />
                                                 </div>
@@ -573,18 +573,18 @@ export default function MarketIntelPage() {
                         {/* Search and Add */}
                         <div className="flex gap-4">
                             <div className="flex-1 relative">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-subtle" />
                                 <input
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search competitors..."
-                                    className="w-full pl-12 pr-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="input pl-12 pr-4 py-3"
                                 />
                             </div>
                             <button
                                 onClick={() => setShowAddCompetitor(true)}
-                                className="flex items-center gap-2 px-4 py-3 bg-indigo-500 text-white rounded-xl font-bold text-sm hover:bg-indigo-600 transition-all"
+                                className="flex items-center gap-2 px-4 py-3 bg-primary text-on-primary rounded-xl font-bold text-sm hover:bg-primary transition-all"
                             >
                                 <Plus className="w-4 h-4" />
                                 Add Competitor
@@ -600,7 +600,7 @@ export default function MarketIntelPage() {
                                         key={competitor.id}
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden"
+                                        className="bg-surface rounded-2xl border border-subtle overflow-hidden"
                                     >
                                         <div className="p-6">
                                             <div className="flex items-start justify-between mb-4">
@@ -611,7 +611,7 @@ export default function MarketIntelPage() {
                                                             href={`https://${competitor.website}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="text-sm text-indigo-500 hover:underline flex items-center gap-1"
+                                                            className="text-sm text-primary hover:underline flex items-center gap-1"
                                                         >
                                                             {competitor.website}
                                                             <ExternalLink className="w-3 h-3" />
@@ -619,23 +619,23 @@ export default function MarketIntelPage() {
                                                     )}
                                                 </div>
                                                 {competitor.alerts.filter(a => !a.isRead).length > 0 && (
-                                                    <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
+                                                    <span className="px-2 py-1 bg-danger-soft text-danger rounded-full text-xs font-bold">
                                                         {competitor.alerts.filter(a => !a.isRead).length} new
                                                     </span>
                                                 )}
                                             </div>
 
-                                            <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+                                            <p className="text-sm text-muted mb-4">
                                                 {competitor.description}
                                             </p>
 
                                             {competitor.lastFunding && (
-                                                <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl mb-4">
-                                                    <div className="flex items-center gap-2 text-green-700 dark:text-green-400 font-bold text-sm">
+                                                <div className="p-3 bg-success-soft rounded-xl mb-4">
+                                                    <div className="flex items-center gap-2 text-success dark:text-success font-bold text-sm">
                                                         <IndianRupee className="w-4 h-4" />
                                                         {competitor.lastFunding.round}: {competitor.lastFunding.amount}
                                                     </div>
-                                                    <div className="text-xs text-zinc-500 mt-1">
+                                                    <div className="text-xs text-muted mt-1">
                                                         {competitor.lastFunding.investors.join(", ")}
                                                     </div>
                                                 </div>
@@ -643,10 +643,10 @@ export default function MarketIntelPage() {
 
                                             {competitor.pricing && (
                                                 <div className="mb-4">
-                                                    <div className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-2">Pricing</div>
+                                                    <div className="text-xs font-bold uppercase tracking-widest text-subtle mb-2">Pricing</div>
                                                     <div className="flex flex-wrap gap-2">
                                                         {competitor.pricing.map((price, i) => (
-                                                            <span key={i} className="px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-xs font-medium">
+                                                            <span key={i} className="px-2 py-1 bg-surface-alt rounded-lg text-xs font-medium">
                                                                 {price}
                                                             </span>
                                                         ))}
@@ -655,16 +655,16 @@ export default function MarketIntelPage() {
                                             )}
 
                                             {competitor.alerts.length > 0 && (
-                                                <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                                                    <div className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-2">Recent Activity</div>
+                                                <div className="pt-4 border-t border-subtle">
+                                                    <div className="text-xs font-bold uppercase tracking-widest text-subtle mb-2">Recent Activity</div>
                                                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                                     {competitor.alerts.slice(0, 2).map((alert: any) => (
                                                         <div key={alert.id} className="flex items-start gap-2 text-sm py-2">
                                                             <div className={cn(
                                                                 "w-6 h-6 rounded-full flex items-center justify-center shrink-0",
-                                                                alert.type === "funding" && "bg-green-100 text-green-600",
-                                                                alert.type === "feature" && "bg-blue-100 text-blue-600",
-                                                                alert.type === "pricing" && "bg-yellow-100 text-yellow-600"
+                                                                alert.type === "funding" && "bg-success-soft text-success",
+                                                                alert.type === "feature" && "bg-info-soft text-info",
+                                                                alert.type === "pricing" && "bg-warning-soft text-warning"
                                                             )}>
                                                                 {alert.type === "funding" && <IndianRupee className="w-3 h-3" />}
                                                                 {alert.type === "feature" && <Sparkles className="w-3 h-3" />}
@@ -672,7 +672,7 @@ export default function MarketIntelPage() {
                                                             </div>
                                                             <div>
                                                                 <div className="font-medium">{alert.title}</div>
-                                                                <div className="text-xs text-zinc-500">{formatRelativeTime(alert.date)}</div>
+                                                                <div className="text-xs text-muted">{formatRelativeTime(alert.date)}</div>
                                                             </div>
                                                         </div>
                                                     ))}
@@ -685,12 +685,12 @@ export default function MarketIntelPage() {
 
                         {competitors.length === 0 && (
                             <div className="py-16 text-center">
-                                <Building2 className="w-12 h-12 mx-auto text-zinc-300 dark:text-zinc-700 mb-4" />
+                                <Building2 className="w-12 h-12 mx-auto text-subtle dark:text-muted mb-4" />
                                 <h3 className="text-lg font-bold mb-2">No competitors tracked yet</h3>
-                                <p className="text-zinc-500 mb-4">Start tracking your competition to stay ahead</p>
+                                <p className="text-muted mb-4">Start tracking your competition to stay ahead</p>
                                 <button
                                     onClick={() => setShowAddCompetitor(true)}
-                                    className="px-4 py-2 bg-indigo-500 text-white rounded-xl font-bold text-sm"
+                                    className="px-4 py-2 bg-primary text-on-primary rounded-xl font-bold text-sm"
                                 >
                                     Add First Competitor
                                 </button>
@@ -704,11 +704,11 @@ export default function MarketIntelPage() {
                     <div className="space-y-6">
                         {/* Alert Banner */}
                         {regulatory.some(r => r.impact === "high") && (
-                            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-4">
-                                <AlertTriangle className="w-6 h-6 text-red-600" />
+                            <div className="p-4 bg-danger-soft dark:bg-danger-soft border border-danger dark:border-danger rounded-xl flex items-center gap-4">
+                                <AlertTriangle className="w-6 h-6 text-danger" />
                                 <div>
-                                    <div className="font-bold text-red-900 dark:text-red-100">High Impact Updates</div>
-                                    <div className="text-sm text-red-700 dark:text-red-300">
+                                    <div className="font-bold text-danger ">High Impact Updates</div>
+                                    <div className="text-sm text-danger ">
                                         {regulatory.filter(r => r.impact === "high").length} regulatory changes require your attention
                                     </div>
                                 </div>
@@ -716,13 +716,13 @@ export default function MarketIntelPage() {
                         )}
 
                         {/* Regulatory Updates List */}
-                        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-                            <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                        <div className="bg-surface rounded-2xl border border-subtle overflow-hidden">
+                            <div className="p-6 border-b border-subtle flex items-center justify-between">
                                 <div>
                                     <h3 className="font-black text-lg">Regulatory Updates</h3>
-                                    <p className="text-sm text-zinc-500">India-focused compliance and regulatory changes</p>
+                                    <p className="text-sm text-muted">India-focused compliance and regulatory changes</p>
                                 </div>
-                                <select className="px-3 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm font-medium">
+                                <select className="px-3 py-2 bg-surface-alt rounded-lg text-sm font-medium">
                                     <option>All Categories</option>
                                     <option>Data Privacy</option>
                                     <option>Fintech</option>
@@ -730,15 +730,15 @@ export default function MarketIntelPage() {
                                 </select>
                             </div>
 
-                            <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                            <div className="divide-y divide-subtle ">
                                 {regulatory.map(update => (
-                                    <div key={update.id} className="p-6 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-all">
+                                    <div key={update.id} className="p-6 hover:bg-surface-alt dark:hover:bg-surface-alt/50 transition-all">
                                         <div className="flex items-start gap-4">
                                             <div className={cn(
                                                 "w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
-                                                update.impact === "high" && "bg-red-100 dark:bg-red-900/30 text-red-600",
-                                                update.impact === "medium" && "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600",
-                                                update.impact === "low" && "bg-green-100 dark:bg-green-900/30 text-green-600"
+                                                update.impact === "high" && "bg-danger-soft text-danger",
+                                                update.impact === "medium" && "bg-warning-soft text-warning",
+                                                update.impact === "low" && "bg-success-soft text-success"
                                             )}>
                                                 <Gavel className="w-6 h-6" />
                                             </div>
@@ -747,17 +747,17 @@ export default function MarketIntelPage() {
                                                     <h4 className="font-bold">{update.title}</h4>
                                                     <span className={cn(
                                                         "px-2 py-1 rounded-full text-xs font-bold uppercase",
-                                                        update.impact === "high" && "bg-red-100 text-red-700",
-                                                        update.impact === "medium" && "bg-yellow-100 text-yellow-700",
-                                                        update.impact === "low" && "bg-green-100 text-green-700"
+                                                        update.impact === "high" && "bg-danger-soft text-danger",
+                                                        update.impact === "medium" && "bg-warning-soft text-warning",
+                                                        update.impact === "low" && "bg-success-soft text-success"
                                                     )}>
                                                         {update.impact} impact
                                                     </span>
                                                 </div>
-                                                <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-3">
+                                                <p className="text-sm text-muted mb-3">
                                                     {update.summary}
                                                 </p>
-                                                <div className="flex items-center gap-4 text-xs text-zinc-500">
+                                                <div className="flex items-center gap-4 text-xs text-muted">
                                                     <span className="flex items-center gap-1">
                                                         <Clock className="w-3 h-3" />
                                                         {formatRelativeTime(update.date)}
@@ -766,13 +766,13 @@ export default function MarketIntelPage() {
                                                         <Newspaper className="w-3 h-3" />
                                                         {update.source}
                                                     </span>
-                                                    <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded">
+                                                    <span className="px-2 py-0.5 bg-surface-alt rounded">
                                                         {update.category}
                                                     </span>
                                                 </div>
                                             </div>
-                                            <button className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg">
-                                                <ChevronRight className="w-5 h-5 text-zinc-400" />
+                                            <button className="p-2 hover:bg-surface-alt dark:hover:bg-surface-alt rounded-lg">
+                                                <ChevronRight className="w-5 h-5 text-subtle" />
                                             </button>
                                         </div>
                                     </div>
@@ -781,18 +781,18 @@ export default function MarketIntelPage() {
                         </div>
 
                         {/* Ask AI About Compliance */}
-                        <div className="p-6 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl text-white">
+                        <div className="p-6 bg-primary-gradient rounded-2xl text-on-primary">
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
+                                <div className="w-14 h-14 rounded-xl bg-surface/20 flex items-center justify-center">
                                     <Sparkles className="w-7 h-7" />
                                 </div>
                                 <div className="flex-1">
                                     <h3 className="font-black text-lg">Regulatory Checker</h3>
-                                    <p className="text-white/80 text-sm">
+                                    <p className="opacity-80 text-sm">
                                         Ask AI about compliance requirements for your startup
                                     </p>
                                 </div>
-                                <button className="px-6 py-3 bg-white text-indigo-600 rounded-xl font-bold text-sm hover:scale-105 transition-all">
+                                <button className="px-6 py-3 bg-surface text-primary rounded-xl font-bold text-sm hover:scale-105 transition-all">
                                     Ask AI
                                 </button>
                             </div>
@@ -809,20 +809,20 @@ export default function MarketIntelPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/50 z-40"
+                            className="fixed inset-0 bg-overlay z-40"
                             onClick={() => setShowAddCompetitor(false)}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-x-4 top-[20%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-md bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50"
+                            className="fixed inset-x-4 top-[20%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-md bg-surface rounded-2xl border border-subtle shadow-2xl z-50"
                         >
-                            <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                            <div className="p-6 border-b border-subtle flex items-center justify-between">
                                 <h2 className="text-xl font-black">Add Competitor</h2>
                                 <button
                                     onClick={() => setShowAddCompetitor(false)}
-                                    className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg"
+                                    className="p-2 hover:bg-surface-alt dark:hover:bg-surface-alt rounded-lg"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
@@ -830,7 +830,7 @@ export default function MarketIntelPage() {
 
                             <div className="p-6 space-y-4">
                                 <div>
-                                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 block">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-muted mb-2 block">
                                         Company Name *
                                     </label>
                                     <input
@@ -838,12 +838,12 @@ export default function MarketIntelPage() {
                                         value={newCompetitor.name}
                                         onChange={(e) => setNewCompetitor(prev => ({ ...prev, name: e.target.value }))}
                                         placeholder="e.g., TechCorp"
-                                        className="w-full p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="input"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 block">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-muted mb-2 block">
                                         Website
                                     </label>
                                     <input
@@ -851,34 +851,34 @@ export default function MarketIntelPage() {
                                         value={newCompetitor.website}
                                         onChange={(e) => setNewCompetitor(prev => ({ ...prev, website: e.target.value }))}
                                         placeholder="techcorp.com"
-                                        className="w-full p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="input"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 block">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-muted mb-2 block">
                                         Description
                                     </label>
                                     <textarea
                                         value={newCompetitor.description}
                                         onChange={(e) => setNewCompetitor(prev => ({ ...prev, description: e.target.value }))}
                                         placeholder="Brief description of what they do..."
-                                        className="w-full p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500 outline-none resize-none h-24"
+                                        className="input h-24 resize-none"
                                     />
                                 </div>
                             </div>
 
-                            <div className="p-6 border-t border-zinc-100 dark:border-zinc-800 flex justify-end gap-3">
+                            <div className="p-6 border-t border-subtle flex justify-end gap-3">
                                 <button
                                     onClick={() => setShowAddCompetitor(false)}
-                                    className="px-6 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all"
+                                    className="px-6 py-3 border border-subtle rounded-xl font-bold hover:bg-surface-alt dark:hover:bg-surface-alt transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleAddCompetitor}
                                     disabled={!newCompetitor.name}
-                                    className="px-6 py-3 bg-indigo-500 text-white rounded-xl font-bold hover:bg-indigo-600 transition-all disabled:opacity-50"
+                                    className="px-6 py-3 bg-primary text-on-primary rounded-xl font-bold hover:bg-primary transition-all disabled:opacity-50"
                                 >
                                     Add Competitor
                                 </button>

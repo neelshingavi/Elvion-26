@@ -239,17 +239,17 @@ export default function ProfileEditor() {
 
     const InputField = ({ label, icon: Icon, name, type = "text", placeholder, disabled }: any) => (
         <div className="space-y-1.5 flex-1 min-w-[180px]">
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 pl-1">{label}</label>
+            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-subtle pl-1">{label}</label>
             <div className="relative group">
-                <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400 group-focus-within:text-indigo-500 transition-colors" />
+                <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-subtle group-focus-within:text-primary transition-colors" />
                 <input
                     type={type}
                     value={(formData as any)[name]}
                     disabled={disabled}
                     onChange={(e) => setFormData(prev => ({ ...prev, [name]: e.target.value }))}
                     className={cn(
-                        "w-full pl-9 pr-3 py-2 text-[11px] font-bold rounded-xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:border-indigo-500/50 outline-none transition-all",
-                        disabled && "bg-zinc-50 dark:bg-zinc-950 text-zinc-400 cursor-not-allowed"
+                        "input pl-9 pr-3 py-2 text-[11px] font-semibold",
+                        disabled && "bg-surface-alt text-subtle cursor-not-allowed"
                     )}
                     placeholder={placeholder}
                 />
@@ -260,16 +260,16 @@ export default function ProfileEditor() {
     return (
         <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
             {/* LinkedIn Style Header Card */}
-            <div className="relative bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800 shadow-xl overflow-hidden group">
+            <div className="relative card overflow-hidden group">
                 {/* Banner */}
                 <div
-                    className="h-48 w-full relative bg-zinc-100 dark:bg-zinc-800"
+                    className="h-48 w-full relative bg-surface-alt"
                     style={formData.bannerURL ? { backgroundImage: `url(${formData.bannerURL})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
                 >
                     {!formData.bannerURL && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-80" />
+                        <div className="absolute inset-0 bg-primary-gradient opacity-80" />
                     )}
-                    <label className="absolute top-6 right-6 p-3 bg-black/20 backdrop-blur-md rounded-2xl text-white hover:bg-black/40 transition-all border border-white/10 opacity-0 group-hover:opacity-100 cursor-pointer flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                    <label className="absolute top-6 right-6 p-3 bg-overlay backdrop-blur-md rounded-2xl text-hero transition-all border border-subtle opacity-0 group-hover:opacity-100 cursor-pointer flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
                         <Upload className="w-3.5 h-3.5" />
                         Update Banner
                         <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'banner')} />
@@ -280,14 +280,14 @@ export default function ProfileEditor() {
                 <div className="px-10 pb-10">
                     <div className="relative -mt-20 mb-6 flex justify-between items-end">
                         <div className="relative group/avatar">
-                            <div className="w-40 h-40 rounded-full border-[6px] border-white dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-800 shadow-2xl overflow-hidden relative">
+                            <div className="w-40 h-40 rounded-full border-[6px] border-surface bg-surface-alt shadow-float overflow-hidden relative">
                                 <img
                                     src={formData.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.displayName || user?.uid}`}
                                     className="w-full h-full object-cover group-hover/avatar:scale-110 transition-transform duration-700"
                                 />
-                                <label className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer">
-                                    <Camera className="w-8 h-8 text-white mb-2" />
-                                    <span className="text-[8px] font-black uppercase tracking-widest text-white">Update Photo</span>
+                                <label className="absolute inset-0 bg-overlay flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer">
+                                    <Camera className="w-8 h-8 text-hero mb-2" />
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-hero">Update Photo</span>
                                     <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'avatar')} />
                                 </label>
                             </div>
@@ -296,14 +296,14 @@ export default function ProfileEditor() {
                             <button
                                 onClick={handleUpdate}
                                 disabled={loading}
-                                className="px-8 py-3 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg hover:scale-[1.02] active:scale-95 disabled:opacity-50 flex items-center gap-2"
+                                className="btn-primary text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 disabled:opacity-50 flex items-center gap-2 px-8 py-3"
                             >
                                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                 Sync Registry
                             </button>
                             <button
                                 onClick={() => setShowConnections(true)}
-                                className="px-8 py-3 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 rounded-2xl font-black text-xs uppercase tracking-widest transition-all text-zinc-600 dark:text-zinc-400 flex items-center gap-2"
+                                className="btn-secondary text-xs uppercase tracking-widest flex items-center gap-2 px-8 py-3"
                             >
                                 <Users className="w-4 h-4" />
                                 Connections ({formData.connectionCount})
@@ -314,35 +314,35 @@ export default function ProfileEditor() {
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <div className="space-y-1">
-                                <h1 className="text-4xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50">
+                                <h1 className="text-h1 text-strong">
                                     {formData.displayName || "Node_Alpha"}
                                 </h1>
-                                <p className="text-lg font-medium text-zinc-500">
+                                <p className="text-lg font-medium text-muted">
                                     {formData.role} • {formData.about?.split('.')[0] || "Strategic Ecosystem Node"}
                                 </p>
                                 <div className="flex items-center gap-4 pt-2">
-                                    <div className="flex items-center gap-1.5 text-zinc-400 text-xs font-bold">
+                                    <div className="flex items-center gap-1.5 text-subtle text-xs font-bold">
                                         <MapPin className="w-3.5 h-3.5" />
                                         {formData.location || "Global Node"}
                                     </div>
-                                    <div className="w-1 h-1 bg-zinc-300 rounded-full" />
-                                    <div className="text-indigo-500 text-xs font-black uppercase tracking-widest cursor-pointer hover:underline" onClick={() => setShowConnections(true)}>
+                                    <div className="w-1 h-1 bg-subtle rounded-full" />
+                                    <div className="text-primary text-xs font-black uppercase tracking-widest cursor-pointer hover:underline" onClick={() => setShowConnections(true)}>
                                         {formData.connectionCount} Connections
                                     </div>
                                 </div>
                             </div>
                             <div className="hidden md:flex flex-col items-end gap-3 text-right">
                                 <div className="flex items-center gap-2 group cursor-pointer">
-                                    <div className="w-8 h-8 rounded-lg bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center border border-zinc-100 dark:border-zinc-800">
-                                        <GraduationCap className="w-4 h-4 text-zinc-400 group-hover:text-indigo-500 transition-colors" />
+                                    <div className="w-8 h-8 rounded-lg bg-surface-alt flex items-center justify-center border border-subtle">
+                                        <GraduationCap className="w-4 h-4 text-subtle group-hover:text-primary transition-colors" />
                                     </div>
-                                    <span className="text-sm font-bold text-zinc-600 dark:text-zinc-400">{formData.education || "University of Innovation"}</span>
+                                    <span className="text-sm font-bold text-muted">{formData.education || "University of Innovation"}</span>
                                 </div>
                                 <div className="flex items-center gap-2 group cursor-pointer">
-                                    <div className="w-8 h-8 rounded-lg bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center border border-zinc-100 dark:border-zinc-800">
-                                        <Rocket className="w-4 h-4 text-zinc-400 group-hover:text-indigo-500 transition-colors" />
+                                    <div className="w-8 h-8 rounded-lg bg-surface-alt flex items-center justify-center border border-subtle">
+                                        <Rocket className="w-4 h-4 text-subtle group-hover:text-primary transition-colors" />
                                     </div>
-                                    <span className="text-sm font-bold text-zinc-600 dark:text-zinc-400">Founder Score: {formData.score}/100</span>
+                                    <span className="text-sm font-bold text-muted">Founder Score: {formData.score}/100</span>
                                 </div>
                             </div>
                         </div>
@@ -353,12 +353,12 @@ export default function ProfileEditor() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Main Rail */}
                 <div className="lg:col-span-8 space-y-8">
-                    <section className="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 p-10 space-y-6">
+                    <section className="card p-10 space-y-6">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-xl font-black tracking-tight">About</h3>
+                            <h3 className="text-h3 text-strong">About</h3>
                             <button
                                 onClick={() => handleUpdate()}
-                                className="p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-colors text-zinc-400"
+                                className="p-2 hover:bg-surface-alt dark:hover:bg-surface-alt rounded-xl transition-colors text-subtle"
                             >
                                 <Save className="w-4 h-4" />
                             </button>
@@ -366,25 +366,25 @@ export default function ProfileEditor() {
                         <textarea
                             value={formData.about}
                             onChange={(e) => setFormData(prev => ({ ...prev, about: e.target.value }))}
-                            className="w-full bg-transparent text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed outline-none resize-none"
+                            className="w-full bg-transparent text-muted font-medium leading-relaxed outline-none resize-none"
                             placeholder="Share your strategic vision and core background..."
                             rows={4}
                         />
                     </section>
 
-                    <section className="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 p-10 space-y-8">
+                    <section className="card p-10 space-y-8">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-xl font-black tracking-tight">Experience & Ventures</h3>
+                            <h3 className="text-h3 text-strong">Experience & Ventures</h3>
                             <div className="flex items-center gap-2">
-                                <button onClick={handleAddProject} className="p-2 bg-indigo-500/10 text-indigo-500 rounded-xl hover:bg-indigo-500/20 transition-all"><Plus className="w-4 h-4" /></button>
-                                <button onClick={() => handleUpdate()} className="p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-colors text-zinc-400"><Save className="w-4 h-4" /></button>
+                                <button onClick={handleAddProject} className="p-2 bg-primary-soft text-primary rounded-xl hover:bg-primary-soft transition-all"><Plus className="w-4 h-4" /></button>
+                                <button onClick={() => handleUpdate()} className="p-2 hover:bg-surface-alt dark:hover:bg-surface-alt rounded-xl transition-colors text-subtle"><Save className="w-4 h-4" /></button>
                             </div>
                         </div>
                         <div className="space-y-10">
                             {formData.projects.map((project, index) => (
                                 <div key={index} className="flex gap-6 relative group">
-                                    <div className="w-14 h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800 flex items-center justify-center shrink-0">
-                                        <Briefcase className="w-6 h-6 text-zinc-400" />
+                                    <div className="w-14 h-14 rounded-2xl bg-surface-alt border border-subtle flex items-center justify-center shrink-0">
+                                        <Briefcase className="w-6 h-6 text-subtle" />
                                     </div>
                                     <div className="space-y-2 flex-1 pt-1">
                                         <div className="flex items-center justify-between">
@@ -394,18 +394,18 @@ export default function ProfileEditor() {
                                                 className="text-lg font-black bg-transparent outline-none w-full"
                                                 placeholder="Venture Name"
                                             />
-                                            <button onClick={() => handleRemoveProject(index)} className="opacity-0 group-hover:opacity-100 p-1.5 text-zinc-400 hover:text-red-500 transition-all"><Trash2 className="w-4 h-4" /></button>
+                                            <button onClick={() => handleRemoveProject(index)} className="opacity-0 group-hover:opacity-100 p-1.5 text-subtle hover:text-danger transition-all"><Trash2 className="w-4 h-4" /></button>
                                         </div>
                                         <input
                                             value={project.role}
                                             onChange={(e) => handleProjectChange(index, "role", e.target.value)}
-                                            className="text-sm font-bold text-indigo-500 bg-transparent outline-none w-full"
+                                            className="text-sm font-bold text-primary bg-transparent outline-none w-full"
                                             placeholder="Your Role (e.g. Founder & CEO)"
                                         />
                                         <textarea
                                             value={project.description}
                                             onChange={(e) => handleProjectChange(index, "description", e.target.value)}
-                                            className="text-[13px] text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed bg-transparent outline-none w-full resize-none"
+                                            className="text-[13px] text-muted font-medium leading-relaxed bg-transparent outline-none w-full resize-none"
                                             placeholder="Describe your impact and mission..."
                                             rows={2}
                                         />
@@ -415,16 +415,16 @@ export default function ProfileEditor() {
                         </div>
                     </section>
 
-                    <section className="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 p-10 space-y-6">
+                    <section className="card p-10 space-y-6">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-xl font-black tracking-tight">Ecosystem Skills</h3>
-                            <button onClick={() => handleUpdate()} className="p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-colors text-zinc-400"><Save className="w-4 h-4" /></button>
+                            <h3 className="text-h3 text-strong">Ecosystem Skills</h3>
+                            <button onClick={() => handleUpdate()} className="p-2 hover:bg-surface-alt dark:hover:bg-surface-alt rounded-xl transition-colors text-subtle"><Save className="w-4 h-4" /></button>
                         </div>
                         <div className="flex flex-wrap gap-3">
                             {formData.skills.split(',').map((skill, i) => skill.trim() && (
-                                <div key={i} className="px-5 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800 rounded-2xl text-[11px] font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-400 hover:border-indigo-500/30 transition-all flex items-center gap-2 group cursor-default">
+                                <div key={i} className="px-5 py-2.5 bg-surface-alt border border-subtle rounded-2xl text-[11px] font-black uppercase tracking-widest text-muted hover:border-primary transition-all flex items-center gap-2 group cursor-default">
                                     {skill.trim()}
-                                    <Star className="w-3 h-3 text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <Star className="w-3 h-3 text-warning opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
                             ))}
                         </div>
@@ -432,7 +432,7 @@ export default function ProfileEditor() {
                             value={formData.skills}
                             onChange={(e) => setFormData(prev => ({ ...prev, skills: e.target.value }))}
                             placeholder="Update skills (comma separated)..."
-                            className="w-full pt-4 bg-transparent border-t border-zinc-50 dark:border-zinc-800 mt-4 outline-none text-xs text-zinc-400 font-bold uppercase tracking-widest"
+                            className="w-full pt-4 bg-transparent border-t border-subtle mt-4 outline-none text-xs text-subtle font-bold uppercase tracking-widest"
                         />
                     </section>
                 </div>
@@ -440,15 +440,15 @@ export default function ProfileEditor() {
                 {/* Right Rail */}
                 <div className="lg:col-span-4 space-y-8">
                     {/* Public Links Card */}
-                    <section className="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 p-8 space-y-6">
+                    <section className="card p-8 space-y-6">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-black tracking-tight">Public Registry</h3>
-                            <button onClick={() => handleUpdate()} className="p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-colors text-zinc-400"><Save className="w-4 h-4" /></button>
+                            <h3 className="text-h3 text-strong">Public Registry</h3>
+                            <button onClick={() => handleUpdate()} className="p-2 hover:bg-surface-alt rounded-xl transition-colors text-subtle"><Save className="w-4 h-4" /></button>
                         </div>
                         <div className="space-y-4">
 
-                            <div className="flex items-center gap-4 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800">
-                                <Globe className="w-5 h-5 text-blue-500" />
+                            <div className="flex items-center gap-4 p-3 rounded-2xl bg-surface-alt border border-subtle">
+                                <Globe className="w-5 h-5 text-info" />
                                 <input
                                     value={formData.socialLinks.website}
                                     onChange={(e) => handleSocialChange("website", e.target.value)}
@@ -456,50 +456,50 @@ export default function ProfileEditor() {
                                     placeholder="Portfolio URL"
                                 />
                             </div>
-                            <div className="flex items-center gap-4 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-800">
-                                <ShieldCheck className="w-5 h-5 text-green-500" />
-                                <span className="text-[10px] font-black uppercase text-zinc-400">Identity Secure</span>
+                            <div className="flex items-center gap-4 p-3 rounded-2xl bg-surface-alt border border-subtle">
+                                <ShieldCheck className="w-5 h-5 text-success" />
+                                <span className="text-[10px] font-black uppercase text-subtle">Identity Secure</span>
                             </div>
                         </div>
                     </section>
 
-                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-zinc-500/10 rounded-full blur-3xl opacity-20" />
+                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary-soft rounded-full blur-3xl opacity-40" />
 
                     {/* Metadata Section */}
-                    <section className="bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-100 dark:border-zinc-800 p-8 space-y-6">
+                    <section className="card p-8 space-y-6">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-black tracking-tight uppercase">Node Registry</h3>
-                            <button onClick={() => handleUpdate()} className="p-1.5 bg-indigo-500/10 text-indigo-500 rounded-lg hover:bg-indigo-500/20 transition-all"><Save className="w-3.5 h-3.5" /></button>
+                            <h3 className="text-h3 text-strong uppercase">Node Registry</h3>
+                            <button onClick={() => handleUpdate()} className="p-1.5 bg-primary-soft text-primary rounded-lg hover:bg-primary-soft transition-all"><Save className="w-3.5 h-3.5" /></button>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5 flex-1">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 pl-1">Age Identity</label>
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-subtle pl-1">Age Identity</label>
                                 <input
                                     type="number"
                                     value={formData.age}
                                     onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
-                                    className="w-full px-4 py-2.5 text-[11px] font-bold rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/50 outline-none focus:border-indigo-500/50 transition-all font-mono"
+                                    className="input px-4 py-2.5 text-[11px] font-semibold font-mono bg-surface-alt"
                                     placeholder="N/A"
                                 />
                             </div>
                             <div className="space-y-1.5 flex-1">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 pl-1">Venture Role</label>
-                                <div className="px-4 py-3 text-[11px] font-bold rounded-xl bg-zinc-50 dark:bg-zinc-950/50 text-zinc-400 border border-zinc-100 dark:border-zinc-800 italic truncate">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-subtle pl-1">Venture Role</label>
+                                <div className="px-4 py-3 text-[11px] font-semibold rounded-xl bg-surface-alt text-subtle border border-subtle italic truncate">
                                     {formData.role}
                                 </div>
                             </div>
                         </div>
                         <InputField label="Contact Vector" icon={Phone} name="phone" placeholder="+91 00000 00000" />
 
-                        <div className="pt-4 border-t border-zinc-50 dark:border-zinc-800">
+                        <div className="pt-4 border-t border-subtle">
                             <button
                                 onClick={handlePasswordReset}
-                                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
+                                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-surface-alt border border-subtle hover:bg-surface transition-all"
                             >
-                                <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-zinc-400"><Lock className="w-3.5 h-3.5 opacity-40" /> Reset Auth Keys</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-subtle"><Lock className="w-3.5 h-3.5 opacity-40" /> Reset Auth Keys</span>
                                 <ChevronRight className="w-3.5 h-3.5 opacity-20" />
                             </button>
-                            {resetSent && <p className="mt-2 text-center text-[10px] text-indigo-500 font-bold uppercase tracking-widest">Reset Link Dispatched</p>}
+                            {resetSent && <p className="mt-2 text-center text-[10px] text-primary font-bold uppercase tracking-widest">Reset Link Dispatched</p>}
                         </div>
                     </section>
                 </div>
@@ -512,39 +512,39 @@ export default function ProfileEditor() {
                         <motion.div
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                             onClick={() => setShowConnections(false)}
-                            className="absolute inset-0 bg-zinc-950/60 backdrop-blur-sm"
+                            className="absolute inset-0 bg-overlay backdrop-blur-sm"
                         />
                         <motion.div
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            className="relative w-full max-w-md bg-white dark:bg-zinc-900 rounded-[2.5rem] shadow-2xl border border-zinc-100 dark:border-zinc-800 p-8"
+                            className="relative w-full max-w-md modal p-8"
                         >
                             <div className="flex items-center justify-between mb-8">
-                                <h3 className="text-xl font-black tracking-tight">Venture Partners</h3>
-                                <button onClick={() => setShowConnections(false)} className="p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-colors">
-                                    <X className="w-5 h-5 text-zinc-400" />
+                                <h3 className="text-h3 text-strong">Venture Partners</h3>
+                                <button onClick={() => setShowConnections(false)} className="p-2 hover:bg-surface-alt dark:hover:bg-surface-alt rounded-xl transition-colors">
+                                    <X className="w-5 h-5 text-subtle" />
                                 </button>
                             </div>
 
                             <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                 {connectedUsers.length > 0 ? connectedUsers.map((u) => (
-                                    <div key={u.uid} className="flex items-center gap-4 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 group hover:border-indigo-500/20 transition-all">
-                                        <div className="w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 flex items-center justify-center overflow-hidden border border-zinc-100 dark:border-zinc-800 shadow-sm">
+                                    <div key={u.uid} className="flex items-center gap-4 p-4 rounded-2xl bg-surface-alt border border-subtle group hover:border-primary transition-all">
+                                        <div className="w-12 h-12 rounded-xl bg-surface flex items-center justify-center overflow-hidden border border-subtle shadow-sm">
                                             <img src={u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.displayName || u.uid}`} className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-50 truncate">{u.displayName}</h4>
-                                            <p className="text-[10px] font-black uppercase text-indigo-500 tracking-widest truncate">{u.role || "Founder"}</p>
+                                            <h4 className="text-sm font-bold text-strong truncate">{u.displayName}</h4>
+                                            <p className="text-[10px] font-black uppercase text-primary tracking-widest truncate">{u.role || "Founder"}</p>
                                         </div>
-                                        <button className="p-2 text-zinc-400 hover:text-indigo-500 transition-colors">
+                                        <button className="p-2 text-subtle hover:text-primary transition-colors">
                                             <ExternalLink className="w-4 h-4" />
                                         </button>
                                     </div>
                                 )) : (
                                     <div className="text-center py-12 space-y-4">
-                                        <Users className="w-12 h-12 text-zinc-100 dark:text-zinc-800 mx-auto" />
-                                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest leading-relaxed"> No verified connections found <br /> in the network registry. </p>
+                                        <Users className="w-12 h-12 text-subtle dark:text-strong mx-auto" />
+                                        <p className="text-xs font-bold text-subtle uppercase tracking-widest leading-relaxed"> No verified connections found <br /> in the network registry. </p>
                                     </div>
                                 )}
                             </div>

@@ -43,23 +43,23 @@ export default function AdminStartupsPage() {
         }
     };
 
-    if (loading) return <div className="text-zinc-500">Loading startups...</div>;
+    if (loading) return <div className="text-muted">Loading startups...</div>;
 
     return (
         <div className="space-y-6">
             <header className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-white">Startup Database</h1>
-                    <p className="text-zinc-400">Monitor new ventures and their growth.</p>
+                    <p className="text-subtle">Monitor new ventures and their growth.</p>
                 </div>
-                <div className="px-3 py-1 bg-zinc-900 rounded-full border border-zinc-800 text-xs text-zinc-400">
+                <div className="px-3 py-1 bg-surface rounded-full border border-subtle text-xs text-subtle">
                     Total: {startups.length}
                 </div>
             </header>
 
-            <div className="border border-zinc-800 rounded-xl overflow-hidden">
-                <table className="w-full text-sm text-left text-zinc-400">
-                    <thead className="text-xs uppercase bg-zinc-900 text-zinc-500">
+            <div className="border border-subtle rounded-xl overflow-hidden">
+                <table className="w-full text-sm text-left text-subtle">
+                    <thead className="text-xs uppercase bg-surface text-muted">
                         <tr>
                             <th className="px-6 py-3">Startup</th>
                             <th className="px-6 py-3">Idea</th>
@@ -68,9 +68,9 @@ export default function AdminStartupsPage() {
                             <th className="px-6 py-3 text-right">Action</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-zinc-800 bg-zinc-950">
+                    <tbody className="divide-y divide-zinc-800 bg-surface">
                         {startups.map((startup) => (
-                            <tr key={startup.id} className="hover:bg-zinc-900/50 transition-colors">
+                            <tr key={startup.id} className="hover:bg-surface/50 transition-colors">
                                 <td className="px-6 py-4 font-medium text-white">
                                     {startup.name || "Untitled Startup"}
                                 </td>
@@ -80,7 +80,7 @@ export default function AdminStartupsPage() {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className="px-2 py-1 rounded text-xs font-bold uppercase bg-purple-900/30 text-purple-400">
+                                    <span className="px-2 py-1 rounded text-xs font-bold uppercase bg-secondary-soft text-secondary">
                                         {startup.stage?.replace(/_/g, " ") || "NEW"}
                                     </span>
                                 </td>
@@ -92,7 +92,7 @@ export default function AdminStartupsPage() {
                                 <td className="px-6 py-4 text-right">
                                     <button
                                         onClick={() => handleDelete(startup.id)}
-                                        className="text-red-500 hover:text-red-400 hover:bg-red-950/30 p-2 rounded-lg transition-all"
+                                        className="text-danger hover:text-danger hover:bg-danger-soft p-2 rounded-lg transition-all"
                                         title="Delete Startup"
                                     >
                                         <Trash2 className="w-4 h-4" />

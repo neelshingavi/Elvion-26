@@ -69,7 +69,7 @@ const DEFAULT_PHASES: Phase[] = [
         description: "Core setup and initial validation",
         startMonth: 1,
         endMonth: 3,
-        color: "from-blue-500 to-cyan-500",
+        color: "bg-info",
         goals: []
     },
     {
@@ -78,7 +78,7 @@ const DEFAULT_PHASES: Phase[] = [
         description: "Product-market fit experiments",
         startMonth: 3,
         endMonth: 6,
-        color: "from-purple-500 to-indigo-500",
+        color: "bg-primary",
         goals: []
     },
     {
@@ -87,7 +87,7 @@ const DEFAULT_PHASES: Phase[] = [
         description: "Scale what works",
         startMonth: 6,
         endMonth: 12,
-        color: "from-green-500 to-emerald-500",
+        color: "bg-success",
         goals: []
     },
     {
@@ -96,7 +96,7 @@ const DEFAULT_PHASES: Phase[] = [
         description: "Market expansion",
         startMonth: 12,
         endMonth: 24,
-        color: "from-orange-500 to-amber-500",
+        color: "bg-warning",
         goals: []
     }
 ];
@@ -335,8 +335,8 @@ export default function RoadmapPage() {
         return (
             <div className="flex min-h-screen items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="w-10 h-10 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-zinc-500">Loading roadmap...</span>
+                    <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm text-muted">Loading roadmap...</span>
                 </div>
             </div>
         );
@@ -345,31 +345,31 @@ export default function RoadmapPage() {
     const hasGoals = phases.some(p => p.goals.length > 0);
 
     return (
-        <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] p-6 md:p-8">
+        <div className="min-h-screen bg-app p-6 md:p-8">
             <div className="max-w-6xl mx-auto space-y-8">
 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                            <Target className="w-8 h-8 text-indigo-500" />
+                        <h1 className="text-h1 flex items-center gap-3">
+                            <Target className="w-8 h-8 text-primary" />
                             Strategic Roadmap
                         </h1>
-                        <p className="text-zinc-500 mt-1">
+                        <p className="text-muted mt-1">
                             Goal-oriented execution plan with milestones and dependencies
                         </p>
                     </div>
 
                     <div className="flex items-center gap-3">
                         {/* View Toggle */}
-                        <div className="flex bg-zinc-100 dark:bg-zinc-800 rounded-xl p-1">
+                        <div className="flex bg-surface-alt rounded-xl p-1">
                             <button
                                 onClick={() => setViewMode("timeline")}
                                 className={cn(
                                     "px-4 py-2 rounded-lg text-sm font-medium transition-all",
                                     viewMode === "timeline"
-                                        ? "bg-white dark:bg-zinc-700 shadow-sm"
-                                        : "text-zinc-500 hover:text-zinc-700"
+                                        ? "bg-surface  shadow-sm"
+                                        : "text-muted hover:text-muted"
                                 )}
                             >
                                 Timeline
@@ -379,8 +379,8 @@ export default function RoadmapPage() {
                                 className={cn(
                                     "px-4 py-2 rounded-lg text-sm font-medium transition-all",
                                     viewMode === "list"
-                                        ? "bg-white dark:bg-zinc-700 shadow-sm"
-                                        : "text-zinc-500 hover:text-zinc-700"
+                                        ? "bg-surface  shadow-sm"
+                                        : "text-muted hover:text-muted"
                                 )}
                             >
                                 List
@@ -391,7 +391,7 @@ export default function RoadmapPage() {
                             <button
                                 onClick={generateRoadmap}
                                 disabled={generating}
-                                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm hover:scale-105 transition-all disabled:opacity-50"
+                                className="btn-primary text-sm hover:scale-105 transition-all disabled:opacity-50 px-6 py-3"
                             >
                                 {generating ? (
                                     <>
@@ -408,7 +408,7 @@ export default function RoadmapPage() {
                         ) : (
                             <button
                                 onClick={() => setShowAddGoal(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 rounded-xl font-bold text-sm hover:scale-105 transition-all"
+                                className="btn-secondary text-sm hover:scale-105 transition-all px-4 py-2"
                             >
                                 <Plus className="w-4 h-4" />
                                 Add Goal
@@ -420,34 +420,34 @@ export default function RoadmapPage() {
                 {/* Progress Overview */}
                 {hasGoals && (
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div className="md:col-span-2 p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                        <div className="md:col-span-2 card p-6">
                             <div className="flex items-center justify-between mb-4">
-                                <span className="text-sm font-bold text-zinc-500">Overall Progress</span>
-                                <span className="text-2xl font-black text-indigo-500">{overallProgress()}%</span>
+                                <span className="text-sm font-bold text-muted">Overall Progress</span>
+                                <span className="text-2xl font-black text-primary">{overallProgress()}%</span>
                             </div>
-                            <div className="w-full h-4 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                            <div className="w-full h-4 bg-surface-alt rounded-full overflow-hidden">
                                 <div
-                                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
+                                    className="h-full bg-primary rounded-full transition-all duration-500"
                                     style={{ width: `${overallProgress()}%` }}
                                 />
                             </div>
                         </div>
 
-                        <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                        <div className="card p-6">
                             <div className="flex items-center gap-3 mb-2">
-                                <Flag className="w-5 h-5 text-green-500" />
-                                <span className="text-sm font-bold text-zinc-500">Goals</span>
+                                <Flag className="w-5 h-5 text-success" />
+                                <span className="text-sm font-bold text-muted">Goals</span>
                             </div>
                             <div className="text-2xl font-black">
                                 {phases.reduce((acc, p) => acc + p.goals.filter(g => g.status === "achieved").length, 0)}
-                                <span className="text-zinc-400 text-lg"> / {phases.reduce((acc, p) => acc + p.goals.length, 0)}</span>
+                                <span className="text-subtle text-lg"> / {phases.reduce((acc, p) => acc + p.goals.length, 0)}</span>
                             </div>
                         </div>
 
-                        <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+                        <div className="card p-6">
                             <div className="flex items-center gap-3 mb-2">
-                                <TrendingUp className="w-5 h-5 text-blue-500" />
-                                <span className="text-sm font-bold text-zinc-500">Active Phase</span>
+                                <TrendingUp className="w-5 h-5 text-info" />
+                                <span className="text-sm font-bold text-muted">Active Phase</span>
                             </div>
                             <div className="text-xl font-black">
                                 {phases.find(p => p.goals.some(g => g.status === "active"))?.title || "Foundation"}
@@ -457,33 +457,33 @@ export default function RoadmapPage() {
                 )}
 
                 {/* Empty State */}
-                {!hasGoals && !generating && (
-                    <div className="py-20 text-center">
-                        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                            <Target className="w-10 h-10 text-indigo-500" />
+                    {!hasGoals && !generating && (
+                        <div className="py-20 text-center">
+                            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary-soft flex items-center justify-center">
+                                <Target className="w-10 h-10 text-primary" />
+                            </div>
+                            <h2 className="text-h2 text-strong mb-2">No Roadmap Yet</h2>
+                            <p className="text-muted max-w-md mx-auto mb-8">
+                                Generate an AI-powered roadmap based on your startup context, or create goals manually.
+                            </p>
+                            <div className="flex items-center justify-center gap-4">
+                                <button
+                                    onClick={generateRoadmap}
+                                    className="btn-primary hover:scale-105 transition-all px-6 py-3"
+                                >
+                                    <Sparkles className="w-5 h-5" />
+                                    Generate AI Roadmap
+                                </button>
+                                <button
+                                    onClick={() => setShowAddGoal(true)}
+                                    className="btn-secondary px-6 py-3"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                    Create Manually
+                                </button>
+                            </div>
                         </div>
-                        <h2 className="text-2xl font-black mb-2">No Roadmap Yet</h2>
-                        <p className="text-zinc-500 max-w-md mx-auto mb-8">
-                            Generate an AI-powered roadmap based on your startup context, or create goals manually.
-                        </p>
-                        <div className="flex items-center justify-center gap-4">
-                            <button
-                                onClick={generateRoadmap}
-                                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:scale-105 transition-all"
-                            >
-                                <Sparkles className="w-5 h-5" />
-                                Generate AI Roadmap
-                            </button>
-                            <button
-                                onClick={() => setShowAddGoal(true)}
-                                className="flex items-center gap-2 px-6 py-3 border border-zinc-300 dark:border-zinc-700 rounded-xl font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all"
-                            >
-                                <Plus className="w-5 h-5" />
-                                Create Manually
-                            </button>
-                        </div>
-                    </div>
-                )}
+                    )}
 
                 {/* Timeline View */}
                 {hasGoals && viewMode === "timeline" && (
@@ -501,38 +501,38 @@ export default function RoadmapPage() {
                                     className={cn(
                                         "p-6 rounded-2xl cursor-pointer transition-all",
                                         selectedPhase === phase.id
-                                            ? "bg-white dark:bg-zinc-900 shadow-lg border border-zinc-200 dark:border-zinc-800"
-                                            : "bg-zinc-50 dark:bg-zinc-900/50 hover:bg-white dark:hover:bg-zinc-900"
+                                            ? "bg-surface  shadow-lg border border-subtle "
+                                            : "bg-surface-alt hover:bg-surface"
                                     )}
                                     onClick={() => setSelectedPhase(selectedPhase === phase.id ? null : phase.id)}
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-4">
                                             <div className={cn(
-                                                "w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-black text-lg",
+                                                "w-12 h-12 radius-control flex items-center justify-center text-on-primary font-black text-lg",
                                                 phase.color
                                             )}>
                                                 {phaseIndex + 1}
                                             </div>
                                             <div>
                                                 <h3 className="font-black text-lg">{phase.title}</h3>
-                                                <p className="text-sm text-zinc-500">{phase.description}</p>
+                                                <p className="text-sm text-muted">{phase.description}</p>
                                             </div>
                                         </div>
 
                                         <div className="flex items-center gap-4">
                                             <div className="text-right">
-                                                <div className="text-xs text-zinc-400">Timeline</div>
+                                                <div className="text-xs text-subtle">Timeline</div>
                                                 <div className="font-bold">
                                                     Month {phase.startMonth} - {phase.endMonth}
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <div className="text-xs text-zinc-400">Goals</div>
+                                                <div className="text-xs text-subtle">Goals</div>
                                                 <div className="font-bold">{phase.goals.length}</div>
                                             </div>
                                             <ChevronDown className={cn(
-                                                "w-5 h-5 text-zinc-400 transition-transform",
+                                                "w-5 h-5 text-subtle transition-transform",
                                                 selectedPhase === phase.id && "rotate-180"
                                             )} />
                                         </div>
@@ -546,24 +546,24 @@ export default function RoadmapPage() {
                                             initial={{ opacity: 0, height: 0 }}
                                             animate={{ opacity: 1, height: "auto" }}
                                             exit={{ opacity: 0, height: 0 }}
-                                            className="mt-4 ml-8 pl-8 border-l-2 border-zinc-200 dark:border-zinc-800 space-y-4"
+                                        className="mt-4 ml-8 pl-8 border-l-2 border-subtle space-y-4"
                                         >
                                             {phase.goals.map((goal) => (
                                                 <div
                                                     key={goal.id}
-                                                    className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden"
+                                                    className="bg-surface rounded-xl border border-subtle overflow-hidden"
                                                 >
                                                     {/* Goal Header */}
                                                     <div
-                                                        className="p-4 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-all"
+                                                        className="p-4 cursor-pointer hover:bg-surface-alt transition-all"
                                                         onClick={() => toggleGoalExpand(goal.id)}
                                                     >
                                                         <div className="flex items-center gap-4">
                                                             <div className={cn(
                                                                 "w-10 h-10 rounded-lg flex items-center justify-center",
                                                                 goal.status === "achieved"
-                                                                    ? "bg-green-100 dark:bg-green-900/30 text-green-600"
-                                                                    : "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600"
+                                                                    ? "bg-success-soft text-success"
+                                                                    : "bg-primary-soft text-primary"
                                                             )}>
                                                                 {goal.status === "achieved"
                                                                     ? <CheckCircle2 className="w-5 h-5" />
@@ -572,24 +572,24 @@ export default function RoadmapPage() {
                                                             </div>
                                                             <div className="flex-1">
                                                                 <h4 className="font-bold">{goal.title}</h4>
-                                                                <p className="text-sm text-zinc-500">{goal.description}</p>
+                                                                <p className="text-sm text-muted">{goal.description}</p>
                                                             </div>
                                                             <div className="flex items-center gap-4">
                                                                 {/* Progress */}
                                                                 <div className="w-24">
                                                                     <div className="flex items-center justify-between text-xs mb-1">
-                                                                        <span className="text-zinc-400">Progress</span>
-                                                                        <span className="font-bold text-indigo-500">{goal.progress}%</span>
+                                                                        <span className="text-subtle">Progress</span>
+                                                                        <span className="font-bold text-primary">{goal.progress}%</span>
                                                                     </div>
-                                                                    <div className="w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                                                    <div className="w-full h-2 bg-surface-alt rounded-full overflow-hidden">
                                                                         <div
-                                                                            className="h-full bg-indigo-500 rounded-full transition-all"
+                                                                            className="h-full bg-primary rounded-full transition-all"
                                                                             style={{ width: `${goal.progress}%` }}
                                                                         />
                                                                     </div>
                                                                 </div>
                                                                 <ChevronRight className={cn(
-                                                                    "w-5 h-5 text-zinc-400 transition-transform",
+                                                                    "w-5 h-5 text-subtle transition-transform",
                                                                     expandedGoals.has(goal.id) && "rotate-90"
                                                                 )} />
                                                             </div>
@@ -603,16 +603,16 @@ export default function RoadmapPage() {
                                                                 initial={{ opacity: 0, height: 0 }}
                                                                 animate={{ opacity: 1, height: "auto" }}
                                                                 exit={{ opacity: 0, height: 0 }}
-                                                                className="border-t border-zinc-100 dark:border-zinc-800 p-4 bg-zinc-50 dark:bg-zinc-800/30"
+                                                                className="border-t border-subtle p-4 bg-surface-alt"
                                                             >
-                                                                <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-3">
+                                                                <p className="text-xs font-bold uppercase tracking-widest text-subtle mb-3">
                                                                     Milestones
                                                                 </p>
                                                                 <div className="space-y-2">
                                                                     {goal.milestones.map((milestone) => (
                                                                         <div
                                                                             key={milestone.id}
-                                                                            className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-900 rounded-lg"
+                                                                            className="flex items-center gap-3 p-3 bg-surface rounded-lg"
                                                                         >
                                                                             <button
                                                                                 onClick={() => updateMilestoneStatus(
@@ -624,8 +624,8 @@ export default function RoadmapPage() {
                                                                                 className={cn(
                                                                                     "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
                                                                                     milestone.status === "achieved"
-                                                                                        ? "bg-green-500 border-green-500 text-white"
-                                                                                        : "border-zinc-300 hover:border-indigo-500"
+                                                                                        ? "bg-success border-success text-on-primary"
+                                                                                        : "border-subtle hover:border-primary"
                                                                                 )}
                                                                             >
                                                                                 {milestone.status === "achieved" && (
@@ -634,12 +634,12 @@ export default function RoadmapPage() {
                                                                             </button>
                                                                             <span className={cn(
                                                                                 "flex-1",
-                                                                                milestone.status === "achieved" && "line-through text-zinc-400"
+                                                                                milestone.status === "achieved" && "line-through text-subtle"
                                                                             )}>
                                                                                 {milestone.title}
                                                                             </span>
                                                                             {milestone.dependsOn.length > 0 && (
-                                                                                <span className="text-xs text-zinc-400 flex items-center gap-1">
+                                                                                <span className="text-xs text-subtle flex items-center gap-1">
                                                                                     <LinkIcon className="w-3 h-3" />
                                                                                     {milestone.dependsOn.length} deps
                                                                                 </span>
@@ -661,16 +661,16 @@ export default function RoadmapPage() {
                                     <motion.div
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
-                                        className="mt-4 ml-8 pl-8 border-l-2 border-zinc-200 dark:border-zinc-800"
+                                        className="mt-4 ml-8 pl-8 border-l-2 border-subtle"
                                     >
-                                        <div className="p-8 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl text-center">
-                                            <p className="text-zinc-500 mb-4">No goals in this phase yet</p>
+                                        <div className="p-8 bg-surface-alt rounded-xl text-center">
+                                            <p className="text-muted mb-4">No goals in this phase yet</p>
                                             <button
                                                 onClick={() => {
                                                     setNewGoal(prev => ({ ...prev, phase: phase.id }));
                                                     setShowAddGoal(true);
                                                 }}
-                                                className="text-indigo-500 font-bold hover:text-indigo-600"
+                                                className="text-primary font-bold hover:text-primary"
                                             >
                                                 + Add Goal
                                             </button>
@@ -684,40 +684,40 @@ export default function RoadmapPage() {
 
                 {/* List View */}
                 {hasGoals && viewMode === "list" && (
-                    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                    <div className="card overflow-hidden">
                         <table className="w-full">
-                            <thead className="bg-zinc-50 dark:bg-zinc-800/50">
+                            <thead className="bg-surface-alt">
                                 <tr>
-                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-zinc-500">Goal</th>
-                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-zinc-500">Phase</th>
-                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-zinc-500">Progress</th>
-                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-zinc-500">Status</th>
-                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-zinc-500">Actions</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted">Goal</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted">Phase</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted">Progress</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted">Status</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                            <tbody className="divide-y divide-subtle">
                                 {phases.flatMap(phase => phase.goals.map(goal => (
-                                    <tr key={goal.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
+                                    <tr key={goal.id} className="hover:bg-surface-alt">
                                         <td className="px-6 py-4">
                                             <div className="font-bold">{goal.title}</div>
-                                            <div className="text-sm text-zinc-500">{goal.description}</div>
+                                            <div className="text-sm text-muted">{goal.description}</div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={cn(
                                                 "px-3 py-1 rounded-full text-xs font-bold",
-                                                phase.id === "foundation" && "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-                                                phase.id === "validation" && "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-                                                phase.id === "growth" && "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-                                                phase.id === "scale" && "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                                                phase.id === "foundation" && "bg-info-soft text-info",
+                                                phase.id === "validation" && "bg-primary-soft text-primary",
+                                                phase.id === "growth" && "bg-success-soft text-success",
+                                                phase.id === "scale" && "bg-warning-soft text-warning"
                                             )}>
                                                 {phase.title}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-20 h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                                <div className="w-20 h-2 bg-surface-alt rounded-full overflow-hidden">
                                                     <div
-                                                        className="h-full bg-indigo-500 rounded-full"
+                                                        className="h-full bg-primary rounded-full"
                                                         style={{ width: `${goal.progress}%` }}
                                                     />
                                                 </div>
@@ -727,16 +727,16 @@ export default function RoadmapPage() {
                                         <td className="px-6 py-4">
                                             <span className={cn(
                                                 "px-3 py-1 rounded-full text-xs font-bold uppercase",
-                                                goal.status === "achieved" && "bg-green-100 text-green-700",
-                                                goal.status === "active" && "bg-blue-100 text-blue-700",
-                                                goal.status === "abandoned" && "bg-zinc-100 text-zinc-700"
+                                                goal.status === "achieved" && "bg-success-soft text-success",
+                                                goal.status === "active" && "bg-info-soft text-info",
+                                                goal.status === "abandoned" && "bg-surface-alt text-muted"
                                             )}>
                                                 {goal.status}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <button className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg">
-                                                <MoreHorizontal className="w-4 h-4 text-zinc-400" />
+                                            <button className="p-2 hover:bg-surface-alt rounded-lg">
+                                                <MoreHorizontal className="w-4 h-4 text-subtle" />
                                             </button>
                                         </td>
                                     </tr>
@@ -755,20 +755,20 @@ export default function RoadmapPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/50 z-40"
+                            className="fixed inset-0 bg-overlay z-40"
                             onClick={() => setShowAddGoal(false)}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="fixed inset-x-4 top-[10%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-lg bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50"
+                            className="fixed inset-x-4 top-[10%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-lg modal z-50"
                         >
-                            <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                            <div className="p-6 border-b border-subtle flex items-center justify-between">
                                 <h2 className="text-xl font-black">Add New Goal</h2>
                                 <button
                                     onClick={() => setShowAddGoal(false)}
-                                    className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg"
+                                    className="p-2 hover:bg-surface-alt rounded-lg"
                                 >
                                     ✕
                                 </button>
@@ -776,7 +776,7 @@ export default function RoadmapPage() {
 
                             <div className="p-6 space-y-4">
                                 <div>
-                                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 block">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-muted mb-2 block">
                                         Goal Title *
                                     </label>
                                     <input
@@ -784,31 +784,31 @@ export default function RoadmapPage() {
                                         value={newGoal.title}
                                         onChange={(e) => setNewGoal(prev => ({ ...prev, title: e.target.value }))}
                                         placeholder="e.g., Launch MVP"
-                                        className="w-full p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="input"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 block">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-muted mb-2 block">
                                         Description
                                     </label>
                                     <textarea
                                         value={newGoal.description}
                                         onChange={(e) => setNewGoal(prev => ({ ...prev, description: e.target.value }))}
                                         placeholder="Describe the goal..."
-                                        className="w-full p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500 outline-none resize-none h-20"
+                                        className="input h-20 resize-none"
                                     />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 block">
+                                        <label className="text-xs font-bold uppercase tracking-widest text-muted mb-2 block">
                                             Phase *
                                         </label>
                                         <select
                                             value={newGoal.phase}
                                             onChange={(e) => setNewGoal(prev => ({ ...prev, phase: e.target.value }))}
-                                            className="w-full p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                            className="select"
                                         >
                                             <option value="">Select phase</option>
                                             {phases.map(p => (
@@ -817,20 +817,20 @@ export default function RoadmapPage() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 block">
+                                        <label className="text-xs font-bold uppercase tracking-widest text-muted mb-2 block">
                                             Target Date
                                         </label>
                                         <input
                                             type="date"
                                             value={newGoal.targetDate}
                                             onChange={(e) => setNewGoal(prev => ({ ...prev, targetDate: e.target.value }))}
-                                            className="w-full p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                            className="input"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 block">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-muted mb-2 block">
                                         Milestones
                                     </label>
                                     {newGoal.milestones.map((milestone, i) => (
@@ -844,12 +844,12 @@ export default function RoadmapPage() {
                                                     setNewGoal(prev => ({ ...prev, milestones: updated }));
                                                 }}
                                                 placeholder={`Milestone ${i + 1}`}
-                                                className="flex-1 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                                className="input flex-1"
                                             />
                                             {i === newGoal.milestones.length - 1 && (
                                                 <button
                                                     onClick={() => setNewGoal(prev => ({ ...prev, milestones: [...prev.milestones, ""] }))}
-                                                    className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                                                    className="p-3 bg-surface-alt rounded-xl hover:bg-surface"
                                                 >
                                                     <Plus className="w-5 h-5" />
                                                 </button>
@@ -859,17 +859,17 @@ export default function RoadmapPage() {
                                 </div>
                             </div>
 
-                            <div className="p-6 border-t border-zinc-100 dark:border-zinc-800 flex justify-end gap-3">
+                            <div className="p-6 border-t border-subtle flex justify-end gap-3">
                                 <button
                                     onClick={() => setShowAddGoal(false)}
-                                    className="px-6 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all"
+                                    className="btn-secondary"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleAddGoal}
                                     disabled={!newGoal.title || !newGoal.phase}
-                                    className="px-6 py-3 bg-indigo-500 text-white rounded-xl font-bold hover:bg-indigo-600 transition-all disabled:opacity-50"
+                                    className="btn-primary disabled:opacity-50"
                                 >
                                     Add Goal
                                 </button>

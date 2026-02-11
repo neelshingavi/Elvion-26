@@ -4,6 +4,7 @@ import { useRef, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { ScrollControls, useScroll, Float, Stars, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
+import { uiTheme } from "@/lib/ui-theme";
 
 export default function Experience() {
     return (
@@ -106,9 +107,9 @@ function Story() {
                             args={[positions, 3]}
                         />
                     </bufferGeometry>
-                    <pointsMaterial size={0.05} color="#818cf8" transparent opacity={0.8} />
+                    <pointsMaterial size={0.05} color={uiTheme.hero.points} transparent opacity={0.8} />
                 </points>
-                <Sparkles count={100} scale={5} size={2} speed={0.4} opacity={0.5} color="#c084fc" />
+                <Sparkles count={100} scale={5} size={2} speed={0.4} opacity={0.5} color={uiTheme.hero.sparkles} />
             </group>
 
             {/* Phase 2: The Structure (Wireframe Cube) */}
@@ -116,11 +117,11 @@ function Story() {
                 <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
                     <mesh>
                         <boxGeometry args={[2, 2, 2]} />
-                        <meshStandardMaterial wireframe color="#6366f1" />
+                        <meshStandardMaterial wireframe color={uiTheme.hero.wireframe} />
                     </mesh>
                     <mesh scale={[0.9, 0.9, 0.9]}>
                         <boxGeometry args={[2, 2, 2]} />
-                        <meshStandardMaterial color="#4f46e5" transparent opacity={0.1} />
+                        <meshStandardMaterial color={uiTheme.hero.glow} transparent opacity={0.1} />
                     </mesh>
                 </Float>
             </group>
@@ -129,15 +130,15 @@ function Story() {
             <group ref={growthRef} visible={false}>
                 <mesh position={[-1.5, -1, 0]}>
                     <boxGeometry args={[1, 3, 1]} />
-                    <meshStandardMaterial color="#818cf8" />
+                    <meshStandardMaterial color={uiTheme.hero.node} />
                 </mesh>
                 <mesh position={[0, 0, 0]}>
                     <boxGeometry args={[1, 5, 1]} />
-                    <meshStandardMaterial color="#6366f1" />
+                    <meshStandardMaterial color={uiTheme.hero.nodeAlt} />
                 </mesh>
                 <mesh position={[1.5, 1, 0]}>
                     <boxGeometry args={[1, 7, 1]} />
-                    <meshStandardMaterial color="#4f46e5" />
+                    <meshStandardMaterial color={uiTheme.hero.glow} />
                 </mesh>
             </group>
 
@@ -147,14 +148,14 @@ function Story() {
                     <mesh>
                         <octahedronGeometry args={[1.5, 0]} />
                         <meshStandardMaterial
-                            color="#c084fc"
-                            emissive="#818cf8"
+                            color={uiTheme.hero.orb}
+                            emissive={uiTheme.hero.orbEmissive}
                             emissiveIntensity={0.5}
                             roughness={0.1}
                             metalness={0.8}
                         />
                     </mesh>
-                    <Sparkles count={50} scale={3} size={3} speed={0.4} opacity={0.5} color="#ffffff" />
+                    <Sparkles count={50} scale={3} size={3} speed={0.4} opacity={0.5} color={uiTheme.hero.flare} />
                 </Float>
             </group>
         </>
