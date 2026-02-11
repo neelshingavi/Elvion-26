@@ -143,238 +143,230 @@ export default function LoginPage() {
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
           await updateDoc(userRef, { lastLoginAt: serverTimestamp() });
+
+          const userData = userSnap.data();
+          if (userData?.isOnboardingCompleted || userData?.activeStartupId) {
+            router.push("/founder/dashboard");
+          } else {
+            router.push("/onboarding");
+          }
+        } else {
+          router.push("/onboarding");
         }
+      }
+    } catch (err: any) {
+      console.error("Auth error:", err);
+      let msg = "Authentication failed.";
+      if (err.code === "auth/email-already-in-use") msg = "Email already in use.";
+      if (err.code === "auth/invalid-credential") msg = "Invalid email or password.";
+      if (err.code === "auth/weak-password") msg = "Password should be at least 6 characters.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-try {
-  if (
-    userSnap.exists() &&
-    (userSnap.data()?.isOnboardingCompleted ||
-      userSnap.data()?.activeStartupId)
-  ) {
-    router.push("/founder/dashboard");
-  } else {
-    router.push("/onboarding");
-  }
-} catch (err: any) {
-  console.error("Auth error:", err);
-  let msg = "Authentication failed.";
-  if (err.code === "auth/email-already-in-use")
-    msg = "Email already in use.";
-  if (err.code === "auth/invalid-credential")
-    msg = "Invalid email or password.";
-  if (err.code === "auth/weak-password")
-    msg = "Password should be at least 6 characters.";
-  setError(msg);
-} finally {
-  setLoading(false);
-}
-
-return (
-  <div className="min-h-screen grid lg:grid-cols-2 bg-app text-foreground">
-    {/* Left Panel */}
-    <div className="hidden lg:flex flex-col justify-between p-12 bg-surface-alt border-r border-subtle relative overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-[-10%] left-[-10%] h-[500px] w-[500px] rounded-full bg-primary-soft blur-[100px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-secondary-soft blur-[100px]" />
-      </div>
-
-      <div className="relative z-10">
-        <Link href="/" className="text-2xl font-semibold tracking-tight">
-          Founder<span className="text-primary">Flow</span>
-        </Link>
-      </div>
-
-      <div className="relative z-10 space-y-8">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={mode}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            <h1 className="text-h1 mb-4">
-              {mode === "login"
-                ? "Welcome back, founder."
-                : "Start your journey."}
-            </h1>
-            <p className="text-subtitle max-w-md">
-              {mode === "login"
-                ? "Continue building your startup with AI-powered tools and validated roadmaps."
-                : "Join thousands of founders simplifying their workflow and scaling faster."}
-            </p>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      <div className="relative z-10 text-caption">
-        © {new Date().getFullYear()} FounderFlow Inc.
-      </div>
-    </div>
-
-    {/* Right Panel */}
-    <div className="flex items-center justify-center p-8 relative">
-      <div className="absolute top-8 right-8 lg:hidden">
-        <Link href="/" className="text-xl font-semibold tracking-tight">
-          Founder<span className="text-primary">Flow</span>
-        </Link>
-      </div>
-
-      <motion.div
-        layout
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md space-y-8"
-      >
-        <div className="text-center lg:text-left">
-          <h2 className="text-h2">
-            {mode === "login"
-              ? "Sign in to your account"
-              : "Create a new account"}
-          </h2>
-          <p className="mt-2 text-body">
-            {mode === "login"
-              ? "Don't have an account? "
-              : "Already have an account? "}
-            <button
-              onClick={() => {
-                setMode(mode === "login" ? "signup" : "login");
-                setError(null);
-                setFormData({ name: "", email: "", password: "" });
-              }}
-              className="font-semibold text-primary hover:text-primary"
-            >
-              {mode === "login" ? "Sign up" : "Sign in"}
-            </button>
-          </p>
+  return (
+    <div className="min-h-screen grid lg:grid-cols-2 bg-app text-foreground">
+      {/* Left Panel */}
+      <div className="hidden lg:flex flex-col justify-between p-12 bg-surface-alt border-r border-subtle relative overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-[-10%] left-[-10%] h-[500px] w-[500px] rounded-full bg-primary-soft blur-[100px]" />
+          <div className="absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-secondary-soft blur-[100px]" />
         </div>
 
-        {!isConfigValid && (
-          <div className="p-4 rounded-2xl bg-danger-soft border border-subtle text-danger flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 shrink-0" />
-            <p className="text-body">
-              System Error: Firebase config missing.
+        <div className="relative z-10">
+          <Link href="/" className="text-2xl font-semibold tracking-tight">
+            Founder<span className="text-primary">Flow</span>
+          </Link>
+        </div>
+
+        <div className="relative z-10 space-y-8">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={mode}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h1 className="text-h1 mb-4">
+                {mode === "login"
+                  ? "Welcome back, founder."
+                  : "Start your journey."}
+              </h1>
+              <p className="text-subtitle max-w-md">
+                {mode === "login"
+                  ? "Continue building your startup with AI-powered tools and validated roadmaps."
+                  : "Join thousands of founders simplifying their workflow and scaling faster."}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div className="relative z-10 text-caption">
+          © {new Date().getFullYear()} FounderFlow Inc.
+        </div>
+      </div>
+
+      {/* Right Panel */}
+      <div className="flex items-center justify-center p-8 relative">
+        <div className="absolute top-8 right-8 lg:hidden">
+          <Link href="/" className="text-xl font-semibold tracking-tight">
+            Founder<span className="text-primary">Flow</span>
+          </Link>
+        </div>
+
+        <motion.div
+          layout
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md space-y-8"
+        >
+          <div className="text-center lg:text-left">
+            <h2 className="text-h2">
+              {mode === "login"
+                ? "Sign in to your account"
+                : "Create a new account"}
+            </h2>
+            <p className="mt-2 text-body">
+              {mode === "login"
+                ? "Don't have an account? "
+                : "Already have an account? "}
+              <button
+                onClick={() => {
+                  setMode(mode === "login" ? "signup" : "login");
+                  setError(null);
+                  setFormData({ name: "", email: "", password: "" });
+                }}
+                className="font-semibold text-primary hover:text-primary"
+              >
+                {mode === "login" ? "Sign up" : "Sign in"}
+              </button>
             </p>
           </div>
-        )}
 
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="p-4 rounded-2xl bg-danger-soft border border-subtle text-danger text-sm flex items-center gap-2 overflow-hidden"
-            >
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              {error}
-              <button
-                onClick={() => setError(null)}
-                className="ml-auto hover:text-foreground"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </motion.div>
+          {!isConfigValid && (
+            <div className="p-4 rounded-2xl bg-danger-soft border border-subtle text-danger flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <p className="text-body">System Error: Firebase config missing.</p>
+            </div>
           )}
-        </AnimatePresence>
 
-        <form onSubmit={handleEmailAuth} className="space-y-4">
-          <AnimatePresence mode="popLayout">
-            {mode === "signup" && (
+          <AnimatePresence>
+            {error && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="space-y-2 overflow-hidden"
+                className="p-4 rounded-2xl bg-danger-soft border border-subtle text-danger text-sm flex items-center gap-2 overflow-hidden"
               >
-                <label className="text-overline">Full Name</label>
-                <input
-                  required
-                  type="text"
-                  placeholder="Elon Musk"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  className="input"
-                />
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                {error}
+                <button
+                  onClick={() => setError(null)}
+                  className="ml-auto hover:text-foreground"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <div className="space-y-2">
-            <label className="text-overline">Email Address</label>
-            <input
-              required
-              type="email"
-              placeholder="you@example.com"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              className="input"
-            />
-          </div>
+          <form onSubmit={handleEmailAuth} className="space-y-4">
+            <AnimatePresence mode="popLayout">
+              {mode === "signup" && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-2 overflow-hidden"
+                >
+                  <label className="text-overline">Full Name</label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="Elon Musk"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    className="input"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-          <div className="space-y-2">
-            <label className="text-overline">Password</label>
-            <div className="relative">
+            <div className="space-y-2">
+              <label className="text-overline">Email Address</label>
               <input
                 required
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={formData.password}
+                type="email"
+                placeholder="you@example.com"
+                value={formData.email}
                 onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
+                  setFormData({ ...formData, email: e.target.value })
                 }
-                className="input pr-10"
+                className="input"
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
-              >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
-              </button>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading || !isConfigValid}
-            className="w-full btn-primary disabled:opacity-50"
-          >
-            {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-            ) : mode === "login" ? (
-              "Sign In"
-            ) : (
-              "Create Account"
-            )}
-          </button>
-        </form>
-      </motion.div>
-    </div>
-  </div>
-);
+            <div className="space-y-2">
+              <label className="text-overline">Password</label>
+              <div className="relative">
+                <input
+                  required
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  className="input pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            </div>
 
+            <button
+              type="submit"
+              disabled={loading || !isConfigValid}
+              className="w-full btn-primary disabled:opacity-50"
+            >
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+              ) : mode === "login" ? (
+                "Sign In"
+              ) : (
+                "Create Account"
+              )}
+            </button>
+          </form>
+
+          <div className="relative py-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-subtle"></div>
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-neutral-950 px-2 text-neutral-500">
-                Or continue with
-              </span>
+              <span className="bg-app px-2 text-muted">Or continue with</span>
             </div>
           </div>
 
           <button
             onClick={handleGoogleLogin}
             disabled={loading || !isConfigValid}
-            className="group relative w-full flex items-center justify-center gap-3 bg-white text-black hover:bg-neutral-200 px-8 py-4 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="group relative w-full flex items-center justify-center gap-3 bg-surface border border-subtle hover:bg-surface-alt text-foreground px-8 py-4 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -396,7 +388,8 @@ return (
             </svg>
             Google
           </button>
-          <p className="text-center text-xs text-neutral-600">
+
+          <p className="text-center text-xs text-muted">
             By clicking continue, you agree to our Terms of Service.
           </p>
         </motion.div>
